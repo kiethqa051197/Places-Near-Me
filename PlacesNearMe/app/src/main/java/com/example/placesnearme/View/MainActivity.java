@@ -10,6 +10,8 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.content.IntentSender;
@@ -24,8 +26,11 @@ import android.view.View;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
+import com.example.placesnearme.Adapter.ListItemDanhMucChaAdapter;
 import com.example.placesnearme.Common;
 import com.example.placesnearme.Interface.IGoogleAPIService;
+import com.example.placesnearme.Model.DanhMuc;
+import com.example.placesnearme.Model.DanhMucCha;
 import com.example.placesnearme.Model.MyPlaces;
 import com.example.placesnearme.Model.PolylineData;
 import com.example.placesnearme.R;
@@ -51,10 +56,14 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.maps.DirectionsApiRequest;
 import com.google.maps.GeoApiContext;
 import com.google.maps.PendingResult;
@@ -77,11 +86,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     // New Location
     private FusedLocationProviderClient fusedLocationProviderClient;
+
     private LocationCallback mLocationCallback;
     private LocationRequest mLocationRequest;
+
     public static Location mLastLocation;
     private Marker mMarker;
+
     private double latitude, longtitude;
+
     private GoogleMap mMap;
     private GeoApiContext mGeoApiContext;
 
@@ -94,7 +107,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private ArrayList<Marker> mTripMarkers = new ArrayList<>();
     private Marker mSelectedMarker = null;
 
-    SupportMapFragment mapFragment;
+    private SupportMapFragment mapFragment;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {

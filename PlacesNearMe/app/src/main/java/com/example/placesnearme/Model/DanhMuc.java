@@ -4,14 +4,16 @@ public class DanhMuc {
     String madanhmuc;
     String tendanhmuc;
     String madanhmuccha;
+    DanhMucCha danhMucCha;
 
     public DanhMuc() {
     }
 
-    public DanhMuc(String madanhmuc, String tendanhmuc, String madanhmuccha) {
+    public DanhMuc(String madanhmuc, String tendanhmuc, String madanhmuccha, DanhMucCha danhMucCha) {
         this.madanhmuc = madanhmuc;
         this.tendanhmuc = tendanhmuc;
         this.madanhmuccha = madanhmuccha;
+        this.danhMucCha = danhMucCha;
     }
 
     public String getMadanhmuc() {
@@ -38,12 +40,21 @@ public class DanhMuc {
         this.madanhmuccha = madanhmuccha;
     }
 
+    public DanhMucCha getDanhMucCha() {
+        return danhMucCha;
+    }
+
+    public void setDanhMucCha(DanhMucCha danhMucCha) {
+        this.danhMucCha = danhMucCha;
+    }
+
     @Override
     public String toString() {
         return "DanhMuc{" +
                 "madanhmuc='" + madanhmuc + '\'' +
                 ", tendanhmuc='" + tendanhmuc + '\'' +
                 ", madanhmuccha='" + madanhmuccha + '\'' +
+                ", danhMucCha=" + danhMucCha +
                 '}';
     }
 }
