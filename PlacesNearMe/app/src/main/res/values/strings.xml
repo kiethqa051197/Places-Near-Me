@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">Places Near Me</string>
+    <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">AIzaSyD2ess1s_lta6cc6OLMi4ygIvlHiBLXftU</string>
+    <string name="open">Open</string>
+    <string name="close">Close</string>
 </resources>

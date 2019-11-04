@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "479204651685",
+    "firebase_url": "https://places-near-me-c816b.firebaseio.com",
+    "project_id": "places-near-me-c816b",
+    "storage_bucket": "places-near-me-c816b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:479204651685:android:6b7bd10fae23373531d34c",
+        "android_client_info": {
+          "package_name": "com.example.placesnearme"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "479204651685-n1qhuot539ed6h7sop7r5jcn32ia15nv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.placesnearme",
+            "certificate_hash": "ed256161ecaf36f20a7b3c1a92b03094e7453751"
+          }
+        },
+        {
+          "client_id": "479204651685-l8n9knjpdv4imobqco5bl0nf2han9upl.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCsomvIIe--buz7k7qRArBiLprLXGL9IRc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "479204651685-l8n9knjpdv4imobqco5bl0nf2han9upl.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
