@@ -1,6 +1,9 @@
 package com.example.placesnearme.Adapter;
 
-import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,7 +16,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.placesnearme.Model.DanhMucCha;
 import com.example.placesnearme.R;
+import com.example.placesnearme.View.CategoryActivity;
 import com.example.placesnearme.View.MainActivity;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.List;
 
@@ -55,32 +62,30 @@ public class ListItemDanhMucChaAdapter extends RecyclerView.Adapter<ListItemDanh
 
         holder.txtTenDanhMuc.setText(danhMucCha.getTendanhmuc());
 
-        switch (danhMucCha.getMadanhmuc()){
-            case "food":
-                holder.imgDanhMuc.setImageResource(R.drawable.ctg_parent_food);
-                break;
-            case "fun":
-                holder.imgDanhMuc.setImageResource(R.drawable.ctg_parent_fun);
-                break;
-            case "health":
-                holder.imgDanhMuc.setImageResource(R.drawable.ctg_parent_health);
-                break;
-            case "stores":
-                holder.imgDanhMuc.setImageResource(R.drawable.ctg_parent_stores);
-                break;
-            case "service":
-                holder.imgDanhMuc.setImageResource(R.drawable.ctg_parent_service);
-                break;
-            case "sports":
-                holder.imgDanhMuc.setImageResource(R.drawable.ctg_parent_sport);
-                break;
-            case "travel":
-                holder.imgDanhMuc.setImageResource(R.drawable.ctg_parent_travel);
-                break;
-            case "others":
-                holder.imgDanhMuc.setImageResource(R.drawable.ctg_parent_others);
-                break;
-        }
+        StorageReference storage = FirebaseStorage.getInstance().getReference().child("Danh Muc Cha").child(danhMucCha.getHinhanh());
+        long ONE_MEGABYTE = 1024 * 1024;
+        storage.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+            @Override
+            public void onSuccess(byte[] bytes) {
+                Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                holder.imgDanhMuc.setImageBitmap(bitmap);
+            }
+        });
+
+        holder.cardView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SharedPreferences pref = mainActivity.getBaseContext().getSharedPreferences("shareDanhMucCha", 0); // 0 - for private mode
+                SharedPreferences.Editor editor = pref.edit();
+
+                editor.putString("madanhmuccha", danhMucCha.getMadanhmuc()); // Storing string
+                editor.putString("tendanhmuccha", danhMucCha.getTendanhmuc());
+                editor.commit(); // commit changes
+
+                Intent intent = new Intent(mainActivity.getApplication(), CategoryActivity.class);
+                mainActivity.startActivity(intent);
+            }
+        });
     }
 
     @Override

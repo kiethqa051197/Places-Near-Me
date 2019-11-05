@@ -3,13 +3,15 @@ package com.example.placesnearme.Model;
 public class DanhMucCha {
     String madanhmuc;
     String tendanhmuc;
+    String hinhanh;
 
     public DanhMucCha() {
     }
 
-    public DanhMucCha(String madanhmuc, String tendanhmuc) {
+    public DanhMucCha(String madanhmuc, String tendanhmuc, String hinhanh) {
         this.madanhmuc = madanhmuc;
         this.tendanhmuc = tendanhmuc;
+        this.hinhanh = hinhanh;
     }
 
     public String getMadanhmuc() {
@@ -28,11 +30,20 @@ public class DanhMucCha {
         this.tendanhmuc = tendanhmuc;
     }
 
+    public String getHinhanh() {
+        return hinhanh;
+    }
+
+    public void setHinhanh(String hinhanh) {
+        this.hinhanh = hinhanh;
+    }
+
     @Override
     public String toString() {
         return "DanhMucCha{" +
                 "madanhmuc='" + madanhmuc + '\'' +
                 ", tendanhmuc='" + tendanhmuc + '\'' +
+                ", hinhanh='" + hinhanh + '\'' +
                 '}';
     }
 }

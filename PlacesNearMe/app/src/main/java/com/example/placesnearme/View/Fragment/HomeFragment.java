@@ -25,7 +25,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HomeFragment extends Fragment {
+public class HomeFragment extends Fragment{
 
     public RecyclerView listItemDanhMuc;
     private ListItemDanhMucChaAdapter adapterDanhMucCha;
@@ -51,11 +51,12 @@ public class HomeFragment extends Fragment {
         layoutManagerDanhMuc = new GridLayoutManager(getContext(), 3);
         listItemDanhMuc.setLayoutManager(layoutManagerDanhMuc);
 
-        loadCategory();
+        loadCategoryParent();
+
         return view;
     }
 
-    private void loadCategory() {
+    private void loadCategoryParent() {
         danhMucChaList = new ArrayList<>();
         if (danhMucChaList.size() > 0)
             danhMucChaList.clear();
@@ -65,12 +66,12 @@ public class HomeFragment extends Fragment {
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 for (DocumentSnapshot doc : task.getResult()) {
                     DanhMucCha danhMucCha = new DanhMucCha(doc.getString("madanhmuc"),
-                            doc.getString("tendanhmuc"));
+                            doc.getString("tendanhmuc"), doc.getString("hinhanh"));
 
                     danhMucChaList.add(danhMucCha);
                 }
 
-                adapterDanhMucCha = new ListItemDanhMucChaAdapter(((MainActivity)getActivity()),danhMucChaList);
+                adapterDanhMucCha = new ListItemDanhMucChaAdapter(((MainActivity)getActivity()), danhMucChaList);
                 listItemDanhMuc.setAdapter(adapterDanhMucCha);
             }
         }).addOnFailureListener(new OnFailureListener() {
