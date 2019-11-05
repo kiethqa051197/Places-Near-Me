@@ -3,17 +3,17 @@ package com.example.placesnearme.Model;
 public class DanhMuc {
     String madanhmuc;
     String tendanhmuc;
-    String madanhmuccha;
+    String hinhanh;
     DanhMucCha danhMucCha;
 
     public DanhMuc() {
     }
 
-    public DanhMuc(String madanhmuc, String tendanhmuc, String madanhmuccha, DanhMucCha danhMucCha) {
+    public DanhMuc(String madanhmuc, String tendanhmuc, String hinhanh, DanhMucCha danhMucCha) {
         this.madanhmuc = madanhmuc;
         this.tendanhmuc = tendanhmuc;
-        this.madanhmuccha = madanhmuccha;
         this.danhMucCha = danhMucCha;
+        this.hinhanh = hinhanh;
     }
 
     public String getMadanhmuc() {
@@ -32,14 +32,6 @@ public class DanhMuc {
         this.tendanhmuc = tendanhmuc;
     }
 
-    public String getMadanhmuccha() {
-        return madanhmuccha;
-    }
-
-    public void setMadanhmuccha(String madanhmuccha) {
-        this.madanhmuccha = madanhmuccha;
-    }
-
     public DanhMucCha getDanhMucCha() {
         return danhMucCha;
     }
@@ -48,12 +40,20 @@ public class DanhMuc {
         this.danhMucCha = danhMucCha;
     }
 
+    public String getHinhanh() {
+        return hinhanh;
+    }
+
+    public void setHinhanh(String hinhanh) {
+        this.hinhanh = hinhanh;
+    }
+
     @Override
     public String toString() {
         return "DanhMuc{" +
                 "madanhmuc='" + madanhmuc + '\'' +
                 ", tendanhmuc='" + tendanhmuc + '\'' +
-                ", madanhmuccha='" + madanhmuccha + '\'' +
+                ", hinhanh='" + hinhanh + '\'' +
                 ", danhMucCha=" + danhMucCha +
                 '}';
     }
