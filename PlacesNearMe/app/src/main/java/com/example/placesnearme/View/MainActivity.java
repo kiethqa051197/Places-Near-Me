@@ -31,8 +31,12 @@ import com.example.placesnearme.Common;
 import com.example.placesnearme.Interface.IGoogleAPIService;
 import com.example.placesnearme.Model.DanhMuc;
 import com.example.placesnearme.Model.DanhMucCha;
+import com.example.placesnearme.Model.DiaDiem;
 import com.example.placesnearme.Model.MyPlaces;
+import com.example.placesnearme.Model.Photos;
 import com.example.placesnearme.Model.PolylineData;
+import com.example.placesnearme.Model.Results;
+import com.example.placesnearme.Model.Sortbyroll;
 import com.example.placesnearme.R;
 import com.example.placesnearme.View.Fragment.HomeFragment;
 import com.example.placesnearme.View.Fragment.SettingFragment;
@@ -63,6 +67,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.maps.DirectionsApiRequest;
 import com.google.maps.GeoApiContext;
@@ -72,7 +77,12 @@ import com.google.maps.model.DirectionsResult;
 import com.google.maps.model.DirectionsRoute;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,
         OnMapReadyCallback, View.OnClickListener, RadioGroup.OnCheckedChangeListener,
@@ -197,6 +207,86 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mMap.setOnPolylineClickListener(this);
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSION_CODE: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                        mMap.setMyLocationEnabled(true);
+
+                        buildLocationCallBack();
+                        buildLocationRequest();
+
+                        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+                        fusedLocationProviderClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
+                    }
+                } else
+                    Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
+            }
+            break;
+        }
+    }
+
+    @Override
+    public void onPolylineClick(Polyline polyline) {
+        int index = 0;
+        for(PolylineData polylineData: mPolylinesData){
+            index++;
+
+            if(polyline.getId().equals(polylineData.getPolyline().getId())){
+                polylineData.getPolyline().setColor(ContextCompat.getColor(getApplicationContext(), R.color.colorPrimaryDark));
+                polylineData.getPolyline().setZIndex(1);
+
+                LatLng endLocation = new LatLng(
+                        polylineData.getLeg().endLocation.lat,
+                        polylineData.getLeg().endLocation.lng
+                );
+
+                Marker marker = mMap.addMarker(new MarkerOptions()
+                        .position(endLocation)
+                        .title("Trip #" + index)
+                        .snippet("Duration: " + polylineData.getLeg().duration)
+                );
+
+                marker.showInfoWindow();
+
+                mTripMarkers.add(marker);
+            }
+            else{
+                polylineData.getPolyline().setColor(ContextCompat.getColor(getApplicationContext(), R.color.grayduration));
+                polylineData.getPolyline().setZIndex(0);
+            }
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+
+    }
+
+    @Override
+    public void onCheckedChanged(RadioGroup group, int checkedId) {
+
+    }
+
+    @Override
+    public void onMapClick(LatLng latLng) {
+
+    }
+
+    @Override
+    protected void onStop() {
+        fusedLocationProviderClient.removeLocationUpdates(mLocationCallback);
+        super.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        fusedLocationProviderClient.removeLocationUpdates(mLocationCallback);
+        super.onDestroy();
+    }
+
     private void buildLocationRequest() {
         mLocationRequest = new LocationRequest();
         mLocationRequest.setInterval(1000);
@@ -280,18 +370,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             return false;
         } else
             return true;
-    }
-
-    @Override
-    protected void onStop() {
-        fusedLocationProviderClient.removeLocationUpdates(mLocationCallback);
-        super.onStop();
-    }
-
-    @Override
-    protected void onDestroy() {
-        fusedLocationProviderClient.removeLocationUpdates(mLocationCallback);
-        super.onDestroy();
     }
 
     public void zoomRoute(List<LatLng> lstLatLngRoute) {
@@ -380,38 +458,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         });
     }
 
-    @Override
-    public void onPolylineClick(Polyline polyline) {
-        int index = 0;
-        for(PolylineData polylineData: mPolylinesData){
-            index++;
-
-            if(polyline.getId().equals(polylineData.getPolyline().getId())){
-                polylineData.getPolyline().setColor(ContextCompat.getColor(getApplicationContext(), R.color.colorPrimaryDark));
-                polylineData.getPolyline().setZIndex(1);
-
-                LatLng endLocation = new LatLng(
-                        polylineData.getLeg().endLocation.lat,
-                        polylineData.getLeg().endLocation.lng
-                );
-
-                Marker marker = mMap.addMarker(new MarkerOptions()
-                        .position(endLocation)
-                        .title("Trip #" + index)
-                        .snippet("Duration: " + polylineData.getLeg().duration)
-                );
-
-                marker.showInfoWindow();
-
-                mTripMarkers.add(marker);
-            }
-            else{
-                polylineData.getPolyline().setColor(ContextCompat.getColor(getApplicationContext(), R.color.grayduration));
-                polylineData.getPolyline().setZIndex(0);
-            }
-        }
-    }
-
     private void removeTripMarkers(){
         for (Marker marker : mTripMarkers){
             marker.remove();
@@ -426,39 +472,97 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case MY_PERMISSION_CODE: {
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                        mMap.setMyLocationEnabled(true);
+    private String getUrl(double latitude, double longtitude, String placeType) {
+        StringBuilder googlePlacesUrl = new StringBuilder("https://maps.googleapis.com/maps/api/place/nearbysearch/json?");
+        googlePlacesUrl.append("location=" + latitude + "," + longtitude);
+        googlePlacesUrl.append("&radius=" + 5000);
+        googlePlacesUrl.append("&type=" + placeType);
+        googlePlacesUrl.append("&sensor=true");
+        googlePlacesUrl.append("&key=" + getResources().getString(R.string.google_maps_key));
 
-                        buildLocationCallBack();
-                        buildLocationRequest();
+        return googlePlacesUrl.toString();
+    }
 
-                        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-                        fusedLocationProviderClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
+    /*
+    public void nearByPlace(final String placeType) {
+        mMap.clear();
+        String url = getUrl(latitude, longtitude, placeType);
+
+        diaDiemList.removeAll(diaDiemList);
+
+        mService.getNearByPlaces(url)
+                .enqueue(new Callback<MyPlaces>() {
+                    @Override
+                    public void onResponse(Call<MyPlaces> call, Response<MyPlaces> response) {
+                        currentPlaces = response.body();
+
+                        if (response.isSuccessful()) {
+                            for (int i = 0; i < response.body().getResults().length; i++) {
+                                MarkerOptions markerOptions = new MarkerOptions();
+                                Results googlePlaces = response.body().getResults()[i];
+
+                                String placesName = googlePlaces.getName();
+                                String vicinity = googlePlaces.getVicinity();
+
+                                double lat = Double.parseDouble(googlePlaces.getGeometry().getLocation().getLat());
+                                double lng = Double.parseDouble(googlePlaces.getGeometry().getLocation().getLng());
+
+                                String[] types = googlePlaces.getTypes();
+                                Photos[] picture = googlePlaces.getPhotos();
+
+                                GeoPoint location = new GeoPoint(lat, lng);
+
+                                List<String> danhMuc = new ArrayList<>();
+                                List<String> hinhAnh = new ArrayList<>();
+
+                                for (int j = 0; j < types.length; j++)
+                                    danhMuc.add(types[j]);
+
+                                for (int l = 0; l < danhMuc.size(); l++) {
+                                    if (danhMuc.get(l).equals("point_of_interest"))
+                                        danhMuc.remove(l);
+                                    if (danhMuc.get(l).equals("establishment"))
+                                        danhMuc.remove(l);
+                                }
+
+                                if (picture != null) {
+                                    for (int k = 0; k < picture.length; k++) {
+                                        hinhAnh.add(picture[k].getPhoto_reference());
+                                    }
+                                }
+
+                                DiaDiem diaDiem = new DiaDiem();
+                                diaDiem.setTendiadiem(placesName);
+                                diaDiem.setDiachi(vicinity);
+                                diaDiem.setDanhmuc(danhMuc);
+                                diaDiem.setHinhAnh(hinhAnh);
+                                diaDiem.setLocation(location);
+
+                                diaDiemList.add(diaDiem);
+
+                                Collections.sort(diaDiemList, new Sortbyroll());
+
+                                LatLng latLng = new LatLng(lat, lng);
+
+                                markerOptions.position(latLng);
+                                markerOptions.title(placesName);
+
+                                markerOptions.snippet(String.valueOf(i)); //Assign index for marker
+
+                                mMap.addMarker(markerOptions);
+
+                                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 13), 4000, null);
+                            }
+
+                            adapterLocation = new ListItemLocationAdapter(MainActivity.this, diaDiemList, getApplicationContext());
+                            listItemDiaDiem.setAdapter(adapterLocation);
+                        }
                     }
-                } else
-                    Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
-            }
-            break;
-        }
+
+                    @Override
+                    public void onFailure(Call<MyPlaces> call, Throwable t) {
+                    }
+                });
     }
-
-    @Override
-    public void onClick(View v) {
-
-    }
-
-    @Override
-    public void onCheckedChanged(RadioGroup group, int checkedId) {
-
-    }
-
-    @Override
-    public void onMapClick(LatLng latLng) {
-
-    }
+     */
 }

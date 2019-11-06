@@ -86,8 +86,6 @@ public class CategoryActivity extends AppCompatActivity{
                     danhMucList.add(danhMuc);
                 }
 
-                Log.d("ktra", danhMucList.size() + "");
-
                 adapterDanhMuc = new ListItemDanhMucAdapter(CategoryActivity.this, danhMucList);
                 listItemDanhMuc.setAdapter(adapterDanhMuc);
             }
