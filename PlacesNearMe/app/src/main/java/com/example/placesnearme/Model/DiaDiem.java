@@ -2,9 +2,10 @@ package com.example.placesnearme.Model;
 
 import com.google.firebase.firestore.GeoPoint;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class DiaDiem{
+public class DiaDiem implements Serializable {
     List<String> danhmuc;
     String diachi;
     List<String> hinhAnh;
@@ -69,18 +70,6 @@ public class DiaDiem{
 
     public void setTendiadiem(String tendiadiem) {
         this.tendiadiem = tendiadiem;
-    }
-
-    @Override
-    public String toString() {
-        return "DiaDiem{" +
-                "danhmuc=" + danhmuc +
-                ", diachi='" + diachi + '\'' +
-                ", hinhAnh=" + hinhAnh +
-                ", location=" + location +
-                ", madiadiem='" + madiadiem + '\'' +
-                ", tendiadiem='" + tendiadiem + '\'' +
-                '}';
     }
 }
 

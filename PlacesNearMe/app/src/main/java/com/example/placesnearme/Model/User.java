@@ -59,15 +59,4 @@ public class User {
     public void setLocation(GeoPoint location) {
         this.location = location;
     }
-
-    @Override
-    public String toString() {
-        return "User{" +
-                "mauser='" + mauser + '\'' +
-                ", email='" + email + '\'' +
-                ", avatar='" + avatar + '\'' +
-                ", username='" + username + '\'' +
-                ", location=" + location +
-                '}';
-    }
 }

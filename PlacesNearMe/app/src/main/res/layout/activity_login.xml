@@ -6,6 +6,7 @@
     android:background="@drawable/background_1">
 
     <ImageView
+        android:id="@+id/imgBackgroundLogin"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#50000000" />
