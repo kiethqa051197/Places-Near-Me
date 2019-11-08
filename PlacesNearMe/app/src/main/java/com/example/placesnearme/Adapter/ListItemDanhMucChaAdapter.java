@@ -41,6 +41,8 @@ class ListItemDanhMucChaViewHolder extends RecyclerView.ViewHolder{
 public class ListItemDanhMucChaAdapter extends RecyclerView.Adapter<ListItemDanhMucChaViewHolder>{
     MainActivity mainActivity;
     List<DanhMucCha> danhMucChaList;
+    public SharedPreferences pref;
+    public SharedPreferences.Editor editor;
 
     public ListItemDanhMucChaAdapter(MainActivity mainActivity, List<DanhMucCha> danhMucChaList) {
         this.mainActivity = mainActivity;
@@ -75,8 +77,8 @@ public class ListItemDanhMucChaAdapter extends RecyclerView.Adapter<ListItemDanh
         holder.cardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SharedPreferences pref = mainActivity.getBaseContext().getSharedPreferences("shareDanhMucCha", 0); // 0 - for private mode
-                SharedPreferences.Editor editor = pref.edit();
+                pref = mainActivity.getBaseContext().getSharedPreferences("shareDanhMucCha", 0); // 0 - for private mode
+                editor = pref.edit();
 
                 editor.putString("madanhmuccha", danhMucCha.getMadanhmuc()); // Storing string
                 editor.putString("tendanhmuccha", danhMucCha.getTendanhmuc());

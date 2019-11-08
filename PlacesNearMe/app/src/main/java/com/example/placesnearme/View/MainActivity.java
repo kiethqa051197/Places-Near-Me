@@ -10,32 +10,44 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.IntentSender;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.ImageView;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
-import com.example.placesnearme.Adapter.ListItemDanhMucChaAdapter;
 import com.example.placesnearme.Common;
 import com.example.placesnearme.Interface.IGoogleAPIService;
-import com.example.placesnearme.Model.DanhMuc;
-import com.example.placesnearme.Model.DanhMucCha;
+import com.example.placesnearme.Model.DiaDiem;
 import com.example.placesnearme.Model.MyPlaces;
+import com.example.placesnearme.Model.Photos;
 import com.example.placesnearme.Model.PolylineData;
+import com.example.placesnearme.Model.Results;
 import com.example.placesnearme.R;
 import com.example.placesnearme.View.Fragment.HomeFragment;
 import com.example.placesnearme.View.Fragment.SettingFragment;
+import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -60,19 +72,36 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.AutocompletePrediction;
+import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.model.TypeFilter;
+import com.google.android.libraries.places.api.net.FetchPlaceRequest;
+import com.google.android.libraries.places.api.net.FetchPlaceResponse;
+import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
+import com.google.android.libraries.places.api.net.FindAutocompletePredictionsResponse;
+import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.material.navigation.NavigationView;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.GeoPoint;
 import com.google.maps.DirectionsApiRequest;
 import com.google.maps.GeoApiContext;
 import com.google.maps.PendingResult;
 import com.google.maps.internal.PolylineEncoding;
 import com.google.maps.model.DirectionsResult;
 import com.google.maps.model.DirectionsRoute;
+import com.mancj.materialsearchbar.MaterialSearchBar;
+import com.mancj.materialsearchbar.adapter.SuggestionsAdapter;
+import com.skyfishjy.library.RippleBackground;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,
         OnMapReadyCallback, View.OnClickListener, RadioGroup.OnCheckedChangeListener,
@@ -107,7 +136,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private ArrayList<Marker> mTripMarkers = new ArrayList<>();
     private Marker mSelectedMarker = null;
 
-    private SupportMapFragment mapFragment;
+    public SupportMapFragment mapFragment;
+
+    private SharedPreferences pref;
+    private SharedPreferences.Editor editor;
+
+    private MaterialSearchBar materialSearchBar;
+
+    private PlacesClient placesClient;
+
+    private List<AutocompletePrediction> predictionList;
+
+    private RippleBackground rippleBackground;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -115,6 +155,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setContentView(R.layout.activity_main);
 
         mDrawerLayout = findViewById(R.id.drawer_layout);
+        materialSearchBar = findViewById(R.id.searchBar);
+        rippleBackground = findViewById(R.id.ripple_bg);
 
         //Navigation
         actionbar = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.open, R.string.close);
@@ -136,13 +178,154 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
             checkLocationPermission();
 
-        buildLocationCallBack();
         buildLocationRequest();
+        buildLocationCallBack();
 
         enableGPS(mLocationRequest);
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         fusedLocationProviderClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
+
+        pref = getSharedPreferences("shareLastLocation", 0); // 0 - for private mode
+
+        latitude = Double.parseDouble(pref.getString("latitude", "0"));
+        longtitude = Double.parseDouble(pref.getString("longtitude", "0"));
+
+        // Initialize Places.
+        Places.initialize(getApplicationContext(), getString(R.string.google_maps_key));
+        // Create a new Places client instance.
+        placesClient = Places.createClient(this);
+
+        final AutocompleteSessionToken token = AutocompleteSessionToken.newInstance();
+
+        materialSearchBar.setOnSearchActionListener(new MaterialSearchBar.OnSearchActionListener() {
+            @Override
+            public void onSearchStateChanged(boolean enabled) { }
+
+            @Override
+            public void onSearchConfirmed(CharSequence text) {
+                startSearch(text.toString(), true, null, true);
+            }
+
+            @Override
+            public void onButtonClicked(int buttonCode) {
+                if(buttonCode == MaterialSearchBar.BUTTON_NAVIGATION){
+
+                }else if (buttonCode == MaterialSearchBar.BUTTON_BACK)
+                    materialSearchBar.disableSearch();
+            }
+        });
+
+        materialSearchBar.addTextChangeListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                FindAutocompletePredictionsRequest predictionsRequest = FindAutocompletePredictionsRequest.builder()
+                        .setCountry("VN")
+                        .setTypeFilter(TypeFilter.ADDRESS)
+                        .setSessionToken(token)
+                        .setQuery(s.toString())
+                        .build();
+
+                placesClient.findAutocompletePredictions(predictionsRequest).addOnCompleteListener(new OnCompleteListener<FindAutocompletePredictionsResponse>() {
+                    @Override
+                    public void onComplete(@NonNull Task<FindAutocompletePredictionsResponse> task) {
+                        if (task.isSuccessful()){
+                            FindAutocompletePredictionsResponse predictionsResponse = task.getResult();
+                            if (predictionsResponse != null){
+                                predictionList = predictionsResponse.getAutocompletePredictions();
+                                List<String> suggestionList = new ArrayList<>();
+
+                                for(int i = 0; i < predictionList.size(); i++){
+                                    AutocompletePrediction prediction = predictionList.get(i);
+                                    suggestionList.add(prediction.getFullText(null).toString());
+                                }
+
+                                materialSearchBar.updateLastSuggestions(suggestionList);
+
+                                if (!materialSearchBar.isSuggestionsVisible())
+                                    materialSearchBar.showSuggestionsList();
+                            }
+                        }else
+                            Toast.makeText(MainActivity.this, "prediction fetching task unsuccessful", Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) { }
+        });
+
+        materialSearchBar.setSuggestionsClickListener(new SuggestionsAdapter.OnItemViewClickListener() {
+            @Override
+            public void OnItemClickListener(int position, View v) {
+                InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
+                imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
+
+                if (mMarker != null)
+                    mMarker.remove();
+
+                if(position >= predictionList.size())
+                    return;
+
+                AutocompletePrediction selected = predictionList.get(position);
+                String suggestion= materialSearchBar.getLastSuggestions().get(position).toString();
+                materialSearchBar.setText(suggestion);
+
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        materialSearchBar.clearSuggestions();
+                    }
+                }, 1000);
+
+                String placesId = selected.getPlaceId();
+                List<Place.Field> placesFields = Arrays.asList(Place.Field.LAT_LNG);
+
+                final FetchPlaceRequest fetchPlaceRequest = FetchPlaceRequest.builder(placesId, placesFields).build();
+                placesClient.fetchPlace(fetchPlaceRequest).addOnSuccessListener(new OnSuccessListener<FetchPlaceResponse>() {
+                    @Override
+                    public void onSuccess(FetchPlaceResponse fetchPlaceResponse) {
+                        Place place = fetchPlaceResponse.getPlace();
+                        LatLng latLng = place.getLatLng();
+
+                        if(latLng != null){
+                            MarkerOptions markerOptions = new MarkerOptions();
+
+                            markerOptions.position(latLng);
+                            markerOptions.title(place.getName());
+
+                            mMap.addMarker(markerOptions);
+                            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 17), 4000, null);
+
+                            rippleBackground.startRippleAnimation();
+
+                            new Handler().postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    rippleBackground.stopRippleAnimation();
+                                }
+                            }, 5000);
+                        }
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        if(e instanceof ApiException){
+                            ApiException api = (ApiException) e;
+                            api.printStackTrace();
+                            int statusCode = api.getStatusCode();
+                            Toast.makeText(MainActivity.this, e.getMessage() + ": " + statusCode, Toast.LENGTH_LONG).show();
+                        }
+                    }
+                });
+            }
+
+            @Override
+            public void OnItemDeleteListener(int position, View v) { }
+        });
     }
 
     @Override
@@ -160,6 +343,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Fragment fragment = null;
 
         if (id == R.id.nav_home) {
+            materialSearchBar.setVisibility(View.GONE);
             fragment = new HomeFragment();
             displaySelectedFragment(fragment);
         } else if (id == R.id.nav_setting) {
@@ -173,7 +357,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return true;
     }
 
-    private void displaySelectedFragment(Fragment fragment) {
+    public void displaySelectedFragment(Fragment fragment) {
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
 
         fragmentTransaction.hide(mapFragment);
@@ -193,8 +377,172 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } else
             mMap.setMyLocationEnabled(true);
 
+        mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+            @Override
+            public void onInfoWindowClick(final Marker marker) {
+                if(marker.getTitle().contains("Trip #")){
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                    builder.setMessage("Open Google Maps?")
+                            .setCancelable(true)
+                            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                                    String latitude = String.valueOf(marker.getPosition().latitude);
+                                    String longitude = String.valueOf(marker.getPosition().longitude);
+                                    Uri gmmIntentUri = Uri.parse("google.navigation:q=" + latitude + "," + longitude);
+                                    Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+                                    mapIntent.setPackage("com.google.android.apps.maps");
+
+                                    try{
+                                        if (mapIntent.resolveActivity(MainActivity.this.getPackageManager()) != null)
+                                            startActivity(mapIntent);
+                                    }catch (NullPointerException e){
+                                        Toast.makeText(MainActivity.this, "Couldn't open map", Toast.LENGTH_SHORT).show();
+                                    }
+
+                                }
+                            }).setNegativeButton("No", new DialogInterface.OnClickListener() {
+                        public void onClick(final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                            dialog.cancel();
+                        }
+                    });
+
+                    AlertDialog alert = builder.create();
+                    alert.show();
+                }else {
+                    if(marker.getSnippet().equals("This is you"))
+                        marker.hideInfoWindow();
+                    else{
+                        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                        builder.setMessage("Ban co muon xem duong di den: " + marker.getTitle() + " khong ?")
+                                .setCancelable(true)
+                                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                    public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                                        resetSelectedMarker();
+                                        mSelectedMarker = marker;
+                                        calculateDirections(marker);
+                                        dialog.dismiss();
+                                    }
+                                }).setNegativeButton("No", new DialogInterface.OnClickListener() {
+                            public void onClick(final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                                dialog.cancel();
+                            }
+                        });
+                        AlertDialog alert = builder.create();
+                        alert.show();
+                    }
+                }
+            }
+        });
+
+        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                if (marker.getSnippet() != null) {
+                    // When user selected marker, just get result of place and assign to static variable
+                    Common.currentResult = currentPlaces.getResults()[Integer.parseInt(marker.getSnippet())];
+
+                    double lat = Double.parseDouble(Common.currentResult.getGeometry().getLocation().getLat());
+                    double lng = Double.parseDouble(Common.currentResult.getGeometry().getLocation().getLng());
+                    LatLng latLng = new LatLng(lat, lng);
+
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18), 1000, null);
+
+//                    cardViewDetails.setVisibility(View.VISIBLE);
+//                    txtPlaceName.setText(Common.currentResult.getName());
+//                    txtFullLocation.setText(Common.currentResult.getVicinity());
+
+                    Location locationCurrent = new Location("Location Current");
+                    locationCurrent.setLatitude(mLastLocation.getLatitude());
+                    locationCurrent.setLongitude(mLastLocation.getLongitude());
+
+                    Location locationSelected = new Location("Location Selected");
+                    locationSelected.setLatitude(lat);
+                    locationSelected.setLongitude(lng);
+
+                    double distance = locationCurrent.distanceTo(locationSelected) / 1000;
+
+                    //txtKm.setText(String.format("%.1f km", distance));
+                }
+                return false;
+            }
+        });
+
         mMap.setOnMapClickListener(this);
         mMap.setOnPolylineClickListener(this);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSION_CODE: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                        mMap.setMyLocationEnabled(true);
+
+                        buildLocationCallBack();
+                        buildLocationRequest();
+
+                        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+                        fusedLocationProviderClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
+                    }
+                } else
+                    Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
+            }
+            break;
+        }
+    }
+
+    @Override
+    public void onPolylineClick(Polyline polyline) {
+        int index = 0;
+        for(PolylineData polylineData: mPolylinesData){
+            index++;
+
+            if(polyline.getId().equals(polylineData.getPolyline().getId())){
+                polylineData.getPolyline().setColor(ContextCompat.getColor(getApplicationContext(), R.color.colorPrimaryDark));
+                polylineData.getPolyline().setZIndex(1);
+
+                LatLng endLocation = new LatLng(
+                        polylineData.getLeg().endLocation.lat,
+                        polylineData.getLeg().endLocation.lng
+                );
+
+                Marker marker = mMap.addMarker(new MarkerOptions()
+                        .position(endLocation)
+                        .title("Trip #" + index)
+                        .snippet("Duration: " + polylineData.getLeg().duration)
+                );
+
+                marker.showInfoWindow();
+
+                mTripMarkers.add(marker);
+            }
+            else{
+                polylineData.getPolyline().setColor(ContextCompat.getColor(getApplicationContext(), R.color.grayduration));
+                polylineData.getPolyline().setZIndex(0);
+            }
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+
+    }
+
+    @Override
+    public void onCheckedChanged(RadioGroup group, int checkedId) {
+
+    }
+
+    @Override
+    public void onMapClick(LatLng latLng) {
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        fusedLocationProviderClient.removeLocationUpdates(mLocationCallback);
     }
 
     private void buildLocationRequest() {
@@ -215,10 +563,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 if (mMarker != null)
                     mMarker.remove();
 
-                latitude = mLastLocation.getLatitude();
-                longtitude = mLastLocation.getLongitude();
+                pref = getApplicationContext().getSharedPreferences("shareLastLocation", 0); // 0 - for private mode
+                editor = pref.edit();
 
-                LatLng latLng = new LatLng(latitude, longtitude);
+                editor.putString("latitude", String.valueOf(mLastLocation.getLatitude())); // Storing string
+                editor.putString("longtitude", String.valueOf(mLastLocation.getLongitude()));
+                editor.commit(); // commit changes
+
+                LatLng latLng = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
                 MarkerOptions markerOptions = new MarkerOptions()
                         .position(latLng)
                         .snippet("Your Position")
@@ -280,18 +632,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             return false;
         } else
             return true;
-    }
-
-    @Override
-    protected void onStop() {
-        fusedLocationProviderClient.removeLocationUpdates(mLocationCallback);
-        super.onStop();
-    }
-
-    @Override
-    protected void onDestroy() {
-        fusedLocationProviderClient.removeLocationUpdates(mLocationCallback);
-        super.onDestroy();
     }
 
     public void zoomRoute(List<LatLng> lstLatLngRoute) {
@@ -380,38 +720,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         });
     }
 
-    @Override
-    public void onPolylineClick(Polyline polyline) {
-        int index = 0;
-        for(PolylineData polylineData: mPolylinesData){
-            index++;
-
-            if(polyline.getId().equals(polylineData.getPolyline().getId())){
-                polylineData.getPolyline().setColor(ContextCompat.getColor(getApplicationContext(), R.color.colorPrimaryDark));
-                polylineData.getPolyline().setZIndex(1);
-
-                LatLng endLocation = new LatLng(
-                        polylineData.getLeg().endLocation.lat,
-                        polylineData.getLeg().endLocation.lng
-                );
-
-                Marker marker = mMap.addMarker(new MarkerOptions()
-                        .position(endLocation)
-                        .title("Trip #" + index)
-                        .snippet("Duration: " + polylineData.getLeg().duration)
-                );
-
-                marker.showInfoWindow();
-
-                mTripMarkers.add(marker);
-            }
-            else{
-                polylineData.getPolyline().setColor(ContextCompat.getColor(getApplicationContext(), R.color.grayduration));
-                polylineData.getPolyline().setZIndex(0);
-            }
-        }
-    }
-
     private void removeTripMarkers(){
         for (Marker marker : mTripMarkers){
             marker.remove();
@@ -424,41 +732,5 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             mSelectedMarker = null;
             removeTripMarkers();
         }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case MY_PERMISSION_CODE: {
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                        mMap.setMyLocationEnabled(true);
-
-                        buildLocationCallBack();
-                        buildLocationRequest();
-
-                        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-                        fusedLocationProviderClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
-                    }
-                } else
-                    Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
-            }
-            break;
-        }
-    }
-
-    @Override
-    public void onClick(View v) {
-
-    }
-
-    @Override
-    public void onCheckedChanged(RadioGroup group, int checkedId) {
-
-    }
-
-    @Override
-    public void onMapClick(LatLng latLng) {
-
     }
 }

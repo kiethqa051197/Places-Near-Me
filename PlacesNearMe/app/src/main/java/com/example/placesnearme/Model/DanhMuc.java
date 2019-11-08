@@ -47,14 +47,4 @@ public class DanhMuc {
     public void setHinhanh(String hinhanh) {
         this.hinhanh = hinhanh;
     }
-
-    @Override
-    public String toString() {
-        return "DanhMuc{" +
-                "madanhmuc='" + madanhmuc + '\'' +
-                ", tendanhmuc='" + tendanhmuc + '\'' +
-                ", hinhanh='" + hinhanh + '\'' +
-                ", danhMucCha=" + danhMucCha +
-                '}';
-    }
 }

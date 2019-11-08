@@ -4,47 +4,47 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/nav_home"
-            android:title="Trang chủ"
+            android:title="Home"
             android:icon="@drawable/ic_home_black_24dp"/>
 
         <item
             android:id="@+id/nav_search"
-            android:title="Tìm kiếm"
+            android:title="Search by keyword"
             android:icon="@drawable/ic_search"/>
 
         <item
             android:id="@+id/nav_favorite"
-            android:title="Yêu thích"
+            android:title="Favorite"
             android:icon="@drawable/ic_favorite_black_24dp"/>
 
         <item
             android:id="@+id/nav_setting"
-            android:title="Cài đặt"
+            android:title="Setting"
             android:icon="@drawable/ic_settings_black_24dp"/>
 
         <item
             android:id="@+id/nav_logout"
-            android:title="Đăng xuất"
+            android:title="Logout"
             android:icon="@drawable/ic_input_black_24dp"/>
 
         <item
             android:id="@+id/nav_log"
-            android:title="Đăng nhập"
+            android:title="Login"
             android:icon="@drawable/ic_input_black_24dp"
             android:visible="false"/>
     </group>
 
-    <item android:title="Khác">
+    <item android:title="Others">
         <menu>
             <item
                 android:id="@+id/nav_share"
-                android:title="Chia sẻ"
+                android:title="Share App"
                 android:icon="@drawable/ic_share_black_24dp"/>
 
             <item
                 android:id="@+id/nav_visit_us"
                 android:icon="@drawable/ic_public_black_24dp"
-                android:title="Về chúng tôi" />
+                android:title="Contact us" />
         </menu>
     </item>
 </menu>

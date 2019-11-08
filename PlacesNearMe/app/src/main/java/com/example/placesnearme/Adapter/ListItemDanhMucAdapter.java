@@ -1,5 +1,7 @@
 package com.example.placesnearme.Adapter;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
@@ -15,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.placesnearme.Model.DanhMuc;
 import com.example.placesnearme.R;
 import com.example.placesnearme.View.CategoryActivity;
+import com.example.placesnearme.View.ResultListAndMapActivity;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -38,6 +41,8 @@ class ListItemDanhMucViewHolder extends RecyclerView.ViewHolder{
 public class ListItemDanhMucAdapter extends RecyclerView.Adapter<ListItemDanhMucViewHolder>{
     CategoryActivity categoryActivity;
     List<DanhMuc> danhMucList;
+    public SharedPreferences pref;
+    public SharedPreferences.Editor editor;
 
     public ListItemDanhMucAdapter(CategoryActivity categoryActivity, List<DanhMuc> danhMucList) {
         this.categoryActivity = categoryActivity;
@@ -59,7 +64,9 @@ public class ListItemDanhMucAdapter extends RecyclerView.Adapter<ListItemDanhMuc
 
         holder.txtTenDanhMuc.setText(danhMuc.getTendanhmuc());
 
-        StorageReference storageImgProductType = FirebaseStorage.getInstance().getReference().child("Danh Muc").child(danhMuc.getHinhanh());
+        StorageReference storageImgProductType = FirebaseStorage.getInstance().getReference().child("Danh Muc")
+                .child(danhMuc.getHinhanh());
+
         long ONE_MEGABYTE = 1024 * 1024;
         storageImgProductType.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
             @Override
@@ -69,6 +76,20 @@ public class ListItemDanhMucAdapter extends RecyclerView.Adapter<ListItemDanhMuc
             }
         });
 
+        holder.cardView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                pref = categoryActivity.getBaseContext().getSharedPreferences("shareDanhMucSelected", 0); // 0 - for private mode
+                editor = pref.edit();
+
+                editor.putString("madanhmuc", danhMuc.getMadanhmuc()); // Storing string
+                editor.putString("tendanhmuc", danhMuc.getTendanhmuc());
+                editor.commit(); // commit changes
+
+                Intent intent = new Intent(categoryActivity.getApplication(), ResultListAndMapActivity.class);
+                categoryActivity.startActivity(intent);
+            }
+        });
     }
 
     @Override
