@@ -32,6 +32,7 @@ import com.example.placesnearme.Interface.IGoogleAPIService;
 import com.example.placesnearme.Model.DiaDiem;
 import com.example.placesnearme.Model.MyPlaces;
 import com.example.placesnearme.Model.Photos;
+import com.example.placesnearme.Model.PlaceDetail;
 import com.example.placesnearme.Model.PolylineData;
 import com.example.placesnearme.Model.Results;
 import com.example.placesnearme.R;
@@ -79,6 +80,7 @@ public class ResultListAndMapActivity extends AppCompatActivity implements OnMap
     private static final int MY_PERMISSION_CODE = 1000;
 
     private ActionBar actionBar;
+
     private RecyclerView listItemDiaDiem;
     private ListItemDiaDiemAdapter adapterDiaDiem;
 
@@ -90,7 +92,7 @@ public class ResultListAndMapActivity extends AppCompatActivity implements OnMap
 
     private RecyclerView.LayoutManager layoutManagerDiaDiem;
 
-    private SharedPreferences prefCategorySelected, prefLocation;
+    public SharedPreferences prefCategorySelected, prefLocation;
     private SharedPreferences.Editor editor;
 
     public double latitude, longtitude;
@@ -108,6 +110,8 @@ public class ResultListAndMapActivity extends AppCompatActivity implements OnMap
     private FusedLocationProviderClient fusedLocationProviderClient;
     private LocationCallback mLocationCallback;
     private LocationRequest mLocationRequest;
+
+    public PlaceDetail mPlace;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -183,12 +187,11 @@ public class ResultListAndMapActivity extends AppCompatActivity implements OnMap
                                 double lng = Double.parseDouble(googlePlaces.getGeometry().getLocation().getLng());
 
                                 String[] types = googlePlaces.getTypes();
-                                Photos[] picture = googlePlaces.getPhotos();
 
                                 GeoPoint location = new GeoPoint(lat, lng);
 
                                 List<String> danhMuc = new ArrayList<>();
-                                List<String> hinhAnh = new ArrayList<>();
+                                final List<String> hinhAnh = new ArrayList<>();
 
                                 for (int j = 0; j < types.length; j++)
                                     danhMuc.add(types[j]);
@@ -198,12 +201,6 @@ public class ResultListAndMapActivity extends AppCompatActivity implements OnMap
                                         danhMuc.remove(l);
                                     if (danhMuc.get(l).equals("establishment"))
                                         danhMuc.remove(l);
-                                }
-
-                                if (picture != null) {
-                                    for (int k = 0; k < picture.length; k++) {
-                                        hinhAnh.add(picture[k].getPhoto_reference());
-                                    }
                                 }
 
                                 DiaDiem diaDiem = new DiaDiem();
@@ -219,14 +216,13 @@ public class ResultListAndMapActivity extends AppCompatActivity implements OnMap
                                 LatLng latLng = new LatLng(lat, lng);
 
                                 MarkerOptions markerOptions = new MarkerOptions();
-
                                 markerOptions.position(latLng);
                                 markerOptions.title(placesName);
                                 markerOptions.snippet(String.valueOf(i)); //Assign index for marker
 
                                 mMap.addMarker(markerOptions);
 
-                                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 13));
+                                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 13), 4000, null);
                             }
 
                             adapterDiaDiem = new ListItemDiaDiemAdapter(ResultListAndMapActivity.this, diaDiemList);
@@ -238,6 +234,21 @@ public class ResultListAndMapActivity extends AppCompatActivity implements OnMap
                     public void onFailure(Call<MyPlaces> call, Throwable t) {
                     }
                 });
+    }
+
+    public String getPlaceDetailUrl(String place_id) {
+        StringBuilder url = new StringBuilder("https://maps.googleapis.com/maps/api/place/details/json?");
+        url.append("place_id=" + place_id);
+        url.append("&key=" + getResources().getString(R.string.google_maps_key));
+        return url.toString();
+    }
+
+    public String getPhotoOfPlace(String photo_reference, int maxWidth) {
+        StringBuilder url = new StringBuilder("https://maps.googleapis.com/maps/api/place/photo");
+        url.append("?maxwidth=" + maxWidth);
+        url.append("&photoreference=" + photo_reference);
+        url.append("&key=" + getResources().getString(R.string.google_maps_key));
+        return url.toString();
     }
 
     private void buildLocationRequest() {
@@ -425,16 +436,6 @@ public class ResultListAndMapActivity extends AppCompatActivity implements OnMap
                     LatLng latLng = new LatLng(lat, lng);
 
                     mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18), 1000, null);
-
-                    Location locationCurrent = new Location("Location Current");
-                    locationCurrent.setLatitude(mLastLocation.getLatitude());
-                    locationCurrent.setLongitude(mLastLocation.getLongitude());
-
-                    Location locationSelected = new Location("Location Selected");
-                    locationSelected.setLatitude(lat);
-                    locationSelected.setLongitude(lng);
-
-                    double distance = locationCurrent.distanceTo(locationSelected) / 1000;
                 }
                 return false;
             }
@@ -610,5 +611,4 @@ public class ResultListAndMapActivity extends AppCompatActivity implements OnMap
             break;
         }
     }
-
 }

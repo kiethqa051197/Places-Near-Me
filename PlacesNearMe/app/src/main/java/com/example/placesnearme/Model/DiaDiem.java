@@ -12,8 +12,6 @@ public class DiaDiem implements Serializable {
     GeoPoint location;
     String madiadiem;
     String tendiadiem;
-    Reviews reviews;
-
 
     public DiaDiem() { }
 
