@@ -21,6 +21,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -218,7 +219,6 @@ public class ResultListAndMapActivity extends AppCompatActivity implements OnMap
                                 MarkerOptions markerOptions = new MarkerOptions();
                                 markerOptions.position(latLng);
                                 markerOptions.title(placesName);
-                                markerOptions.snippet(String.valueOf(i)); //Assign index for marker
 
                                 mMap.addMarker(markerOptions);
 
@@ -282,7 +282,7 @@ public class ResultListAndMapActivity extends AppCompatActivity implements OnMap
                 LatLng latLng = new LatLng(latitude, longtitude);
                 MarkerOptions markerOptions = new MarkerOptions()
                         .position(latLng)
-                        .snippet("Your Position")
+                        .title("This is you")
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
 
                 mMarker = mMap.addMarker(markerOptions);
@@ -399,7 +399,7 @@ public class ResultListAndMapActivity extends AppCompatActivity implements OnMap
                     AlertDialog alert = builder.create();
                     alert.show();
                 }else {
-                    if(marker.getSnippet().equals("This is you"))
+                    if(marker.getTitle().equals("This is you"))
                         marker.hideInfoWindow();
                     else{
                         AlertDialog.Builder builder = new AlertDialog.Builder(ResultListAndMapActivity.this);
@@ -427,16 +427,12 @@ public class ResultListAndMapActivity extends AppCompatActivity implements OnMap
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
-                if (marker.getSnippet() != null) {
-                    // When user selected marker, just get result of place and assign to static variable
-                    Common.currentResult = currentPlaces.getResults()[Integer.parseInt(marker.getSnippet())];
-
-                    double lat = Double.parseDouble(Common.currentResult.getGeometry().getLocation().getLat());
-                    double lng = Double.parseDouble(Common.currentResult.getGeometry().getLocation().getLng());
-                    LatLng latLng = new LatLng(lat, lng);
-
-                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18), 1000, null);
+                for (int i = 0; i < diaDiemList.size(); i++){
+                    if (diaDiemList.get(i).getLocation().getLatitude() == marker.getPosition().latitude
+                            && diaDiemList.get(i).getLocation().getLongitude() == marker.getPosition().longitude)
+                        Log.d("ktra", diaDiemList.get(i).getMadiadiem());
                 }
+
                 return false;
             }
         });
