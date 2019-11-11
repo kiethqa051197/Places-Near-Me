@@ -37,13 +37,4 @@ public class TuKhoa {
     public void setDanhMuc(DanhMuc danhMuc) {
         this.danhMuc = danhMuc;
     }
-
-    @Override
-    public String toString() {
-        return "TuKhoa{" +
-                "matukhoa='" + matukhoa + '\'' +
-                ", tentukhoa='" + tentukhoa + '\'' +
-                ", danhMuc=" + danhMuc +
-                '}';
-    }
 }

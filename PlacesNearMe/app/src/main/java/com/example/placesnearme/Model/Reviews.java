@@ -32,8 +32,7 @@ public class Reviews {
         return profile_photo_url;
     }
 
-    public void setProfile_photo_url (String profile_photo_url)
-    {
+    public void setProfile_photo_url (String profile_photo_url) {
         this.profile_photo_url = profile_photo_url;
     }
 
@@ -92,14 +91,12 @@ public class Reviews {
         return relative_time_description;
     }
 
-    public void setRelative_time_description (String relative_time_description)
-    {
+    public void setRelative_time_description (String relative_time_description) {
         this.relative_time_description = relative_time_description;
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "ClassPojo [author_name = "+author_name+", profile_photo_url = "+profile_photo_url+", author_url = "+author_url+", rating = "+rating+", language = "+language+", text = "+text+", time = "+time+", relative_time_description = "+relative_time_description+"]";
     }
 }

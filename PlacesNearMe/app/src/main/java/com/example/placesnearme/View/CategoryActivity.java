@@ -6,42 +6,24 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.example.placesnearme.Adapter.ListItemDanhMucAdapter;
-import com.example.placesnearme.Common;
-import com.example.placesnearme.Interface.IGoogleAPIService;
 import com.example.placesnearme.Model.DanhMuc;
 import com.example.placesnearme.Model.DanhMucCha;
-import com.example.placesnearme.Model.DiaDiem;
-import com.example.placesnearme.Model.MyPlaces;
-import com.example.placesnearme.Model.Photos;
-import com.example.placesnearme.Model.Results;
 import com.example.placesnearme.R;
-import com.example.placesnearme.Remote.ObjectSerializer;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.QuerySnapshot;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class CategoryActivity extends AppCompatActivity{
 

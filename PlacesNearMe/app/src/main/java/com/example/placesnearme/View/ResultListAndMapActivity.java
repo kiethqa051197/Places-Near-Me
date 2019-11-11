@@ -1,30 +1,72 @@
 package com.example.placesnearme.View;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.content.Context;
+import android.Manifest;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentSender;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Toast;
 
-import com.example.placesnearme.Adapter.ListItemDanhMucAdapter;
 import com.example.placesnearme.Adapter.ListItemDiaDiemAdapter;
 import com.example.placesnearme.Common;
 import com.example.placesnearme.Interface.IGoogleAPIService;
 import com.example.placesnearme.Model.DiaDiem;
 import com.example.placesnearme.Model.MyPlaces;
 import com.example.placesnearme.Model.Photos;
+import com.example.placesnearme.Model.PolylineData;
 import com.example.placesnearme.Model.Results;
 import com.example.placesnearme.R;
-import com.example.placesnearme.Remote.ObjectSerializer;
+import com.google.android.gms.common.api.ResolvableApiException;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResponse;
+import com.google.android.gms.location.SettingsClient;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
+import com.google.maps.DirectionsApiRequest;
+import com.google.maps.GeoApiContext;
+import com.google.maps.PendingResult;
+import com.google.maps.internal.PolylineEncoding;
+import com.google.maps.model.DirectionsResult;
+import com.google.maps.model.DirectionsRoute;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,47 +74,69 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class ResultListAndMapActivity extends AppCompatActivity {
+public class ResultListAndMapActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnPolylineClickListener{
+
+    private static final int MY_PERMISSION_CODE = 1000;
 
     private ActionBar actionBar;
-    public RecyclerView listItemDiaDiem;
+    private RecyclerView listItemDiaDiem;
     private ListItemDiaDiemAdapter adapterDiaDiem;
+
+    private ArrayList<Marker> mTripMarkers = new ArrayList<>();
+    private ArrayList<PolylineData> mPolylinesData = new ArrayList<>();
+    private List<DiaDiem> diaDiemList = new ArrayList<>();
 
     private FirebaseFirestore db;
 
     private RecyclerView.LayoutManager layoutManagerDiaDiem;
 
-    private SharedPreferences prefCategorySelected, prefLocation, prefDiaDiem;
+    private SharedPreferences prefCategorySelected, prefLocation;
+    private SharedPreferences.Editor editor;
 
     public double latitude, longtitude;
-    private List<DiaDiem> diaDiemList = new ArrayList<>();
+
+    public static Location mLastLocation;
+    private Marker mMarker;
 
     public IGoogleAPIService mService;
+    public SupportMapFragment mapFragment;
+    private GoogleMap mMap;
+    public MyPlaces currentPlaces;
+    private Marker mSelectedMarker = null;
+    private GeoApiContext mGeoApiContext;
+
+    private FusedLocationProviderClient fusedLocationProviderClient;
+    private LocationCallback mLocationCallback;
+    private LocationRequest mLocationRequest;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_result_list_and_map);
 
-        prefCategorySelected = getSharedPreferences("shareDanhMucSelected", 0); // 0 - for private mode
-        prefLocation = getSharedPreferences("shareLastLocation", 0); // 0 - for private mode
+        //Request Runtime permission
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+            checkLocationPermission();
+
+        buildLocationCallBack();
+        buildLocationRequest();
+
+        enableGPS(mLocationRequest);
+
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        fusedLocationProviderClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
+
+        prefCategorySelected = getSharedPreferences("shareDanhMucSelected", 0);
+        prefLocation = getSharedPreferences("shareLastLocation", 0);
 
         mService = Common.getGoogleAPIService();
 
         actionBar = getSupportActionBar();
-        actionBar.setTitle(prefCategorySelected.getString("tendanhmuc", "Error")); //Thiết lập tiêu đề nếu muốn
+        actionBar.setTitle(prefCategorySelected.getString("tendanhmuc", ""));
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        ArrayList diadiemList = new ArrayList();
-        // Load user List from preferences
-        prefDiaDiem = getSharedPreferences("DiaDiem", Context.MODE_PRIVATE);
-        try {
-            diadiemList = (ArrayList) ObjectSerializer.deserialize(prefDiaDiem.getString("DiaDiemList", ObjectSerializer.serialize(new ArrayList())));
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
+        mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
 
         latitude = Double.parseDouble(prefLocation.getString("latitude", "0"));
         longtitude = Double.parseDouble(prefLocation.getString("longtitude", "0"));
@@ -83,17 +147,6 @@ public class ResultListAndMapActivity extends AppCompatActivity {
         listItemDiaDiem.setHasFixedSize(true);
         layoutManagerDiaDiem = new LinearLayoutManager(this);
         listItemDiaDiem.setLayoutManager(layoutManagerDiaDiem);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                onBackPressed();
-                return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 
     private String getUrl(double latitude, double longtitude, String placeType) {
@@ -110,10 +163,14 @@ public class ResultListAndMapActivity extends AppCompatActivity {
     public void nearByPlace(final String placeType) {
         String url = getUrl(latitude, longtitude, placeType);
 
+        diaDiemList.removeAll(diaDiemList);
+
         mService.getNearByPlaces(url)
                 .enqueue(new Callback<MyPlaces>() {
                     @Override
                     public void onResponse(Call<MyPlaces> call, Response<MyPlaces> response) {
+                        currentPlaces = response.body();
+
                         if (response.isSuccessful()) {
                             for (int i = 0; i < response.body().getResults().length; i++) {
                                 Results googlePlaces = response.body().getResults()[i];
@@ -159,16 +216,17 @@ public class ResultListAndMapActivity extends AppCompatActivity {
 
                                 diaDiemList.add(diaDiem);
 
-                                SharedPreferences prefs = getSharedPreferences("DiaDiem", Context.MODE_PRIVATE);
-                                //save the user list to preference
-                                SharedPreferences.Editor editor = prefs.edit();
+                                LatLng latLng = new LatLng(lat, lng);
 
-                                try {
-                                    editor.putString("DiaDiemList", ObjectSerializer.serialize(diaDiem));
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-                                editor.commit();
+                                MarkerOptions markerOptions = new MarkerOptions();
+
+                                markerOptions.position(latLng);
+                                markerOptions.title(placesName);
+                                markerOptions.snippet(String.valueOf(i)); //Assign index for marker
+
+                                mMap.addMarker(markerOptions);
+
+                                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 13));
                             }
 
                             adapterDiaDiem = new ListItemDiaDiemAdapter(ResultListAndMapActivity.this, diaDiemList);
@@ -181,4 +239,376 @@ public class ResultListAndMapActivity extends AppCompatActivity {
                     }
                 });
     }
+
+    private void buildLocationRequest() {
+        mLocationRequest = new LocationRequest();
+        mLocationRequest.setInterval(1000);
+        mLocationRequest.setFastestInterval(500);
+        mLocationRequest.setSmallestDisplacement(10f);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+    }
+
+    private void buildLocationCallBack() {
+        mLocationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                super.onLocationResult(locationResult);
+                mLastLocation = locationResult.getLastLocation();
+
+                if (mMarker != null)
+                    mMarker.remove();
+
+                latitude = mLastLocation.getLatitude();
+                longtitude = mLastLocation.getLongitude();
+
+                prefLocation = getApplicationContext().getSharedPreferences("shareLastLocation", 0);
+                editor = prefLocation.edit();
+
+                editor.putString("latitude", String.valueOf(mLastLocation.getLatitude()));
+                editor.putString("longtitude", String.valueOf(mLastLocation.getLongitude()));
+                editor.commit();
+
+                LatLng latLng = new LatLng(latitude, longtitude);
+                MarkerOptions markerOptions = new MarkerOptions()
+                        .position(latLng)
+                        .snippet("Your Position")
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+
+                mMarker = mMap.addMarker(markerOptions);
+
+                //Move Camera
+                mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16), 5000, null);
+
+                if(mGeoApiContext == null){
+                    mGeoApiContext = new GeoApiContext.Builder()
+                            .apiKey(getString(R.string.google_maps_key))
+                            .build();
+                }
+            }
+        };
+    }
+
+    private void enableGPS(LocationRequest locationRequest) {
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder().addLocationRequest(locationRequest);
+
+        SettingsClient settingsClient = LocationServices.getSettingsClient(ResultListAndMapActivity.this);
+
+        Task<LocationSettingsResponse> task = settingsClient.checkLocationSettings(builder.build());
+        task.addOnSuccessListener(ResultListAndMapActivity.this, new OnSuccessListener<LocationSettingsResponse>() {
+            @Override
+            public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
+                //Toast.makeText(MainActivity.this, "Granted", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        task.addOnFailureListener(ResultListAndMapActivity.this, new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                if (e instanceof ResolvableApiException) {
+                    ResolvableApiException resolvable = (ResolvableApiException) e;
+                    try {
+                        resolvable.startResolutionForResult(ResultListAndMapActivity.this, 51);
+                    } catch (IntentSender.SendIntentException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+            }
+        });
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.headermenu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId())
+        {
+            case android.R.id.home:
+                onBackPressed();
+                return true;
+            case R.id.header_menu_filter:
+                //code xử lý khi bấm menu1
+                break;
+            case R.id.header_menu_list:
+                listItemDiaDiem.setVisibility(View.VISIBLE);
+                break;
+            case R.id.header_menu_map:
+                listItemDiaDiem.setVisibility(View.GONE);
+                break;
+            default:break;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
+
+        //Init Google Play Services
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+                mMap.setMyLocationEnabled(true);
+        } else
+            mMap.setMyLocationEnabled(true);
+
+        mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+            @Override
+            public void onInfoWindowClick(final Marker marker) {
+                if(marker.getTitle().contains("Trip #")){
+                    AlertDialog.Builder builder = new AlertDialog.Builder(ResultListAndMapActivity.this);
+                    builder.setMessage("Open Google Maps?")
+                            .setCancelable(true)
+                            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                                    String latitude = String.valueOf(marker.getPosition().latitude);
+                                    String longitude = String.valueOf(marker.getPosition().longitude);
+                                    Uri gmmIntentUri = Uri.parse("google.navigation:q=" + latitude + "," + longitude);
+                                    Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+                                    mapIntent.setPackage("com.google.android.apps.maps");
+
+                                    try{
+                                        if (mapIntent.resolveActivity(ResultListAndMapActivity.this.getPackageManager()) != null)
+                                            startActivity(mapIntent);
+                                    }catch (NullPointerException e){
+                                        Toast.makeText(ResultListAndMapActivity.this, "Couldn't open map", Toast.LENGTH_SHORT).show();
+                                    }
+
+                                }
+                            }).setNegativeButton("No", new DialogInterface.OnClickListener() {
+                        public void onClick(final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                            dialog.cancel();
+                        }
+                    });
+
+                    AlertDialog alert = builder.create();
+                    alert.show();
+                }else {
+                    if(marker.getSnippet().equals("This is you"))
+                        marker.hideInfoWindow();
+                    else{
+                        AlertDialog.Builder builder = new AlertDialog.Builder(ResultListAndMapActivity.this);
+                        builder.setMessage("Ban co muon xem duong di den: " + marker.getTitle() + " khong ?")
+                                .setCancelable(true)
+                                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                    public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                                        resetSelectedMarker();
+                                        mSelectedMarker = marker;
+                                        calculateDirections(marker);
+                                        dialog.dismiss();
+                                    }
+                                }).setNegativeButton("No", new DialogInterface.OnClickListener() {
+                            public void onClick(final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                                dialog.cancel();
+                            }
+                        });
+                        AlertDialog alert = builder.create();
+                        alert.show();
+                    }
+                }
+            }
+        });
+
+        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                if (marker.getSnippet() != null) {
+                    // When user selected marker, just get result of place and assign to static variable
+                    Common.currentResult = currentPlaces.getResults()[Integer.parseInt(marker.getSnippet())];
+
+                    double lat = Double.parseDouble(Common.currentResult.getGeometry().getLocation().getLat());
+                    double lng = Double.parseDouble(Common.currentResult.getGeometry().getLocation().getLng());
+                    LatLng latLng = new LatLng(lat, lng);
+
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18), 1000, null);
+
+                    Location locationCurrent = new Location("Location Current");
+                    locationCurrent.setLatitude(mLastLocation.getLatitude());
+                    locationCurrent.setLongitude(mLastLocation.getLongitude());
+
+                    Location locationSelected = new Location("Location Selected");
+                    locationSelected.setLatitude(lat);
+                    locationSelected.setLongitude(lng);
+
+                    double distance = locationCurrent.distanceTo(locationSelected) / 1000;
+                }
+                return false;
+            }
+        });
+
+        mMap.setOnPolylineClickListener(this);
+    }
+
+    @Override
+    public void onPolylineClick(Polyline polyline) {
+        int index = 0;
+        for(PolylineData polylineData: mPolylinesData){
+            index++;
+
+            if(polyline.getId().equals(polylineData.getPolyline().getId())){
+                polylineData.getPolyline().setColor(ContextCompat.getColor(getApplicationContext(), R.color.colorPrimaryDark));
+                polylineData.getPolyline().setZIndex(1);
+
+                LatLng endLocation = new LatLng(
+                        polylineData.getLeg().endLocation.lat,
+                        polylineData.getLeg().endLocation.lng
+                );
+
+                Marker marker = mMap.addMarker(new MarkerOptions()
+                        .position(endLocation)
+                        .title("Trip #" + index)
+                        .snippet("Duration: " + polylineData.getLeg().duration)
+                );
+
+                marker.showInfoWindow();
+
+                mTripMarkers.add(marker);
+            }
+            else{
+                polylineData.getPolyline().setColor(ContextCompat.getColor(getApplicationContext(), R.color.grayduration));
+                polylineData.getPolyline().setZIndex(0);
+            }
+        }
+    }
+
+    private void removeTripMarkers(){
+        for (Marker marker : mTripMarkers){
+            marker.remove();
+        }
+    }
+
+    private void resetSelectedMarker(){
+        if (mSelectedMarker != null){
+            mSelectedMarker.setVisible(true);
+            mSelectedMarker = null;
+            removeTripMarkers();
+        }
+    }
+
+    private void calculateDirections(Marker marker){
+        com.google.maps.model.LatLng destination = new com.google.maps.model.LatLng(
+                marker.getPosition().latitude,
+                marker.getPosition().longitude
+        );
+
+        DirectionsApiRequest directions = new DirectionsApiRequest(mGeoApiContext);
+
+        directions.alternatives(true);
+        directions.origin(new com.google.maps.model.LatLng(
+                        latitude,
+                        longtitude
+                )
+        );
+
+        directions.destination(destination).setCallback(new PendingResult.Callback<DirectionsResult>() {
+            @Override
+            public void onResult(DirectionsResult result) {
+                addPolylinesToMap(result);
+            }
+
+            @Override
+            public void onFailure(Throwable e) {
+            }
+        });
+    }
+
+    private void addPolylinesToMap(final DirectionsResult result){
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                if (mPolylinesData.size() > 0){
+                    for (PolylineData polylineData : mPolylinesData)
+                        polylineData.getPolyline().remove();
+
+                    mPolylinesData.clear();
+                    mPolylinesData = new ArrayList<>();
+                }
+
+                double duration = 99999999;
+
+                for(DirectionsRoute route: result.routes){
+                    List<com.google.maps.model.LatLng> decodedPath = PolylineEncoding.decode(route.overviewPolyline.getEncodedPath());
+
+                    List<LatLng> newDecodedPath = new ArrayList<>();
+
+                    // This loops through all the LatLng coordinates of ONE polyline.
+                    for(com.google.maps.model.LatLng latLng: decodedPath){
+
+                        newDecodedPath.add(new LatLng(
+                                latLng.lat,
+                                latLng.lng
+                        ));
+                    }
+
+                    Polyline polyline = mMap.addPolyline(new PolylineOptions().addAll(newDecodedPath));
+                    polyline.setColor(ContextCompat.getColor(getApplicationContext(), R.color.grayduration));
+                    polyline.setClickable(true);
+                    mPolylinesData.add(new PolylineData(polyline, route.legs[0]));
+
+                    double tempDuration = route.legs[0].duration.inSeconds;
+                    if (tempDuration < duration){
+                        duration = tempDuration;
+                        onPolylineClick(polyline);
+                        zoomRoute(polyline.getPoints());
+                    }
+
+                    mSelectedMarker.setVisible(false);
+                }
+            }
+        });
+    }
+
+    public void zoomRoute(List<LatLng> lstLatLngRoute) {
+        if (mMap == null || lstLatLngRoute == null || lstLatLngRoute.isEmpty()) return;
+
+        LatLngBounds.Builder boundsBuilder = new LatLngBounds.Builder();
+        for (LatLng latLngPoint : lstLatLngRoute)
+            boundsBuilder.include(latLngPoint);
+
+        int routePadding = 120;
+        LatLngBounds latLngBounds = boundsBuilder.build();
+
+        mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, routePadding),600,null);
+    }
+
+    private boolean checkLocationPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION))
+                ActivityCompat.requestPermissions(this, new String[]{
+                        Manifest.permission.ACCESS_FINE_LOCATION
+                }, MY_PERMISSION_CODE);
+            else
+                ActivityCompat.requestPermissions(this, new String[]{
+                        Manifest.permission.ACCESS_FINE_LOCATION
+                }, MY_PERMISSION_CODE);
+            return false;
+        } else
+            return true;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSION_CODE: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                        mMap.setMyLocationEnabled(true);
+
+                        buildLocationCallBack();
+                        buildLocationRequest();
+
+                        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+                        fusedLocationProviderClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
+                    }
+                } else
+                    Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
+            }
+            break;
+        }
+    }
+
 }

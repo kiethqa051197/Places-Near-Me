@@ -12,36 +12,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <com.mancj.materialsearchbar.MaterialSearchBar
-            style="@style/MaterialSearchBarLight"
-            app:mt_hint="Search a places"
-            app:mt_maxSuggestionsCount="10"
-            app:mt_placeholder="Search a places"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/searchBar"
-            android:elevation="5dp"
-            android:outlineProvider="bounds"
-            android:layout_marginTop="10dp"
-            android:layout_marginRight="60dp"
-            android:layout_marginLeft="10dp"/>
-
-        <fragment
-            android:id="@+id/map"
-            android:name="com.google.android.gms.maps.SupportMapFragment"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
-        <com.skyfishjy.library.RippleBackground
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/ripple_bg"
-            app:rb_color="#0099CC"
-            app:rb_radius="30dp"
-            app:rb_rippleAmount="4"
-            app:rb_duration="5000"
-            app:rb_scale="4">
-        </com.skyfishjy.library.RippleBackground>
     </FrameLayout>
 
     <com.google.android.material.navigation.NavigationView
