@@ -1,12 +1,13 @@
-package com.example.placesnearme.Model;
+package com.example.placesnearme.Remote;
 
 import android.location.Location;
 
+import com.example.placesnearme.Model.DiaDiem;
 import com.example.placesnearme.View.MainActivity;
 
 import java.util.Comparator;
 
-public class Sortbyroll implements Comparator<DiaDiem>
+public class SortAscending implements Comparator<DiaDiem>
 {
     @Override
     public int compare(DiaDiem diaDiem1, DiaDiem diaDiem2) {

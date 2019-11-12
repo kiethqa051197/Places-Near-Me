@@ -5,4 +5,6 @@
     <color name="colorAccent">#D81B60</color>
 
     <color name="grayduration">#9D9A9A</color>
+    <color name="ratingYellow">#FFC922</color>
+    <color name="ratingLightGray">#D3D3D3</color>
 </resources>

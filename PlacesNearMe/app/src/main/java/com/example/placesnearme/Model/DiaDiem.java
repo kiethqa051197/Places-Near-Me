@@ -15,7 +15,8 @@ public class DiaDiem implements Serializable {
 
     public DiaDiem() { }
 
-    public DiaDiem(List<String> danhmuc, String diachi, List<String> hinhAnh, GeoPoint location, String madiadiem, String tendiadiem) {
+    public DiaDiem(List<String> danhmuc, String diachi, List<String> hinhAnh, GeoPoint location,
+                   String madiadiem, String tendiadiem) {
         this.danhmuc = danhmuc;
         this.diachi = diachi;
         this.hinhAnh = hinhAnh;
