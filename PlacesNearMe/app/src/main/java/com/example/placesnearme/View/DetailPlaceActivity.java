@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -12,14 +13,17 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.widget.NestedScrollView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.placesnearme.Adapter.ListItemDetailCategoryAdapter;
 import com.example.placesnearme.Adapter.ListItemImagePlacesAdapter;
+import com.example.placesnearme.Adapter.ListItemReviewsRatingAdapter;
 import com.example.placesnearme.Common;
 import com.example.placesnearme.Interface.IGoogleAPIService;
 import com.example.placesnearme.Model.PlaceDetail;
+import com.example.placesnearme.Model.Reviews;
 import com.example.placesnearme.R;
 import com.squareup.picasso.Picasso;
 
@@ -38,7 +42,10 @@ public class DetailPlaceActivity extends AppCompatActivity implements View.OnCli
             txtOpenNow, txtCountRating, txtDetailLocation, txtMontoFriday, txtSattoSun, txtSeeAllDay,
             txtMonday, txtTuesday, txtWednesday, txtThursday, txtFriday, txtSaturday, txtSunday, txtMoreMedia;
 
-    private LinearLayout linearViewOnMap, linearSeeAllDay, linearShowAllDay, linearImage;
+    private NestedScrollView nestedScrollView;
+
+    private LinearLayout linearViewOnMap, linearSeeAllDay, linearShowAllDay,
+            linearImage, linearReviews, linearRating;
 
     private IGoogleAPIService mService;
     private PlaceDetail mPlace;
@@ -50,10 +57,12 @@ public class DetailPlaceActivity extends AppCompatActivity implements View.OnCli
 
     private SharedPreferences prefPlace;
 
-    private RecyclerView listItemImage, listItemCategory;
-    private RecyclerView.LayoutManager layoutManagerImage, layoutManagerCategory;
+    private RecyclerView listItemImage, listItemCategory, listItemReviewsRating;
+    private RecyclerView.LayoutManager layoutManagerImage, layoutManagerCategory, layoutManagerReviewsRating;
+
     private ListItemImagePlacesAdapter adapterImage;
     private ListItemDetailCategoryAdapter adapterCategory;
+    private ListItemReviewsRatingAdapter adapterReviews;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +78,8 @@ public class DetailPlaceActivity extends AppCompatActivity implements View.OnCli
         actionBar.setLogo(R.drawable.ic_near_me_black_24dp);    //Icon muốn hiện thị
         actionBar.setDisplayUseLogoEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        nestedScrollView = findViewById(R.id.nestedScrollView);
 
         imgAvataPlace = findViewById(R.id.imgAvataPlace);
         imgPhone = findViewById(R.id.imgPhone);
@@ -99,6 +110,8 @@ public class DetailPlaceActivity extends AppCompatActivity implements View.OnCli
         linearSeeAllDay = findViewById(R.id.linearSeeAllDay);
         linearShowAllDay = findViewById(R.id.linearShowAllDay);
         linearImage = findViewById(R.id.linearImage);
+        linearReviews = findViewById(R.id.linearReviews);
+        linearRating = findViewById(R.id.linearRating);
 
         listItemImage = findViewById(R.id.recyclerImage);
         listItemImage.setHasFixedSize(true);
@@ -110,6 +123,10 @@ public class DetailPlaceActivity extends AppCompatActivity implements View.OnCli
         layoutManagerCategory = new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false);
         listItemCategory.setLayoutManager(layoutManagerCategory);
 
+        listItemReviewsRating = findViewById(R.id.recyclerReview);
+        listItemReviewsRating.setHasFixedSize(true);
+        layoutManagerReviewsRating = new LinearLayoutManager(this, RecyclerView.VERTICAL, false);
+        listItemReviewsRating.setLayoutManager(layoutManagerReviewsRating);
 
         //User Service to fectch Address and Name
         mService.getDetaislPlaces(getPlaceDetailUrl(prefPlace.getString("madiadiem", "")))
@@ -162,6 +179,7 @@ public class DetailPlaceActivity extends AppCompatActivity implements View.OnCli
 
                         List<String> imagelist = new ArrayList<>();
                         List<String> imageListAfter = new ArrayList<>();
+                        List<Reviews> reviewsList = new ArrayList<>();
 
                         if (mPlace.getResult().getPhotos() != null){
                             for (int i = 0; i < mPlace.getResult().getPhotos().length; i++) {
@@ -225,11 +243,37 @@ public class DetailPlaceActivity extends AppCompatActivity implements View.OnCli
                             linearSeeAllDay.setEnabled(false);
                         }
 
+                        if (mPlace.getResult().getReviews() != null){
+                            for (int i = 0; i < mPlace.getResult().getReviews().length; i++){
+                                Reviews reviews = new Reviews();
+                                reviews.setAuthor_name(mPlace.getResult().getReviews()[i].getAuthor_name());
+                                reviews.setAuthor_url(mPlace.getResult().getReviews()[i].getAuthor_url());
+                                reviews.setLanguage(mPlace.getResult().getReviews()[i].getLanguage());
+                                reviews.setProfile_photo_url(mPlace.getResult().getReviews()[i].getProfile_photo_url());
+                                reviews.setRating(mPlace.getResult().getReviews()[i].getRating());
+                                reviews.setText(mPlace.getResult().getReviews()[i].getText());
+                                reviews.setTime(mPlace.getResult().getReviews()[i].getTime());
+                                reviews.setRelative_time_description(mPlace.getResult().getReviews()[i].getRelative_time_description());
+
+                                reviewsList.add(reviews);
+                            }
+                        }else
+                            linearReviews.setVisibility(View.GONE);
+
+                        for (int i = 0; i < reviewsList.size(); i++){
+                            Log.d("ktra", reviewsList.get(i).getAuthor_name());
+                            Log.d("ktra", reviewsList.get(i).getTime());
+                            Log.d("ktra", reviewsList.get(i).getRelative_time_description());
+                        }
+
                         adapterImage = new ListItemImagePlacesAdapter(DetailPlaceActivity.this, imageListAfter);
                         listItemImage.setAdapter(adapterImage);
 
                         adapterCategory = new ListItemDetailCategoryAdapter(DetailPlaceActivity.this, categoryList);
                         listItemCategory.setAdapter(adapterCategory);
+
+                        adapterReviews = new ListItemReviewsRatingAdapter(DetailPlaceActivity.this, reviewsList);
+                        listItemReviewsRating.setAdapter(adapterReviews);
                     }
 
                     @Override
@@ -241,6 +285,7 @@ public class DetailPlaceActivity extends AppCompatActivity implements View.OnCli
         linearViewOnMap.setOnClickListener(this);
         linearSeeAllDay.setOnClickListener(this);
         linearShowAllDay.setOnClickListener(this);
+        linearRating.setOnClickListener(this);
         imgChrome.setOnClickListener(this);
         imgPhone.setOnClickListener(this);
     }
@@ -300,8 +345,7 @@ public class DetailPlaceActivity extends AppCompatActivity implements View.OnCli
                     try {
                         startActivity(i);
                     }
-                    catch (SecurityException s)
-                    { }
+                    catch (SecurityException s) { }
                 }else {
                     Toast.makeText(this, "No data for display", Toast.LENGTH_LONG).show();
                 }
@@ -320,6 +364,14 @@ public class DetailPlaceActivity extends AppCompatActivity implements View.OnCli
                 }else {
                     Toast.makeText(this, "No data for display", Toast.LENGTH_LONG).show();
                 }
+                break;
+            case R.id.linearRating:
+                nestedScrollView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        nestedScrollView.fullScroll(NestedScrollView.FOCUS_DOWN);
+                    }
+                });
                 break;
         }
     }

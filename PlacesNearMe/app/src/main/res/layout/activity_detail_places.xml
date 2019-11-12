@@ -6,6 +6,7 @@
     android:background="#10000000">
 
     <androidx.core.widget.NestedScrollView
+        android:id="@+id/nestedScrollView"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content">
 
@@ -107,6 +108,7 @@
                             android:layout_gravity="center"/>
 
                         <LinearLayout
+                            android:id="@+id/linearRating"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:orientation="horizontal"
@@ -506,6 +508,7 @@
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/linearReviews"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
@@ -518,7 +521,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Category"
+                    android:text="Review and Rating"
                     android:textStyle="bold"
                     android:textSize="20sp"
                     android:textColor="@android:color/black"
@@ -531,7 +534,9 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:nestedScrollingEnabled="false"
-                    android:padding="10dp"/>
+                    android:padding="5dp"
+                    android:background="@color/ratingLightGray"
+                    android:layout_margin="10dp"/>
             </LinearLayout>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
