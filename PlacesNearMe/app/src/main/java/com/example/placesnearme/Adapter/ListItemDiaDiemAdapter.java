@@ -1,6 +1,7 @@
 package com.example.placesnearme.Adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -21,6 +22,7 @@ import com.example.placesnearme.Model.DanhMucCha;
 import com.example.placesnearme.Model.DiaDiem;
 import com.example.placesnearme.Model.PlaceDetail;
 import com.example.placesnearme.R;
+import com.example.placesnearme.View.DetailPlaceActivity;
 import com.example.placesnearme.View.ResultListAndMapActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -61,7 +63,6 @@ class ListItemViewHolderDiaDiem extends RecyclerView.ViewHolder{
 public class ListItemDiaDiemAdapter extends RecyclerView.Adapter<ListItemViewHolderDiaDiem>{
     ResultListAndMapActivity resultListAndMapActivity;
     List<DiaDiem> diaDiemList;
-    Context context;
 
     public ListItemDiaDiemAdapter(ResultListAndMapActivity resultListAndMapActivity, List<DiaDiem> diaDiemList) {
         this.resultListAndMapActivity = resultListAndMapActivity;
@@ -73,7 +74,6 @@ public class ListItemDiaDiemAdapter extends RecyclerView.Adapter<ListItemViewHol
     public ListItemViewHolderDiaDiem onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(resultListAndMapActivity.getBaseContext());
         View view = inflater.inflate(R.layout.list_item_places, parent, false);
-        context = parent.getContext();
 
         return new ListItemViewHolderDiaDiem(view);
     }
@@ -96,12 +96,14 @@ public class ListItemDiaDiemAdapter extends RecyclerView.Adapter<ListItemViewHol
                                 + " people rating");
 
                         if (resultListAndMapActivity.mPlace.getResult().getRating() != null){
-                            holder.ratingBar.setMax(5);
                             holder.ratingBar.setStepSize(0.01f);
                             holder.ratingBar.setRating(Float.parseFloat(resultListAndMapActivity.mPlace.getResult().getRating()));
                             holder.ratingBar.invalidate();
-                        }else
+                        }else {
+                            holder.txtCountRating.setText("0 people rating");
                             holder.ratingBar.setRating(0);
+                            holder.ratingBar.invalidate();
+                        }
                     }
 
                     @Override
@@ -125,9 +127,7 @@ public class ListItemDiaDiemAdapter extends RecyclerView.Adapter<ListItemViewHol
         SharedPreferences prefCategorySelected = resultListAndMapActivity
                 .getSharedPreferences("shareDanhMucSelected", 0);
 
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-        db.collection("Danh Muc").whereEqualTo("madanhmuc", prefCategorySelected.getString("madanhmuc", ""))
+        resultListAndMapActivity.db.collection("Danh Muc").whereEqualTo("madanhmuc", prefCategorySelected.getString("madanhmuc", ""))
                 .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -153,6 +153,21 @@ public class ListItemDiaDiemAdapter extends RecyclerView.Adapter<ListItemViewHol
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
+            }
+        });
+
+        holder.cardView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SharedPreferences prefPlaces = resultListAndMapActivity.getSharedPreferences("sharePlaces", 0);
+                SharedPreferences.Editor editor = prefPlaces.edit();
+
+                editor.putString("madiadiem", diaDiem.getMadiadiem());
+                editor.putString("distance", String.format("%.1f km", distance));
+                editor.commit();
+
+                Intent intent = new Intent(resultListAndMapActivity.getBaseContext(), DetailPlaceActivity.class);
+                resultListAndMapActivity.startActivity(intent);
             }
         });
     }

@@ -15,27 +15,34 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.RatingBar;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.placesnearme.Adapter.ListItemDiaDiemAdapter;
 import com.example.placesnearme.Common;
 import com.example.placesnearme.Interface.IGoogleAPIService;
+import com.example.placesnearme.Model.DanhMuc;
+import com.example.placesnearme.Model.DanhMucCha;
 import com.example.placesnearme.Model.DiaDiem;
 import com.example.placesnearme.Model.MyPlaces;
-import com.example.placesnearme.Model.Photos;
 import com.example.placesnearme.Model.PlaceDetail;
 import com.example.placesnearme.Model.PolylineData;
 import com.example.placesnearme.Model.Results;
+import com.example.placesnearme.Remote.SortAscending;
 import com.example.placesnearme.R;
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -57,11 +64,16 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.google.maps.DirectionsApiRequest;
 import com.google.maps.GeoApiContext;
 import com.google.maps.PendingResult;
@@ -70,6 +82,7 @@ import com.google.maps.model.DirectionsResult;
 import com.google.maps.model.DirectionsRoute;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import retrofit2.Call;
@@ -81,20 +94,23 @@ public class ResultListAndMapActivity extends AppCompatActivity implements OnMap
     private static final int MY_PERMISSION_CODE = 1000;
 
     private ActionBar actionBar;
+    private RelativeLayout rl_cardDetails;
+    private ImageView imgCategory;
+    private TextView txtCountReview, txtPlacesName, txtKm, txtDetailLocation;
+    private RatingBar ratingBar;
 
     private RecyclerView listItemDiaDiem;
+    private RecyclerView.LayoutManager layoutManagerDiaDiem;
     private ListItemDiaDiemAdapter adapterDiaDiem;
 
     private ArrayList<Marker> mTripMarkers = new ArrayList<>();
     private ArrayList<PolylineData> mPolylinesData = new ArrayList<>();
     private List<DiaDiem> diaDiemList = new ArrayList<>();
 
-    private FirebaseFirestore db;
+    public FirebaseFirestore db;
 
-    private RecyclerView.LayoutManager layoutManagerDiaDiem;
-
-    public SharedPreferences prefCategorySelected, prefLocation;
-    private SharedPreferences.Editor editor;
+    public SharedPreferences prefCategorySelected, prefLocation, prefPlaces;
+    private SharedPreferences.Editor editor, editor2;
 
     public double latitude, longtitude;
 
@@ -114,10 +130,24 @@ public class ResultListAndMapActivity extends AppCompatActivity implements OnMap
 
     public PlaceDetail mPlace;
 
+    private boolean filter = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_result_list_and_map);
+
+        db = FirebaseFirestore.getInstance();
+
+        rl_cardDetails = findViewById(R.id.rl_cardDetails);
+        imgCategory = findViewById(R.id.imgCategory);
+        txtCountReview = findViewById(R.id.txtCountReview);
+        txtPlacesName = findViewById(R.id.txtPlacesName);
+        txtKm = findViewById(R.id.txtKm);
+        txtDetailLocation = findViewById(R.id.txtDetailLocation);
+        ratingBar = findViewById(R.id.ratingBar);
+
+        rl_cardDetails.setVisibility(View.GONE);
 
         //Request Runtime permission
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
@@ -146,7 +176,7 @@ public class ResultListAndMapActivity extends AppCompatActivity implements OnMap
         latitude = Double.parseDouble(prefLocation.getString("latitude", "0"));
         longtitude = Double.parseDouble(prefLocation.getString("longtitude", "0"));
 
-        nearByPlace(prefCategorySelected.getString("madanhmuc", "Error"));
+        nearByPlace(prefCategorySelected.getString("madanhmuc", ""));
 
         listItemDiaDiem = findViewById(R.id.listDiaDiem);
         listItemDiaDiem.setHasFixedSize(true);
@@ -243,14 +273,6 @@ public class ResultListAndMapActivity extends AppCompatActivity implements OnMap
         return url.toString();
     }
 
-    public String getPhotoOfPlace(String photo_reference, int maxWidth) {
-        StringBuilder url = new StringBuilder("https://maps.googleapis.com/maps/api/place/photo");
-        url.append("?maxwidth=" + maxWidth);
-        url.append("&photoreference=" + photo_reference);
-        url.append("&key=" + getResources().getString(R.string.google_maps_key));
-        return url.toString();
-    }
-
     private void buildLocationRequest() {
         mLocationRequest = new LocationRequest();
         mLocationRequest.setInterval(1000);
@@ -342,10 +364,12 @@ public class ResultListAndMapActivity extends AppCompatActivity implements OnMap
                 onBackPressed();
                 return true;
             case R.id.header_menu_filter:
-                //code xử lý khi bấm menu1
+                Collections.sort(diaDiemList, new SortAscending());
+                adapterDiaDiem.notifyDataSetChanged();
                 break;
             case R.id.header_menu_list:
                 listItemDiaDiem.setVisibility(View.VISIBLE);
+                rl_cardDetails.setVisibility(View.GONE);
                 break;
             case R.id.header_menu_map:
                 listItemDiaDiem.setVisibility(View.GONE);
@@ -427,11 +451,101 @@ public class ResultListAndMapActivity extends AppCompatActivity implements OnMap
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
+                final List<DanhMuc> danhMucs = new ArrayList<>();
+
                 for (int i = 0; i < diaDiemList.size(); i++){
                     if (diaDiemList.get(i).getLocation().getLatitude() == marker.getPosition().latitude
-                            && diaDiemList.get(i).getLocation().getLongitude() == marker.getPosition().longitude)
-                        Log.d("ktra", diaDiemList.get(i).getMadiadiem());
+                            && diaDiemList.get(i).getLocation().getLongitude() == marker.getPosition().longitude){
+
+                        txtPlacesName.setText(diaDiemList.get(i).getTendiadiem());
+                        txtDetailLocation.setText(diaDiemList.get(i).getDiachi());
+
+                        db.collection("Danh Muc").whereEqualTo("madanhmuc", prefCategorySelected.getString("madanhmuc", ""))
+                                .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                            @Override
+                            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                for (DocumentSnapshot doc : task.getResult()) {
+                                    DanhMuc danhMuc = new DanhMuc(doc.getString("madanhmuc"),
+                                            doc.getString("tendanhmuc"), doc.getString("hinhanh"), doc.toObject(DanhMucCha.class));
+
+                                    danhMucs.add(danhMuc);
+                                }
+
+                                StorageReference storageImgProductType = FirebaseStorage.getInstance().getReference()
+                                        .child("Danh Muc").child(danhMucs.get(0).getHinhanh());
+
+                                long ONE_MEGABYTE = 1024 * 1024;
+                                storageImgProductType.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                                    @Override
+                                    public void onSuccess(byte[] bytes) {
+                                        Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                                        imgCategory.setImageBitmap(bitmap);
+                                    }
+                                });
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                            }
+                        });
+
+                        mService.getDetaislPlaces(getPlaceDetailUrl(diaDiemList.get(i).getMadiadiem()))
+                                .enqueue(new Callback<PlaceDetail>() {
+                                    @Override
+                                    public void onResponse(Call<PlaceDetail> call, Response<PlaceDetail> response) {
+                                        mPlace = response.body();
+
+                                        txtCountReview.setText(mPlace.getResult().getUser_ratings_total() + " people rating");
+
+                                        if (mPlace.getResult().getRating() != null){
+                                            ratingBar.setStepSize(0.01f);
+                                            ratingBar.setRating(Float.parseFloat(mPlace.getResult().getRating()));
+                                            ratingBar.invalidate();
+                                        }else {
+                                            txtCountReview.setText("0 people rating");
+                                            ratingBar.setRating(0);
+                                            ratingBar.invalidate();
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onFailure(Call<PlaceDetail> call, Throwable t) {
+
+                                    }
+                                });
+
+                        Location locationCurrent = new Location("Location Current");
+                        locationCurrent.setLatitude(latitude);
+                        locationCurrent.setLongitude(longtitude);
+
+                        Location locationSelected = new Location("Location Selected");
+                        locationSelected.setLatitude(marker.getPosition().latitude);
+                        locationSelected.setLongitude(marker.getPosition().longitude);
+
+                        final double distance = locationCurrent.distanceTo(locationSelected) / 1000;
+
+                        txtKm.setText(String.format("%.1f km", distance));
+
+                        final String madiadiem = diaDiemList.get(i).getMadiadiem();
+
+                        rl_cardDetails.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                prefPlaces = getSharedPreferences("sharePlaces", 0);
+                                editor2 = prefPlaces.edit();
+
+                                editor2.putString("madiadiem", madiadiem);
+                                editor2.putString("distance", String.format("%.1f km", distance));
+                                editor2.commit();
+
+                                Intent intent = new Intent(ResultListAndMapActivity.this, DetailPlaceActivity.class);
+                                startActivity(intent);
+                            }
+                        });
+                    }
                 }
+
+                rl_cardDetails.setVisibility(View.VISIBLE);
 
                 return false;
             }

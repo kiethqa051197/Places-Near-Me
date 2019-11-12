@@ -18,20 +18,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-                <ImageView
-                    android:id="@+id/imgCover"
-                    android:layout_width="match_parent"
-                    android:layout_height="200dp"
-                    android:src="@drawable/bg_bar"
-                    android:scaleType="centerCrop"
-                    android:tint="#85000000"/>
-
                 <LinearLayout
                     android:id="@+id/lnInfo"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_centerHorizontal="true"
-                    android:layout_marginTop="170dp"
+                    android:layout_marginTop="80dp"
                     android:background="@drawable/border_linear"
                     android:orientation="vertical"
                     android:layout_marginLeft="15dp"
@@ -46,7 +38,8 @@
                         android:textSize="25sp"
                         android:textStyle="bold"
                         android:textAlignment="center"
-                        android:layout_marginTop="80dp"/>
+                        android:layout_marginTop="80dp"
+                        android:padding="10dp"/>
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -140,7 +133,7 @@
                 <de.hdodenhof.circleimageview.CircleImageView
                     android:layout_width="150dp"
                     android:layout_height="150dp"
-                    android:layout_marginTop="100dp"
+                    android:layout_marginTop="10dp"
                     android:layout_centerHorizontal="true"
                     android:src="@drawable/ctg_circle_white" />
 
@@ -148,12 +141,13 @@
                     android:id="@+id/imgAvataPlace"
                     android:layout_width="140dp"
                     android:layout_height="140dp"
-                    android:layout_marginTop="105dp"
+                    android:layout_marginTop="15dp"
                     android:layout_centerHorizontal="true"
                     android:src="@drawable/ic_launcher_background"/>
             </RelativeLayout>
 
             <LinearLayout
+                android:id="@+id/linearImage"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
@@ -173,11 +167,31 @@
                     android:layout_marginTop="10dp"
                     android:layout_marginRight="10dp"/>
 
-                <androidx.recyclerview.widget.RecyclerView
+                <RelativeLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:nestedScrollingEnabled="false"
-                    android:padding="10dp"/>
+                    android:layout_height="wrap_content">
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/recyclerImage"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:nestedScrollingEnabled="false"
+                        android:padding="10dp"
+                        android:layout_weight="1"/>
+
+                    <TextView
+                        android:id="@+id/txtMoreMedia"
+                        android:layout_width="70dp"
+                        android:layout_height="70dp"
+                        android:background="@android:color/holo_blue_dark"
+                        android:layout_centerVertical="true"
+                        android:text="16 MEDIA"
+                        android:gravity="center"
+                        android:textStyle="bold"
+                        android:textColor="@android:color/white"
+                        android:textSize="20dp"
+                        android:layout_alignParentRight="true"/>
+                </RelativeLayout>
             </LinearLayout>
 
             <LinearLayout
@@ -253,7 +267,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:nestedScrollingEnabled="false"
-                    android:layout_margin="5dp"/>
+                    android:padding="10dp"/>
             </LinearLayout>
 
             <LinearLayout
@@ -262,7 +276,6 @@
                 android:layout_marginTop="10dp"
                 android:layout_marginRight="15dp"
                 android:layout_marginLeft="15dp"
-                android:layout_marginBottom="10dp"
                 android:orientation="vertical"
                 android:background="@drawable/border_linear">
 
@@ -490,6 +503,35 @@
                             android:layout_marginLeft="10dp"/>
                     </LinearLayout>
                 </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginRight="15dp"
+                android:layout_marginLeft="15dp"
+                android:orientation="vertical"
+                android:layout_marginBottom="10dp"
+                android:background="@drawable/border_linear">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Category"
+                    android:textStyle="bold"
+                    android:textSize="20sp"
+                    android:textColor="@android:color/black"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginTop="10dp"/>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerReview"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:nestedScrollingEnabled="false"
+                    android:padding="10dp"/>
             </LinearLayout>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
