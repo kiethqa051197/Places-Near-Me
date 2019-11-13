@@ -38,7 +38,6 @@ public class CategoryActivity extends AppCompatActivity{
 
     SharedPreferences prefCategory;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

@@ -1,23 +1,19 @@
 package com.example.placesnearme.Model;
 
-import com.google.firebase.firestore.GeoPoint;
-
 public class User {
     String mauser;
     String email;
     String avatar;
     String username;
-    GeoPoint location;
 
     public User() {
     }
 
-    public User(String mauser, String email, String avatar, String username, GeoPoint location) {
+    public User(String mauser, String email, String avatar, String username) {
         this.mauser = mauser;
         this.email = email;
         this.avatar = avatar;
         this.username = username;
-        this.location = location;
     }
 
     public String getMauser() {
@@ -50,13 +46,5 @@ public class User {
 
     public void setUsername(String username) {
         this.username = username;
-    }
-
-    public GeoPoint getLocation() {
-        return location;
-    }
-
-    public void setLocation(GeoPoint location) {
-        this.location = location;
     }
 }

@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -19,6 +20,7 @@ import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
@@ -43,6 +45,8 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.model.AutocompletePrediction;
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.mancj.materialsearchbar.MaterialSearchBar;
 import com.skyfishjy.library.RippleBackground;
 
@@ -73,6 +77,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private SharedPreferences pref;
     private SharedPreferences.Editor editor;
 
+    private FirebaseAuth.AuthStateListener mAuthListener;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -94,6 +100,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         navHeader = navigationView.getHeaderView(0);
+
+        setupFirebaseAuth();
+
         mService = Common.getGoogleAPIService();
 
         //Request Runtime permission
@@ -114,6 +123,29 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         longtitude = Double.parseDouble(pref.getString("longtitude", "0"));
     }
 
+    private void setupFirebaseAuth(){
+        mAuthListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                FirebaseUser user = firebaseAuth.getCurrentUser();
+                if (user != null)
+                    hideItem(R.id.nav_login);
+                else
+                    hideItem(R.id.nav_logout);
+            }
+        };
+    }
+
+    private void hideItem(int id) {
+        Menu nav_Menu = navigationView.getMenu();
+        nav_Menu.findItem(id).setVisible(false);
+    }
+
+    private void showItem(int id) {
+        Menu nav_Menu = navigationView.getMenu();
+        nav_Menu.findItem(id).setVisible(true);
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (actionbar.onOptionsItemSelected(item))
@@ -127,12 +159,23 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         int id = menuItem.getItemId();
         Fragment fragment = null;
 
-        if (id == R.id.nav_home) {
-            fragment = new HomeFragment();
-            displaySelectedFragment(fragment);
-        } else if (id == R.id.nav_setting) {
-            fragment = new SettingFragment();
-            displaySelectedFragment(fragment);
+        switch (id){
+            case R.id.nav_home:
+                fragment = new HomeFragment();
+                displaySelectedFragment(fragment);
+                break;
+            case R.id.nav_setting:
+                fragment = new SettingFragment();
+                displaySelectedFragment(fragment);
+                break;
+            case R.id.nav_login:
+                Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                startActivity(intent);
+                break;
+            case R.id.nav_logout:
+                FirebaseAuth.getInstance().signOut();
+                showItem(R.id.nav_login);
+                break;
         }
 
         drawer = findViewById(R.id.drawer_layout);
@@ -170,6 +213,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onDestroy() {
         super.onDestroy();
         fusedLocationProviderClient.removeLocationUpdates(mLocationCallback);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        FirebaseAuth.getInstance().addAuthStateListener(mAuthListener);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (mAuthListener != null) {
+            FirebaseAuth.getInstance().removeAuthStateListener(mAuthListener);
+        }
     }
 
     private void buildLocationRequest() {
