@@ -10,12 +10,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <ImageView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:src="@drawable/background_cut"
-        android:scaleType="centerCrop"/>
-
     <LinearLayout
         android:id="@+id/linearTimKiem"
         android:layout_width="match_parent"
@@ -55,5 +49,6 @@
         android:layout_marginRight="10dp"
         android:layout_marginBottom="50dp"
         android:padding="10dp"
-        android:background="@android:color/white"/>
+        android:background="@android:color/white"
+        android:visibility="gone"/>
 </RelativeLayout>

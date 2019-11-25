@@ -124,7 +124,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 } catch (Exception e) { }
                 finally {
                     for (int i = 0; i < types.size(); i++){
-                        nearByPlace(types.get(i));
+                        //nearByPlace(types.get(i));
                     }
                 }
             }
