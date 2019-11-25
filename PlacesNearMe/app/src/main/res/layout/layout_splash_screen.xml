@@ -18,11 +18,11 @@
         android:layout_centerHorizontal="true"/>
 
     <ImageView
-        android:id="@+id/imgSplashScreen"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
         android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"/>
+        android:layout_centerVertical="true"
+        android:src="@drawable/logo_app"/>
 
     <TextView
         android:id="@+id/txtVesion"

@@ -13,7 +13,4 @@ public interface IGoogleAPIService {
 
     @GET
     Call<PlaceDetail> getDetaislPlaces(@Url String url);
-//
-//    @GET("maps/api/directions/json")
-//    Call<String> getDirections(@Query("origin") String origin, @Query("destination") String destination, @Query("key") String key);
 }

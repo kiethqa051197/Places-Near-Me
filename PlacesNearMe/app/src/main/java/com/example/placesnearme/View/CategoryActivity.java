@@ -1,19 +1,21 @@
 package com.example.placesnearme.View;
 
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.content.SharedPreferences;
-import android.os.Bundle;
-import android.view.MenuItem;
-import android.widget.Toast;
-
-import com.example.placesnearme.Adapter.ListItemDanhMucAdapter;
-import com.example.placesnearme.Model.DanhMuc;
-import com.example.placesnearme.Model.DanhMucCha;
+import com.example.placesnearme.Adapter.ListDanhMucAdapter;
+import com.example.placesnearme.Model.Firebase.DanhMuc;
+import com.example.placesnearme.Model.Firebase.DanhMucCha;
 import com.example.placesnearme.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -25,50 +27,43 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CategoryActivity extends AppCompatActivity{
+public class CategoryActivity extends AppCompatActivity implements View.OnClickListener{
 
-    private ActionBar actionBar;
-    public RecyclerView listItemDanhMuc;
-    private ListItemDanhMucAdapter adapterDanhMuc;
+    public RecyclerView listDanhMuc;
+    private ListDanhMucAdapter adapterDanhMuc;
 
     private FirebaseFirestore db;
 
-    private RecyclerView.LayoutManager layoutManagerDanhMuc;
+    private RecyclerView.LayoutManager layoutManager;
     private List<DanhMuc> danhMucList;
 
-    SharedPreferences prefCategory;
+    private ImageView imgBack;
+    private TextView txtTenDanhMuc;
 
+    SharedPreferences prefCategory;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_category);
+        setContentView(R.layout.activity_categoty_child);
 
         db = FirebaseFirestore.getInstance();
 
-        prefCategory = getSharedPreferences("shareDanhMucCha", 0); // 0 - for private mode
+        prefCategory = getSharedPreferences("prefDanhMucCha", 0);
 
-        listItemDanhMuc = findViewById(R.id.listDanhMuc);
-        listItemDanhMuc.setHasFixedSize(true);
-        layoutManagerDanhMuc = new GridLayoutManager(getApplicationContext(), 3);
-        listItemDanhMuc.setLayoutManager(layoutManagerDanhMuc);
+        imgBack = findViewById(R.id.imgBack);
+        txtTenDanhMuc = findViewById(R.id.txtTenDanhMuc);
 
-        actionBar = getSupportActionBar();
-        actionBar.setTitle(prefCategory.getString("tendanhmuccha", "Error")); //Thiết lập tiêu đề nếu muốn
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        listDanhMuc = findViewById(R.id.recyclerDanhMucCon);
+        listDanhMuc.setHasFixedSize(true);
+        layoutManager = new GridLayoutManager(getApplicationContext(), 3);
+        listDanhMuc.setLayoutManager(layoutManager);
+
+        txtTenDanhMuc.setText(prefCategory.getString("tenDanhMucCha", ""));
 
         loadCategory();
-    }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                onBackPressed();
-                return true;
-        }
-
-        return super.onOptionsItemSelected(item);
+        imgBack.setOnClickListener(this);
     }
 
     private void loadCategory() {
@@ -76,7 +71,8 @@ public class CategoryActivity extends AppCompatActivity{
         if (danhMucList.size() > 0)
             danhMucList.clear();
 
-        db.collection("Danh Muc").whereEqualTo("Danh Muc Cha.madanhmuc", prefCategory.getString("madanhmuccha", "error")).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+        db.collection("Danh Muc").whereEqualTo("Danh Muc Cha.madanhmuc", prefCategory.getString("maDanhMucCha", ""))
+                .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 for (DocumentSnapshot doc : task.getResult()) {
@@ -86,8 +82,8 @@ public class CategoryActivity extends AppCompatActivity{
                     danhMucList.add(danhMuc);
                 }
 
-                adapterDanhMuc = new ListItemDanhMucAdapter(CategoryActivity.this, danhMucList);
-                listItemDanhMuc.setAdapter(adapterDanhMuc);
+                adapterDanhMuc = new ListDanhMucAdapter(danhMucList);
+                listDanhMuc.setAdapter(adapterDanhMuc);
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
@@ -95,5 +91,15 @@ public class CategoryActivity extends AppCompatActivity{
                 Toast.makeText(getApplicationContext(), e.getMessage() + "", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    @Override
+    public void onClick(View v) {
+        int id = v.getId();
+        switch (id){
+            case R.id.imgBack:
+                onBackPressed();
+                break;
+        }
     }
 }

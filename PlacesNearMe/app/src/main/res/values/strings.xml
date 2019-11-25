@@ -1,6 +1,140 @@
 <resources>
     <string name="app_name">Places Near Me</string>
-    <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">AIzaSyD2ess1s_lta6cc6OLMi4ygIvlHiBLXftU</string>
-    <string name="open">Open</string>
-    <string name="close">Close</string>
+    <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">AIzaSyCHXskobrWfXIqL4RmS2ZlU5SFtHIKyrG8</string>
+    <string name="xinchao">Xin chào, </string>
+    <string name="timkiem">Bạn tìm gì hôm nay?</string>
+    <string name="tendanhmuc">Tên danh mục</string>
+    <string name="taikhoan">Tài khoản</string>
+    <string name="sua">Sửa</string>
+    <string name="luu">Lưu</string>
+    <string name="tennguoidung">Ha Quoc Anh Kiet</string>
+    <string name="tenhienthi">Tên hiển thị:</string>
+    <string name="email">Email:</string>
+    <string name="emailExample">anhkietxl051197@gmail.com</string>
+    <string name="matkhau">Mật khẩu:</string>
+    <string name="doimatkhau">Đổi mật khẩu:</string>
+    <string name="btndoimatkhau">Đổi mật khẩu</string>
+    <string name="nhaplaimatkhau">Nhập lại mật khẩu:</string>
+    <string name="hintmatkhaumoi">Nhập mật khẩu mới</string>
+    <string name="hintnhaplaimatkhau">Nhập lại mật khẩu mới</string>
+    <string name="thu2">Thứ Hai: 5:00 am - 10:00 pm</string>
+    <string name="thu3">Thứ Ba: 5:00 am - 10:00 pm</string>
+    <string name="thu4">Thứ Tư: 5:00 am - 10:00 pm</string>
+    <string name="thu5">Thứ Năm: 5:00 am - 10:00 pm</string>
+    <string name="thu6">Thứ Sáu: 5:00 am - 10:00 pm</string>
+    <string name="thu7">Thứ Bảy: Không hoạt động</string>
+    <string name="chunhat">Chủ nhật: Không hoạt động</string>
+    <string name="danghoatdong">Đang hoạt động</string>
+    <string name="dongcua">Đóng cửa</string>
+    <string name="tendiadiem">Trường Đại học Sư Phạm Kỹ Thuật TP. Hồ Chí Minh</string>
+    <string name="sodienthoai">Số điện thoại: 0373385547</string>
+    <string name="website">Website: http://abc.com</string>
+    <string name="danhgia">10 đánh giá</string>
+    <string name="soanh">10 ảnh</string>
+    <string name="hinhanh">Hình ảnh</string>
+    <string name="diachi">Địa chỉ</string>
+    <string name="diachimau">273, Dinh Phong Phu, Distric 9, Ho Chi Minh City</string>
+    <string name="danhmuc">Danh mục</string>
+    <string name="thoigianhoatdong">Thời gian hoạt động</string>
+    <string name="nhanxetdanhgia">Nhận xét và Đánh giá</string>
+
+    <string-array name="place_type">
+        <item>accounting</item>
+        <item>airport</item>
+        <item>amusement_park</item>
+        <item>aquarium</item>
+        <item>art_gallery</item>
+        <item>atm</item>
+        <item>bakery</item>
+        <item>bank</item>
+        <item>bar</item>
+        <item>beauty_salon</item>
+        <item>bicycle_store</item>
+        <item>book_store</item>
+        <item>bowling_alley</item>
+        <item>bus_station</item>
+        <item>cafe</item>
+        <item>campground</item>
+        <item>car_dealer</item>
+        <item>car_rental</item>
+        <item>car_repair</item>
+        <item>car_wash</item>
+        <item>casino</item>
+        <item>cemetery</item>
+        <item>church</item>
+        <item>city_hall</item>
+        <item>clothing_store</item>
+        <item>convenience_store</item>
+        <item>dentist</item>
+        <item>department_store</item>
+        <item>doctor</item>
+        <item>drugstore</item>
+        <item>electrician</item>
+        <item>electronics_store</item>
+        <item>embassy</item>
+        <item>fire_station</item>
+        <item>florist</item>
+        <item>funeral_home</item>
+        <item>furniture_store</item>
+        <item>gas_station</item>
+        <item>grocery_or_supermarket</item>
+        <item>gym</item>
+        <item>hair_care</item>
+        <item>hardware_store</item>
+        <item>hindu_temple</item>
+        <item>home_goods_store</item>
+        <item>hospital</item>
+        <item>insurance_agency</item>
+        <item>jewelry_store</item>
+        <item>laundry</item>
+        <item>lawyer</item>
+        <item>library</item>
+        <item>light_rail_station</item>
+        <item>liquor_store</item>
+        <item>local_government_office</item>
+        <item>locksmith</item>
+        <item>lodging</item>
+        <item>accounting</item>
+        <item>meal_delivery</item>
+        <item>meal_takeaway</item>
+        <item>mosque</item>
+        <item>movie_rental</item>
+        <item>movie_theater</item>
+        <item>moving_company</item>
+        <item>museum</item>
+        <item>night_club</item>
+        <item>painter</item>
+        <item>park</item>
+        <item>parking</item>
+        <item>pet_store</item>
+        <item>pharmacy</item>
+        <item>physiotherapist</item>
+        <item>plumber</item>
+        <item>police</item>
+        <item>post_office</item>
+        <item>primary_school</item>
+        <item>real_estate_agency</item>
+        <item>restaurant</item>
+        <item>roofing_contractor</item>
+        <item>rv_park</item>
+        <item>school</item>
+        <item>secondary_school</item>
+        <item>shoe_store</item>
+        <item>shopping_mall</item>
+        <item>spa</item>
+        <item>stadium</item>
+        <item>storage</item>
+        <item>store</item>
+        <item>subway_station</item>
+        <item>supermarket</item>
+        <item>synagogue</item>
+        <item>taxi_stand</item>
+        <item>tourist_attraction</item>
+        <item>train_station</item>
+        <item>transit_station</item>
+        <item>travel_agency</item>
+        <item>university</item>
+        <item>veterinary_care</item>
+        <item>zoo</item>
+    </string-array>
 </resources>
