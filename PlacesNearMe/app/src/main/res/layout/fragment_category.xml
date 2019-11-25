@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scaleType="centerCrop"
+        android:background="@drawable/background_cut"/>
+
+    <LinearLayout
+        android:id="@+id/linearXinChao"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="10dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/xinchao"
+            android:textColor="@color/white" />
+
+        <TextView
+            android:id="@+id/txttennguoidung"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            android:layout_marginStart="5dp"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linearTimKiem"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_below="@id/linearXinChao"
+        android:layout_margin="10dp"
+        android:background="@color/white"
+        android:gravity="center">
+
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/search"
+            android:padding="10dp"/>
+
+        <EditText
+            android:id="@+id/txtSearch"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:textColor="@android:color/black"
+            android:textSize="15sp"
+            android:layout_marginStart="5dp"
+            android:hint="@string/timkiem"
+            android:gravity="left|center"
+            android:background="@android:color/transparent"/>
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerDanhMuc"
+        android:layout_below="@id/linearTimKiem"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="10dp"
+        android:padding="10dp"
+        android:background="@android:color/white"/>
+</RelativeLayout>

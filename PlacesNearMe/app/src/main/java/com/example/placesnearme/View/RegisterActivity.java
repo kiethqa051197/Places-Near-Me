@@ -1,11 +1,7 @@
 package com.example.placesnearme.View;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -15,68 +11,52 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.placesnearme.Model.User;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.placesnearme.Model.Firebase.User;
 import com.example.placesnearme.R;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreSettings;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
 
 import static android.text.TextUtils.isEmpty;
 import static com.example.placesnearme.Remote.Check.doStringsMatch;
 
 public class RegisterActivity extends AppCompatActivity implements View.OnClickListener{
-
-    private ImageView imgBackgroundRegister;
     private EditText mEmail, mPassword, mConfirmPassword;
     private ProgressBar mProgressBar;
     private Button btnRegister;
     private TextView txtSignIn;
+    private ImageView imgBack;
 
     private FirebaseFirestore mDb;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
         mDb = FirebaseFirestore.getInstance();
-
-        imgBackgroundRegister = findViewById(R.id.imgBackgroundRegister);
-
-        List<Integer> givenList = Arrays.asList(R.drawable.background_1, R.drawable.background_2,R.drawable.background_3,
-                R.drawable.background_4, R.drawable.background_5, R.drawable.background_6, R.drawable.background_7,
-                R.drawable.background_8, R.drawable.background_9, R.drawable.background_10,
-                R.drawable.background_11, R.drawable.background_12, R.drawable.background_13);
-
-        Random rand = new Random();
-        int randomElement = givenList.get(rand.nextInt(givenList.size()));
-
-        imgBackgroundRegister.setImageResource(randomElement);
-
         mEmail = findViewById(R.id.edEmail);
         mPassword = findViewById(R.id.edPassword);
         mConfirmPassword = findViewById(R.id.edConfirmPassword);
 
         txtSignIn = findViewById(R.id.txtSignIn);
-
         btnRegister = findViewById(R.id.btnRegister);
-
         mProgressBar = findViewById(R.id.progressBar);
+        imgBack = findViewById(R.id.imgBack);
 
         hideSoftKeyboard();
 
         btnRegister.setOnClickListener(this);
         txtSignIn.setOnClickListener(this);
+        imgBack.setOnClickListener(this);
     }
 
     public void registerNewEmail(final String email, String password){
@@ -92,11 +72,6 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                             user.setEmail(email);
                             user.setUsername(email.substring(0, email.indexOf("@")));
                             user.setMauser(FirebaseAuth.getInstance().getUid());
-
-                            FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
-                                    .setTimestampsInSnapshotsEnabled(true)
-                                    .build();
-                            mDb.setFirestoreSettings(settings);
 
                             DocumentReference newUserRef = mDb
                                     .collection("User").document(FirebaseAuth.getInstance().getUid());
@@ -164,6 +139,9 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                 break;
             case R.id.txtSignIn:
                 redirectLoginScreen();
+                break;
+            case R.id.imgBack:
+                onBackPressed();
                 break;
         }
     }

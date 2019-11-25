@@ -8,15 +8,12 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
 import com.example.placesnearme.R;
 
 public class SplashScreenActivity extends AppCompatActivity {
 
-    ImageView imgGifSplashScreen;
     TextView txtVersion;
 
     @Override
@@ -33,9 +30,6 @@ public class SplashScreenActivity extends AppCompatActivity {
 
         txtVersion = findViewById(R.id.txtVesion);
 
-        imgGifSplashScreen = findViewById(R.id.imgSplashScreen);
-        Glide.with(this).asGif().load(R.drawable.gif_splash).into(imgGifSplashScreen);
-
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -44,7 +38,7 @@ public class SplashScreenActivity extends AppCompatActivity {
                 } catch (Exception e) {
 
                 } finally {
-                    Intent intent = new Intent(SplashScreenActivity.this, MainActivity.class);
+                    Intent intent = new Intent(SplashScreenActivity.this, LoginActivity.class);
                     startActivity(intent);
                     finish();
                 }

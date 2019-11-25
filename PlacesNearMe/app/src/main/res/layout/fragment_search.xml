@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#10000000">
+
+    <fragment
+        android:id="@+id/map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:src="@drawable/background_cut"
+        android:scaleType="centerCrop"/>
+
+    <LinearLayout
+        android:id="@+id/linearTimKiem"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_margin="10dp"
+        android:background="@color/white"
+        android:gravity="center">
+
+        <EditText
+            android:id="@+id/edSearch"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:textColor="@android:color/black"
+            android:textSize="15sp"
+            android:hint="@string/timkiem"
+            android:gravity="left|center"
+            android:padding="10dp"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"/>
+
+        <ImageView
+            android:id="@+id/imgSearch"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/search"
+            android:padding="10dp"/>
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerTimKiem"
+        android:layout_below="@id/linearTimKiem"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="50dp"
+        android:padding="10dp"
+        android:background="@android:color/white"/>
+</RelativeLayout>

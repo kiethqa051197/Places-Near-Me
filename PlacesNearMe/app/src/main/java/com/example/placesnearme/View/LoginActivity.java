@@ -2,19 +2,15 @@ package com.example.placesnearme.View;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.placesnearme.R;
@@ -24,10 +20,6 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
 
 import static android.text.TextUtils.isEmpty;
 
@@ -46,18 +38,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-
-        imgBackgroundLogin = findViewById(R.id.imgBackgroundLogin);
-
-        List<Integer> givenList = Arrays.asList(R.drawable.background_1, R.drawable.background_2,R.drawable.background_3,
-                R.drawable.background_4, R.drawable.background_5, R.drawable.background_6, R.drawable.background_7,
-                R.drawable.background_8, R.drawable.background_9, R.drawable.background_10,
-                R.drawable.background_11, R.drawable.background_12, R.drawable.background_13);
-
-        Random rand = new Random();
-        int randomElement = givenList.get(rand.nextInt(givenList.size()));
-
-        imgBackgroundLogin.setImageResource(randomElement);
 
         edEmail = findViewById(R.id.edEmail);
         edPassword = findViewById(R.id.edPassword);

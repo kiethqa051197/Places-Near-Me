@@ -2,14 +2,8 @@
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-    <ImageView
-        android:id="@+id/imgBackgroundRegister"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:scaleType="fitXY"
-        android:background="#70000000" />
+    android:layout_height="match_parent"
+    android:background="@drawable/background_register">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -134,11 +128,18 @@
         </LinearLayout>
     </ScrollView>
 
+    <ImageView
+        android:id="@+id/imgBack"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_back"
+        android:layout_margin="10dp"/>
+
     <ProgressBar
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/progressBar"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="120dp"
+        android:layout_centerVertical="true"
         android:visibility="invisible"/>
 </RelativeLayout>
