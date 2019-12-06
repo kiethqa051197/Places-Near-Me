@@ -30,7 +30,7 @@
                     android:layout_marginRight="15dp">
 
                     <TextView
-                        android:id="@+id/txtPlacesName"
+                        android:id="@+id/txtTenDiaDiem"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/tendiadiem"
@@ -48,7 +48,7 @@
                         android:layout_margin="5dp">
 
                         <TextView
-                            android:id="@+id/txtPlacePhone"
+                            android:id="@+id/txtSdtDiaDiem"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:text="@string/sodienthoai"
@@ -58,7 +58,7 @@
                             android:textColor="@android:color/black"/>
 
                         <de.hdodenhof.circleimageview.CircleImageView
-                            android:id="@+id/imgPhone"
+                            android:id="@+id/imgDienThoai"
                             android:layout_width="30dp"
                             android:layout_height="30dp"
                             android:src="@drawable/item_phone"
@@ -98,7 +98,7 @@
                         android:orientation="horizontal">
 
                         <TextView
-                            android:id="@+id/txtOpenNow"
+                            android:id="@+id/txtDangHoatDong"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/danghoatdong"
@@ -121,19 +121,19 @@
                                 android:src="@drawable/item_star"/>
 
                             <TextView
-                                android:id="@+id/txtCountRating"
+                                android:id="@+id/txtSoNguoiDanhGia"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/danhgia"
                                 android:textSize="15sp"
-                                android:layout_marginRight="2dp"
+                                android:layout_marginEnd="2dp"
                                 android:layout_gravity="center"/>
                         </LinearLayout>
                     </LinearLayout>
                 </LinearLayout>
 
                 <de.hdodenhof.circleimageview.CircleImageView
-                    android:id="@+id/imgAvataPlace"
+                    android:id="@+id/imgAvaDiaDiem"
                     android:layout_width="150dp"
                     android:layout_height="150dp"
                     android:layout_marginTop="15dp"
@@ -167,7 +167,7 @@
                     android:layout_height="wrap_content">
 
                     <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/recyclerImage"
+                        android:id="@+id/recyclerHinhAnhDiaDiem"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:nestedScrollingEnabled="false"
@@ -175,7 +175,7 @@
                         android:layout_weight="1"/>
 
                     <TextView
-                        android:id="@+id/txtMoreMedia"
+                        android:id="@+id/txtSoHinh"
                         android:layout_width="50dp"
                         android:layout_height="50dp"
                         android:background="@color/colorPrimaryDark"
@@ -220,40 +220,12 @@
                 </LinearLayout>
 
                 <TextView
-                    android:id="@+id/txtDetailLocation"
+                    android:id="@+id/txtDiaChi"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:padding="10dp"
                     android:text="@string/diachimau"
                     android:textSize="16sp"/>
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:layout_marginRight="15dp"
-                android:layout_marginLeft="15dp"
-                android:orientation="vertical"
-                android:background="@drawable/border_linear">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/danhmuc"
-                    android:textStyle="bold"
-                    android:textSize="20sp"
-                    android:textColor="@android:color/black"
-                    android:layout_marginStart="10dp"
-                    android:layout_marginTop="10dp"/>
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/recyclerCategoryDetais"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:nestedScrollingEnabled="false"
-                    android:padding="10dp"/>
             </LinearLayout>
 
             <LinearLayout
@@ -285,13 +257,12 @@
                 </LinearLayout>
 
                 <LinearLayout
-                    android:id="@+id/linearShowAllDay"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 
                     <TextView
-                        android:id="@+id/txtMonday"
+                        android:id="@+id/txtThu2"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/thu2"
@@ -299,7 +270,7 @@
                         android:layout_margin="10dp"/>
 
                     <TextView
-                        android:id="@+id/txtTuesday"
+                        android:id="@+id/txtThu3"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/thu3"
@@ -307,7 +278,7 @@
                         android:layout_margin="10dp"/>
 
                     <TextView
-                        android:id="@+id/txtWednesday"
+                        android:id="@+id/txtThu4"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/thu4"
@@ -315,7 +286,7 @@
                         android:layout_margin="10dp"/>
 
                     <TextView
-                        android:id="@+id/txtThursday"
+                        android:id="@+id/txtThu5"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/thu5"
@@ -324,7 +295,7 @@
 
 
                     <TextView
-                        android:id="@+id/txtFriday"
+                        android:id="@+id/txtThu6"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/thu6"
@@ -332,7 +303,7 @@
                         android:layout_margin="10dp"/>
 
                     <TextView
-                        android:id="@+id/txtSaturday"
+                        android:id="@+id/txtThu7"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/thu7"
@@ -340,7 +311,7 @@
                         android:layout_margin="10dp"/>
 
                     <TextView
-                        android:id="@+id/txtSunday"
+                        android:id="@+id/txtChuNhat"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/chunhat"

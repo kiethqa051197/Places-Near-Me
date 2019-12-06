@@ -1,6 +1,7 @@
 package com.example.placesnearme.Adapter;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
@@ -15,7 +16,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.placesnearme.Model.Firebase.DanhMuc;
 import com.example.placesnearme.R;
-import com.example.placesnearme.View.CategoryActivity;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -39,6 +39,9 @@ class ListDanhMucViewHolder extends RecyclerView.ViewHolder{
 public class ListDanhMucAdapter extends RecyclerView.Adapter<ListDanhMucViewHolder>{
     List<DanhMuc> danhMucList;
     Context context;
+
+    SharedPreferences pref;
+    SharedPreferences.Editor editor;
 
     public ListDanhMucAdapter(List<DanhMuc> danhMucList) {
         this.danhMucList = danhMucList;
@@ -75,6 +78,12 @@ public class ListDanhMucAdapter extends RecyclerView.Adapter<ListDanhMucViewHold
         holder.cardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                pref = context.getSharedPreferences("prefDanhMuc", 0); // 0 - for private mode
+                editor = pref.edit();
+
+                editor.putString("maDanhMuc", danhMuc.getMadanhmuc());
+                editor.putString("tenDanhMuc", danhMuc.getTendanhmuc());
+                editor.commit();
             }
         });
     }

@@ -17,6 +17,7 @@ import com.example.placesnearme.Model.MyPlaces;
 import com.example.placesnearme.Model.PlaceDetail;
 import com.example.placesnearme.Model.Results;
 import com.example.placesnearme.Model.Reviews;
+import com.example.placesnearme.View.Fragment.AddPlaceFragment;
 import com.example.placesnearme.View.Fragment.CategoryFragment;
 import com.example.placesnearme.View.Fragment.ProfileFragment;
 import com.example.placesnearme.View.Fragment.SearchFragment;
@@ -77,7 +78,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     public static Location mLastLocation;
 
-    public double latitude, longtitude;
+    public static double latitude, longtitude;
 
     private static final int MY_PERMISSION_CODE = 1000;
 
@@ -85,7 +86,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     private MyPlaces currentPlaces;
     private PlaceDetail mPlace;
 
-    private FirebaseFirestore db;
+    public static FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -140,20 +141,19 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
         switch (menuItem.getItemId()) {
             case R.id.action_search:
-                bottomNavigationView.setItemIconTintList(ColorStateList.valueOf(getColor(R.color.white)));
                 fragment = new SearchFragment();
                 displaySelectedFragment(fragment);
                 break;
             case R.id.action_category:
-                menuItem.setIcon(R.drawable.category_selected);
-                bottomNavigationView.setItemIconTintList(ColorStateList.valueOf(getColor(R.color.white)));
                 fragment = new CategoryFragment();
                 displaySelectedFragment(fragment);
                 break;
             case R.id.action_user:
-                menuItem.setIcon(R.drawable.user_selected);
-                bottomNavigationView.setItemIconTintList(ColorStateList.valueOf(getColor(R.color.white)));
                 fragment = new ProfileFragment();
+                displaySelectedFragment(fragment);
+                break;
+            case R.id.action_add_place:
+                fragment = new AddPlaceFragment();
                 displaySelectedFragment(fragment);
                 break;
             default:
@@ -384,7 +384,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     }
 
     private void themDiaDiem(String madiadiem, final DiaDiem diaDiem) {
-        final DocumentReference docRef = db.collection("DiaDiem").document(madiadiem);
+        final DocumentReference docRef = db.collection("Dia Diem").document(madiadiem);
 
         docRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
@@ -407,7 +407,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     }
 
     private void themReviews(final String madiadiem, final Review review) {
-        final DocumentReference docRef = db.collection("DanhGia").document(madiadiem);
+        final DocumentReference docRef = db.collection("Danh Gia").document(madiadiem);
         docRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {

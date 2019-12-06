@@ -11,29 +11,29 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.Toast;
 
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.placesnearme.Adapter.ListDiaDiemTimKiemAdapter;
+import com.example.placesnearme.Model.Firebase.DanhMuc;
 import com.example.placesnearme.Model.Firebase.DiaDiem;
 import com.example.placesnearme.Model.PolylineData;
 import com.example.placesnearme.R;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.location.LocationServices;
+import com.example.placesnearme.Remote.SortDiaDiem;
+import com.example.placesnearme.Remote.StringUtils;
+import com.example.placesnearme.View.MainActivity;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -57,41 +57,38 @@ import com.google.maps.model.DirectionsResult;
 import com.google.maps.model.DirectionsRoute;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
-public class SearchFragment extends Fragment implements OnMapReadyCallback, View.OnClickListener, GoogleMap.OnPolylineClickListener {
+public class SearchFragment extends Fragment implements OnMapReadyCallback, View.OnClickListener,
+        GoogleMap.OnPolylineClickListener, AdapterView.OnItemSelectedListener {
 
     private SupportMapFragment mapFragment;
     private GoogleMap mMap;
 
+    private Spinner spinContextSapXep, spinContextKieuXem;
     private EditText edSearch;
     private ImageView imgSearch;
 
-    private FusedLocationProviderClient fusedLocationProviderClient;
-
-    private LocationCallback mLocationCallback;
-    private LocationRequest mLocationRequest;
-
-    private static Location mLastLocation;
     private GeoApiContext mGeoApiContext;
-
-    private double latitude, longtitude;
-
-    private static final int MY_PERMISSION_CODE = 1000;
 
     private FirebaseFirestore db;
 
     private Marker mMarker;
-
 
     private RecyclerView listDiaDiemTimKiem;
     private ListDiaDiemTimKiemAdapter adapterDiaDiemTimKiem;
     private RecyclerView.LayoutManager layoutManagerDanhMuc;
     private Marker mSelectedMarker = null;
 
+    private ArrayAdapter<String> arrayAdapterSapXep, arrayAdapterKieuXem;
+
     private List<DiaDiem> diaDiems = new ArrayList<>();
+    private List<DanhMuc> danhMucs = new ArrayList<>();
     private ArrayList<Marker> mTripMarkers = new ArrayList<>();
     private ArrayList<PolylineData> mPolylinesData = new ArrayList<>();
+    List<String> kieuxems, sapxeps;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -102,33 +99,56 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, View
         mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+        if(mGeoApiContext == null){
+            mGeoApiContext = new GeoApiContext.Builder()
+                    .apiKey(getString(R.string.google_maps_key))
+                    .build();
+        }
+
         edSearch = view.findViewById(R.id.edSearch);
         imgSearch = view.findViewById(R.id.imgSearch);
 
-        //Request Runtime permission
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-            checkLocationPermission();
+        spinContextKieuXem = view.findViewById(R.id.spinContextKieuXem);
+        spinContextSapXep = view.findViewById(R.id.spinContextSapXep);
 
-        buildLocationRequest();
-        buildLocationCallBack();
+        kieuxems = Arrays.asList(getResources().getStringArray(R.array.array_kieuxem));
+        arrayAdapterKieuXem = new ArrayAdapter<String>(getContext(), android.R.layout.simple_list_item_1, kieuxems);
+        spinContextKieuXem.setAdapter(arrayAdapterKieuXem);
+        arrayAdapterKieuXem.notifyDataSetChanged();
 
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getActivity());
-        fusedLocationProviderClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
+        sapxeps = Arrays.asList(getResources().getStringArray(R.array.array_sapxep));
+        arrayAdapterSapXep = new ArrayAdapter<String>(getContext(), android.R.layout.simple_list_item_1, sapxeps);
+        spinContextSapXep.setAdapter(arrayAdapterSapXep);
+        arrayAdapterSapXep.notifyDataSetChanged();
 
         listDiaDiemTimKiem = view.findViewById(R.id.recyclerTimKiem);
         listDiaDiemTimKiem.setHasFixedSize(true);
         layoutManagerDanhMuc = new LinearLayoutManager(getActivity());
         listDiaDiemTimKiem.setLayoutManager(layoutManagerDanhMuc);
 
-        timkiem();
-
         imgSearch.setOnClickListener(this);
+
+        spinContextSapXep.setOnItemSelectedListener(this);
+        spinContextKieuXem.setOnItemSelectedListener(this);
+
         return view;
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+
+        LatLng latLng = new LatLng(MainActivity.latitude, MainActivity.longtitude);
+        MarkerOptions markerOptions = new MarkerOptions()
+                .position(latLng)
+                .title("This is you")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+
+        mMarker = mMap.addMarker(markerOptions);
+
+        //Move Camera
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16), 5000, null);
 
         //Init Google Play Services
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -211,14 +231,38 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, View
 
         switch (id){
             case R.id.imgSearch:
-                //Log.d("ktra", "Click");
-                //timkiem();
+                timkiem(StringUtils.removeAccent(edSearch.getText().toString()));
                 break;
         }
     }
 
-    private void timkiem(){
-        db.collection("Dia Diem").whereArrayContains("danhmuc", "atm").get()
+    private void timkiem(final String tukhoa){
+        danhMucs.clear();
+        diaDiems.clear();
+
+        if (adapterDiaDiemTimKiem != null){
+            adapterDiaDiemTimKiem.notifyDataSetChanged();
+        }
+
+        db.collection("Danh Muc").whereArrayContains("tukhoa", tukhoa).get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
+                            DanhMuc danhMuc = documentSnapshot.toObject(DanhMuc.class);
+
+                            danhMucs.add(danhMuc);
+                        }
+
+                        for (int i = 0; i < danhMucs.size(); i++){
+                            danhsach(danhMucs.get(i).getMadanhmuc());
+                        }
+                    }
+                });
+    }
+
+    private void danhsach(String madanhmuc){
+        db.collection("Dia Diem").whereArrayContains("danhmuc", madanhmuc).get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                     @Override
                     public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
@@ -226,8 +270,8 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, View
                             DiaDiem diaDiem = documentSnapshot.toObject(DiaDiem.class);
 
                             Location locationCurrent = new Location("Location Current");
-                            locationCurrent.setLatitude(latitude);
-                            locationCurrent.setLongitude(longtitude);
+                            locationCurrent.setLatitude(MainActivity.latitude);
+                            locationCurrent.setLongitude(MainActivity.longtitude);
 
                             Location locationSelected = new Location("Location Selected");
                             locationSelected.setLatitude(diaDiem.getLocation().getLatitude());
@@ -235,7 +279,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, View
 
                             final double distance = locationCurrent.distanceTo(locationSelected) / 1000;
 
-                            if (distance <= 5){
+                            if(distance < 5){
                                 com.google.android.gms.maps.model.LatLng latLng = new com.google.android.gms.maps.model.LatLng(diaDiem.getLocation().getLatitude(), diaDiem.getLocation().getLongitude());
 
                                 MarkerOptions markerOptions = new MarkerOptions();
@@ -251,67 +295,12 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, View
                             }
                         }
 
-                        adapterDiaDiemTimKiem = new ListDiaDiemTimKiemAdapter(diaDiems, latitude, longtitude);
+                        Collections.sort(diaDiems, new SortDiaDiem());
+
+                        adapterDiaDiemTimKiem = new ListDiaDiemTimKiemAdapter(diaDiems, MainActivity.latitude, MainActivity.longtitude);
                         listDiaDiemTimKiem.setAdapter(adapterDiaDiemTimKiem);
                     }
                 });
-    }
-
-    private void buildLocationRequest() {
-        mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(1000);
-        mLocationRequest.setFastestInterval(500);
-        mLocationRequest.setSmallestDisplacement(10f);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-    }
-
-    private void buildLocationCallBack() {
-        mLocationCallback = new LocationCallback() {
-            @Override
-            public void onLocationResult(LocationResult locationResult) {
-                super.onLocationResult(locationResult);
-                mLastLocation = locationResult.getLastLocation();
-
-                if (mMarker != null)
-                    mMarker.remove();
-
-                latitude = mLastLocation.getLatitude();
-                longtitude = mLastLocation.getLongitude();
-
-                LatLng latLng = new LatLng(latitude, longtitude);
-                MarkerOptions markerOptions = new MarkerOptions()
-                        .position(latLng)
-                        .title("This is you")
-                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-
-                mMarker = mMap.addMarker(markerOptions);
-
-                //Move Camera
-                mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16), 5000, null);
-
-                if(mGeoApiContext == null){
-                    mGeoApiContext = new GeoApiContext.Builder()
-                            .apiKey(getString(R.string.google_maps_key))
-                            .build();
-                }
-            }
-        };
-    }
-
-    private boolean checkLocationPermission() {
-        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION))
-                ActivityCompat.requestPermissions(getActivity(), new String[]{
-                        Manifest.permission.ACCESS_FINE_LOCATION
-                }, MY_PERMISSION_CODE);
-            else
-                ActivityCompat.requestPermissions(getActivity(), new String[]{
-                        Manifest.permission.ACCESS_FINE_LOCATION
-                }, MY_PERMISSION_CODE);
-            return false;
-        } else
-            return true;
     }
 
     @Override
@@ -369,11 +358,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, View
         DirectionsApiRequest directions = new DirectionsApiRequest(mGeoApiContext);
 
         directions.alternatives(true);
-        directions.origin(new com.google.maps.model.LatLng(
-                        latitude,
-                        longtitude
-                )
-        );
+        directions.origin(new com.google.maps.model.LatLng(MainActivity.latitude, MainActivity.longtitude));
 
         directions.destination(destination).setCallback(new PendingResult.Callback<DirectionsResult>() {
             @Override
@@ -444,5 +429,37 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, View
         LatLngBounds latLngBounds = boundsBuilder.build();
 
         mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, routePadding),600,null);
+    }
+
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        switch (parent.getId()){
+            case R.id.spinContextKieuXem:
+                if(position == 0)
+                    listDiaDiemTimKiem.setVisibility(View.VISIBLE);
+                else
+                    listDiaDiemTimKiem.setVisibility(View.GONE);
+
+                break;
+            case R.id.spinContextSapXep:
+                if (position == 0){
+                    if (adapterDiaDiemTimKiem != null){
+                        Collections.sort(diaDiems, new SortDiaDiem());
+                        adapterDiaDiemTimKiem.notifyDataSetChanged();
+                    }
+                }else {
+                    if (adapterDiaDiemTimKiem != null){
+                        Collections.sort(diaDiems, new SortDiaDiem());
+                        Collections.reverse(diaDiems);
+                        adapterDiaDiemTimKiem.notifyDataSetChanged();
+                    }
+                }
+                break;
+        }
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+
     }
 }

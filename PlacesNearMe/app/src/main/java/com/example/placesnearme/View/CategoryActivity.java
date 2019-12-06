@@ -76,8 +76,7 @@ public class CategoryActivity extends AppCompatActivity implements View.OnClickL
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 for (DocumentSnapshot doc : task.getResult()) {
-                    DanhMuc danhMuc = new DanhMuc(doc.getString("madanhmuc"),
-                            doc.getString("tendanhmuc"), doc.getString("hinhanh"), doc.toObject(DanhMucCha.class));
+                    DanhMuc danhMuc = doc.toObject(DanhMuc.class);
 
                     danhMucList.add(danhMuc);
                 }

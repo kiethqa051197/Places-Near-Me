@@ -27,16 +27,42 @@
     <string name="danghoatdong">Đang hoạt động</string>
     <string name="dongcua">Đóng cửa</string>
     <string name="tendiadiem">Trường Đại học Sư Phạm Kỹ Thuật TP. Hồ Chí Minh</string>
-    <string name="sodienthoai">Số điện thoại: 0373385547</string>
-    <string name="website">Website: http://abc.com</string>
+    <string name="sodienthoai">0373385547</string>
+    <string name="nhapwebsite">http://abc.com</string>
+    <string name="website">Trang web</string>
     <string name="danhgia">10 đánh giá</string>
     <string name="soanh">10 ảnh</string>
     <string name="hinhanh">Hình ảnh</string>
     <string name="diachi">Địa chỉ</string>
-    <string name="diachimau">273, Dinh Phong Phu, Distric 9, Ho Chi Minh City</string>
+    <string name="diachimau">1, Vo Van Ngan, Quan Thu Duc, Tp. Ho Chi Minh</string>
     <string name="danhmuc">Danh mục</string>
     <string name="thoigianhoatdong">Thời gian hoạt động</string>
     <string name="nhanxetdanhgia">Nhận xét và Đánh giá</string>
+    <string name="chupanh">Chụp ảnh</string>
+    <string name="chonanh">Chọn ảnh</string>
+    <string name="anhdiadiem">Ảnh địa điểm</string>
+    <string name="nhapthu2">Thứ Hai:</string>
+    <string name="nhapthu3">Thứ Ba:</string>
+    <string name="nhapthu4">Thứ Tư:</string>
+    <string name="nhapthu5">Thứ Năm:</string>
+    <string name="nhapthu6">Thứ Sáu:</string>
+    <string name="nhapthu7">Thứ Bảy:</string>
+    <string name="nhapchunhat">Chủ nhật:</string>
+    <string name="nhaptendiadiem">Tên địa điểm</string>
+    <string name="nhapsodienthoai">Số điện thoại</string>
+    <string name="thu2denthu6">Thứ 2 - Thứ 6:</string>
+    <string name="giomocua">Giờ mở cửa</string>
+    <string name="giodongcua">Giờ đóng cửa</string>
+    <string name="mocua24hsuottuan">Mở của 24h suốt tuần</string>
+    <string name="khongcodulieudehienthi">Không có dữ liệu để hiển thị</string>
+    <string name="khongcothoigianhoatdong">Không có thời gian hoạt động</string>
+    <string name="mocuatheolich">Mở cửa theo lịch</string>
+    <string name="mocua24h">Mở cửa 24h</string>
+    <string name="datgio">Đặt giờ</string>
+    <string name="khongmocua">Không mở cửa</string>
+    <string name="themdiadiem">Thêm địa điểm</string>
+    <string name="kieuxem">Kiểu xem:</string>
+    <string name="sapxep">Khoảng cách:</string>
 
     <string-array name="place_type">
         <item>accounting</item>
@@ -136,5 +162,15 @@
         <item>university</item>
         <item>veterinary_care</item>
         <item>zoo</item>
+    </string-array>
+
+    <string-array name="array_kieuxem">
+        <item>Danh sách</item>
+        <item>Bản đồ</item>
+    </string-array>
+
+    <string-array name="array_sapxep">
+        <item>Tăng dần</item>
+        <item>Giảm dần</item>
     </string-array>
 </resources>

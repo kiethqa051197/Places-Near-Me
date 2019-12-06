@@ -18,7 +18,7 @@
             android:orientation="horizontal"
             android:gravity="center">
 
-            <ImageView
+            <de.hdodenhof.circleimageview.CircleImageView
                 android:id="@+id/imgAvaUserReview"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
@@ -41,7 +41,7 @@
                     android:textColor="#000"/>
 
                 <RatingBar
-                    android:id="@+id/ratingBar"
+                    android:id="@+id/ratingBarReview"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     style="?android:attr/ratingBarStyleSmall"
@@ -54,13 +54,10 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:orientation="horizontal"
-                android:gravity="right"
-                android:layout_gravity="center">
-
-
+                android:gravity="end">
 
                 <ImageView
-                    android:id="@+id/imgFace"
+                    android:id="@+id/imgCamXuc"
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:src="@drawable/icon_normal_face"
