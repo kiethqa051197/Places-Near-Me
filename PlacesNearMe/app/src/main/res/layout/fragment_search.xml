@@ -8,47 +8,114 @@
         android:id="@+id/map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:layout_below="@+id/linearTong"
+        android:layout_marginBottom="50dp"/>
 
     <LinearLayout
-        android:id="@+id/linearTimKiem"
+        android:id="@+id/linearTong"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_margin="10dp"
-        android:background="@color/white"
-        android:gravity="center">
+        android:orientation="vertical"
+        android:background="@color/colorPrimaryDark"
+        android:padding="5dp">
 
-        <EditText
-            android:id="@+id/edSearch"
+        <LinearLayout
+            android:id="@+id/linearTimKiem"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:textColor="@android:color/black"
-            android:textSize="15sp"
-            android:hint="@string/timkiem"
-            android:gravity="left|center"
-            android:padding="10dp"
-            android:layout_weight="1"
-            android:background="@android:color/transparent"/>
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:background="@color/white"
+            android:gravity="center">
 
-        <ImageView
-            android:id="@+id/imgSearch"
-            android:layout_width="40dp"
+            <EditText
+                android:id="@+id/edSearch"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:textColor="@android:color/black"
+                android:textSize="15sp"
+                android:hint="@string/timkiem"
+                android:gravity="start|center"
+                android:padding="10dp"
+                android:layout_weight="1"
+                android:layout_gravity="center"
+                android:background="@android:color/transparent"/>
+
+            <ImageView
+                android:id="@+id/imgSearch"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/search"
+                android:padding="10dp"
+                android:layout_gravity="center"/>
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:background="@color/ratingLightGray"/>
+
+        <LinearLayout
+            android:id="@+id/linearSapXep"
+            android:layout_width="match_parent"
             android:layout_height="40dp"
-            android:src="@drawable/search"
-            android:padding="10dp"/>
+            android:background="@color/white"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:layout_gravity="center">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginStart="5dp"
+                    android:text="@string/sapxep" />
+
+                <Spinner
+                    android:id="@+id/spinContextSapXep"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:padding="5dp"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="right"
+                android:orientation="horizontal"
+                android:paddingRight="5dp"
+                android:layout_gravity="center">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginStart="5dp"
+                    android:text="@string/kieuxem" />
+
+                <Spinner
+                    android:id="@+id/spinContextKieuXem"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:padding="5dp"/>
+            </LinearLayout>
+        </LinearLayout>
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerTimKiem"
-        android:layout_below="@id/linearTimKiem"
+        android:layout_below="@id/linearTong"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="10dp"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
         android:layout_marginBottom="50dp"
-        android:padding="10dp"
-        android:background="@android:color/white"
-        android:visibility="gone"/>
+        android:padding="5dp"
+        android:background="@android:color/white"/>
 </RelativeLayout>

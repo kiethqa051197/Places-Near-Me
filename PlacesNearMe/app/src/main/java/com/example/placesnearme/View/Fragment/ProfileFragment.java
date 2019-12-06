@@ -71,6 +71,8 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
 
     private static final int RESULT_LOAD_IMAGE = 1;
 
+    private FirebaseUser user;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             View view = inflater.inflate(R.layout.fragment_profile, container, false);
@@ -78,13 +80,13 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
             db = FirebaseFirestore.getInstance();
             storageReference = FirebaseStorage.getInstance().getReference();
 
-            setupFirebaseAuth();
-
             prefUser = getActivity().getSharedPreferences("prefUser", 0);
             editorUser = prefUser.edit();
 
             prefFile = getActivity().getSharedPreferences("prefFile", 0);
             editorFile = prefFile.edit();
+
+            setupFirebaseAuth();
 
             imgAva = view.findViewById(R.id.imgAva);
             imgCamera = view.findViewById(R.id.imgCamera);
@@ -187,7 +189,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
+                user = firebaseAuth.getCurrentUser();
                 if (user != null){
                     String idUser = user.getUid();
                     loadData(idUser);
@@ -232,17 +234,24 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
                 .addOnSuccessListener(new OnSuccessListener < Void > () {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        Toast.makeText(getContext(), "Updated Successfully",
-                                Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "Updated Successfully", Toast.LENGTH_SHORT).show();
                     }
                 });
-
 
         db.collection("User").document(idUser)
                 .addSnapshotListener(new EventListener<DocumentSnapshot>() {
                     @Override
                     public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
-                        loadData(idUser);
+                        if (e != null){
+                            Toast.makeText(getContext(), "Có lỗi", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+
+                        if (documentSnapshot.exists()){
+                            edTenHienThi.setText(documentSnapshot.getString("username"));
+                            edEmail.setText(documentSnapshot.getString("email"));
+                            loadAvatar(documentSnapshot.getString("avatar"));
+                        }
                     }
                 });
     }
