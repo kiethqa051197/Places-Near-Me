@@ -79,11 +79,11 @@ public class AddPlaceFragment extends Fragment implements View.OnClickListener, 
 
     private List<Uri> uriList = new ArrayList<>();
     private List<String> fileNameList = new ArrayList<>();
-    private List<String> danhMucChaList = new ArrayList<>();
+    private List<DanhMucCha> danhMucChaList = new ArrayList<>();
     private List<String> danhMucDuocChonList = new ArrayList<>();
     private List<String> thoigianhoatdong = new ArrayList<>();
 
-    private ArrayAdapter<String> arrayAdapterDanhMuc;
+    private ArrayAdapter<DanhMucCha> arrayAdapterDanhMuc;
     private List<DanhMuc> danhMucList = new ArrayList<>();
 
     private String danhMucDuocChon, gioMoCuaThu7, gioDongCuaThu7, gioMoCuaChuNhat, gioDongCuaChuNhat,
@@ -142,8 +142,7 @@ public class AddPlaceFragment extends Fragment implements View.OnClickListener, 
         linearChonGio.setVisibility(View.GONE);
 
         layDanhMucCha();
-
-        arrayAdapterDanhMuc = new ArrayAdapter<String>(getContext(), android.R.layout.simple_list_item_1, danhMucChaList);
+        arrayAdapterDanhMuc = new ArrayAdapter<DanhMucCha>(getContext(), android.R.layout.simple_list_item_1, danhMucChaList);
 
         spinDanhMucCha.setAdapter(arrayAdapterDanhMuc);
         arrayAdapterDanhMuc.notifyDataSetChanged();
@@ -240,7 +239,7 @@ public class AddPlaceFragment extends Fragment implements View.OnClickListener, 
                 for (DocumentSnapshot doc : task.getResult()) {
                     DanhMucCha danhMucCha = doc.toObject(DanhMucCha.class);
 
-                    danhMucChaList.add(danhMucCha.getTendanhmuc());
+                    danhMucChaList.add(danhMucCha);
                 }
                 arrayAdapterDanhMuc.notifyDataSetChanged();
             }
@@ -252,11 +251,11 @@ public class AddPlaceFragment extends Fragment implements View.OnClickListener, 
         });
     }
 
-    private void layDanhMuc(String tendanhmuc) {
+    private void layDanhMuc(String madanhmuc) {
         danhMucList.clear();
         khungDanhMuc.removeAllViews();
 
-        db.collection("Danh Muc").whereEqualTo("Danh Muc Cha.tendanhmuc", tendanhmuc)
+        db.collection("Danh Muc").whereEqualTo("Danh Muc Cha.madanhmuc", madanhmuc)
                 .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -543,7 +542,7 @@ public class AddPlaceFragment extends Fragment implements View.OnClickListener, 
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         switch (parent.getId()){
             case R.id.spinDanhMucCha:
-                danhMucDuocChon = danhMucChaList.get(position);
+                danhMucDuocChon = danhMucChaList.get(position).getMadanhmuc();
 
                 layDanhMuc(danhMucDuocChon);
                 break;
