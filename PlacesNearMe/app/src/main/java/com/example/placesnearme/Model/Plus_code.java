@@ -24,10 +24,4 @@ public class Plus_code {
     {
         this.global_code = global_code;
     }
-
-    @Override
-    public String toString()
-    {
-        return "ClassPojo [compound_code = "+compound_code+", global_code = "+global_code+"]";
-    }
 }

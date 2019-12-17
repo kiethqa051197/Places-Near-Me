@@ -3,11 +3,12 @@ package com.example.placesnearme.Model.Firebase;
 import com.google.firebase.firestore.GeoPoint;
 
 import java.util.List;
+import java.util.Map;
 
 public class DiaDiem {
     List<String> danhmuc;
     List<String> hinhanh;
-    List<String> thoigianhoatdong;
+    List<Map<String, Object>> thoigianhoatdong;
     String diachi;
     GeoPoint location;
     String madiadiem;
@@ -17,7 +18,7 @@ public class DiaDiem {
 
     public DiaDiem() { }
 
-    public DiaDiem(List<String> danhmuc, List<String> hinhanh, List<String> thoigianhoatdong, String diachi,
+    public DiaDiem(List<String> danhmuc, List<String> hinhanh, List<Map<String, Object>> thoigianhoatdong, String diachi,
                    GeoPoint location, String madiadiem, String tendiadiem, String website, String dienthoai) {
         this.danhmuc = danhmuc;
         this.hinhanh = hinhanh;
@@ -46,11 +47,11 @@ public class DiaDiem {
         this.hinhanh = hinhanh;
     }
 
-    public List<String> getThoigianhoatdong() {
+    public List<Map<String, Object>> getThoigianhoatdong() {
         return thoigianhoatdong;
     }
 
-    public void setThoigianhoatdong(List<String> thoigianhoatdong) {
+    public void setThoigianhoatdong(List<Map<String, Object>> thoigianhoatdong) {
         this.thoigianhoatdong = thoigianhoatdong;
     }
 

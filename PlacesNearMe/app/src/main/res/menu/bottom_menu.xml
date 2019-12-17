@@ -3,29 +3,21 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/action_category"
-        android:enabled="true"
         android:title="Danh mục"
-        android:icon="@drawable/category"
-        app:showAsAction="ifRoom" />
+        android:icon="@drawable/category"/>
 
     <item
         android:id="@+id/action_search"
-        android:enabled="true"
         android:title="Tìm kiếm"
-        android:icon="@drawable/search"
-        app:showAsAction="ifRoom"/>
+        android:icon="@drawable/search"/>
 
     <item
         android:id="@+id/action_add_place"
-        android:enabled="true"
         android:title="@string/themdiadiem"
-        android:icon="@drawable/ic_add_black_24dp"
-        app:showAsAction="ifRoom"/>
+        android:icon="@drawable/ic_add_black_24dp"/>
 
     <item
         android:id="@+id/action_user"
-        android:enabled="true"
         android:title="Cá nhân"
-        android:icon="@drawable/user"
-        app:showAsAction="ifRoom"/>
+        android:icon="@drawable/user"/>
 </menu>

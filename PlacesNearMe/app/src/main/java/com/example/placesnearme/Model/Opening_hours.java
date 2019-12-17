@@ -36,10 +36,4 @@ public class Opening_hours {
     {
         this.weekday_text = weekday_text;
     }
-
-    @Override
-    public String toString()
-    {
-        return "ClassPojo [open_now = "+open_now+", periods = "+periods+", weekday_text = "+weekday_text+"]";
-    }
 }

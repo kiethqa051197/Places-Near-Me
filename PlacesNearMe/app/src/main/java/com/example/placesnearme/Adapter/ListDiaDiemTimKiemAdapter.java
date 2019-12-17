@@ -3,8 +3,9 @@ package com.example.placesnearme.Adapter;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.Location;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,10 +24,14 @@ import com.example.placesnearme.R;
 import com.example.placesnearme.View.DetailPlacesActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,13 +61,13 @@ class ListDiaDiemTimKiemViewHolder extends RecyclerView.ViewHolder{
 }
 
 public class ListDiaDiemTimKiemAdapter extends RecyclerView.Adapter<ListDiaDiemTimKiemViewHolder>{
-    List<DiaDiem> diaDiemList;
-    double lat;
-    double lng;
-    Context context;
+    private List<DiaDiem> diaDiemList;
+    private double lat;
+    private double lng;
+    private Context context;
 
-    SharedPreferences pref;
-    SharedPreferences.Editor editor;
+    private SharedPreferences pref;
+    private SharedPreferences.Editor editor;
 
     public ListDiaDiemTimKiemAdapter(List<DiaDiem> diaDiemList, double lat, double lng) {
         this.diaDiemList = diaDiemList;
@@ -97,6 +102,27 @@ public class ListDiaDiemTimKiemAdapter extends RecyclerView.Adapter<ListDiaDiemT
 
         final double distance = locationCurrent.distanceTo(locationSelected) / 1000;
         holder.txtKm.setText(String.format("%.1f km", distance));
+
+        if(diaDiem.getHinhanh().size() > 0){
+            if (diaDiem.getHinhanh().get(0).substring(0, diaDiem.getHinhanh().get(0).indexOf(":")).equals("https")){
+                Picasso.get()
+                        .load(diaDiem.getHinhanh().get(0))
+                        .placeholder(R.drawable.img_loading)
+                        .into(holder.imgDanhMuc);
+            }else {
+                StorageReference storageImgProductType = FirebaseStorage.getInstance().getReference().child("Images")
+                        .child(diaDiem.getMadiadiem()).child(diaDiem.getHinhanh().get(0));
+
+                long ONE_MEGABYTE = 1024 * 1024;
+                storageImgProductType.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                    @Override
+                    public void onSuccess(byte[] bytes) {
+                        Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                        holder.imgDanhMuc.setImageBitmap(bitmap);
+                    }
+                });
+            }
+        }
 
         holder.db.collection("Danh Gia").document(diaDiem.getMadiadiem()).collection("Reviews").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override

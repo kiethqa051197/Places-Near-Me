@@ -24,10 +24,4 @@ public class Periods {
     {
         this.open = open;
     }
-
-    @Override
-    public String toString()
-    {
-        return "ClassPojo [close = "+close+", open = "+open+"]";
-    }
 }

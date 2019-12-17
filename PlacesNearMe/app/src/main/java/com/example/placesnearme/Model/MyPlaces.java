@@ -48,10 +48,4 @@ public class MyPlaces {
     {
         this.status = status;
     }
-
-    @Override
-    public String toString()
-    {
-        return "ClassPojo [next_page_token = "+next_page_token+", html_attributions = "+html_attributions+", results = "+results+", status = "+status+"]";
-    }
 }

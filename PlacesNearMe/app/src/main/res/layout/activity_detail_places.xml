@@ -5,6 +5,12 @@
     android:orientation="vertical"
     android:background="#10000000">
 
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="@color/colorPrimaryDark"/>
+
     <androidx.core.widget.NestedScrollView
         android:layout_width="fill_parent"
         android:layout_height="wrap_content">
@@ -340,15 +346,71 @@
                     android:layout_marginStart="10dp"
                     android:layout_marginTop="10dp"/>
 
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <RatingBar
+                        android:id="@+id/rating"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center|bottom"
+                        android:max="5"
+                        android:numStars="5"
+                        android:saveEnabled="true"
+                        android:theme="@style/RatingBar"/>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <de.hdodenhof.circleimageview.CircleImageView
+                            android:id="@+id/imgAva"
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:src="@drawable/ava_man"
+                            android:padding="5dp"/>
+
+                        <EditText
+                            android:id="@+id/edBinhLuan"
+                            android:layout_width="0dp"
+                            android:layout_height="50dp"
+                            android:hint="Binh luan"
+                            android:padding="5dp"
+                            android:background="#10000000"
+                            android:layout_weight="1"/>
+
+                        <TextView
+                            android:id="@+id/txtDangBinhLuan"
+                            android:layout_width="50dp"
+                            android:layout_height="50dp"
+                            android:text="Đăng"
+                            android:textSize="15sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/colorPrimaryDark"
+                            android:textAllCaps="false"
+                            android:padding="5dp"/>
+                    </LinearLayout>
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tat ca nhan xet:"
+                    android:layout_margin="10dp"/>
+
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/recyclerReview"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:nestedScrollingEnabled="false"
-                    android:padding="5dp"
-                    android:background="#10000000"
-                    android:layout_margin="10dp"/>
+                    android:padding="10dp"/>
             </LinearLayout>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

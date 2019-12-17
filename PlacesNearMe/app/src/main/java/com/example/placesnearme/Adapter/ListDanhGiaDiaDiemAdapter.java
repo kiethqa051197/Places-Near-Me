@@ -72,21 +72,21 @@ public class ListDanhGiaDiaDiemAdapter extends RecyclerView.Adapter<ListDanhGiaD
 
         holder.ratingBarReview.setRating(danhgia);
 
-        if (danhgia > 4)
+        if (danhgia >= 4)
             holder.imgCamXuc.setImageResource(R.drawable.icon_happy_face);
         else if (danhgia < 2)
             holder.imgCamXuc.setImageResource(R.drawable.icon_sad_face);
         else
             holder.imgCamXuc.setImageResource(R.drawable.icon_normal_face);
 
-        if (review.getHinhanhnguoireview().substring(0, review.getHinhanhnguoireview().indexOf(":")).equals("https")){
+        if (review.getManguoireview().equals("")){
             Picasso.get()
                     .load(review.getHinhanhnguoireview())
                     .placeholder(R.drawable.img_loading)
                     .into(holder.imgAvaUserReview);
         }else {
-            StorageReference storageImgProductType = FirebaseStorage.getInstance().getReference().child("Images")
-                    .child(madiadiem).child(review.getHinhanhnguoireview());
+            StorageReference storageImgProductType = FirebaseStorage.getInstance().getReference().child("Avatar")
+                    .child(review.getManguoireview()).child(review.getHinhanhnguoireview());
 
             long ONE_MEGABYTE = 1024 * 1024;
             storageImgProductType.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {

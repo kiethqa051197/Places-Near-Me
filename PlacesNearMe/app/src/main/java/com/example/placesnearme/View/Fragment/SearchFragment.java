@@ -88,7 +88,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, View
     private List<DanhMuc> danhMucs = new ArrayList<>();
     private ArrayList<Marker> mTripMarkers = new ArrayList<>();
     private ArrayList<PolylineData> mPolylinesData = new ArrayList<>();
-    List<String> kieuxems, sapxeps;
+    private List<String> kieuxems, sapxeps;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -240,6 +240,8 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, View
         danhMucs.clear();
         diaDiems.clear();
 
+        resetSelectedMarker();
+
         if (adapterDiaDiemTimKiem != null){
             adapterDiaDiemTimKiem.notifyDataSetChanged();
         }
@@ -262,6 +264,8 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, View
     }
 
     private void danhsach(String madanhmuc){
+        mMap.clear();
+
         db.collection("Dia Diem").whereArrayContains("danhmuc", madanhmuc).get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                     @Override

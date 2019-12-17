@@ -1,9 +1,7 @@
 package com.example.placesnearme.Adapter;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -51,23 +49,26 @@ public class ListHinhAnhDiaDiemAdapter extends RecyclerView.Adapter<ListHinhAnhD
     @Override
     public void onBindViewHolder(@NonNull final ListHinhAnhDiaDiemViewHolder holder, final int position) {
         String hinhanh = hinhanhs.get(position);
-        if (hinhanh.substring(0, hinhanh.indexOf(":")).equals("https")){
-            Picasso.get()
-                    .load(hinhanh)
-                    .placeholder(R.drawable.img_loading)
-                    .into(holder.imgDiaDiem);
-        }else {
-            StorageReference storageImgProductType = FirebaseStorage.getInstance().getReference().child("Images")
-                    .child(madiadiem).child(hinhanh);
 
-            long ONE_MEGABYTE = 1024 * 1024;
-            storageImgProductType.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
-                @Override
-                public void onSuccess(byte[] bytes) {
-                    Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                    holder.imgDiaDiem.setImageBitmap(bitmap);
-                }
-            });
+        if (hinhanhs.size() > 0){
+            if (hinhanh.substring(0, hinhanh.indexOf(":")).equals("https")){
+                Picasso.get()
+                        .load(hinhanh)
+                        .placeholder(R.drawable.img_loading)
+                        .into(holder.imgDiaDiem);
+            }else {
+                StorageReference storageImgProductType = FirebaseStorage.getInstance().getReference().child("Images")
+                        .child(madiadiem).child(hinhanh);
+
+                long ONE_MEGABYTE = 1024 * 1024;
+                storageImgProductType.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                    @Override
+                    public void onSuccess(byte[] bytes) {
+                        Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                        holder.imgDiaDiem.setImageBitmap(bitmap);
+                    }
+                });
+            }
         }
     }
 

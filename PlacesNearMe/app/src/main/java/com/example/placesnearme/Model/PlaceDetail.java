@@ -36,10 +36,4 @@ public class PlaceDetail {
     {
         this.status = status;
     }
-
-    @Override
-    public String toString()
-    {
-        return "ClassPojo [result = "+result+", html_attributions = "+html_attributions+", status = "+status+"]";
-    }
 }

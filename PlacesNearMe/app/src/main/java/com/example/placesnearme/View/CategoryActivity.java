@@ -35,7 +35,7 @@ public class CategoryActivity extends AppCompatActivity implements View.OnClickL
     private FirebaseFirestore db;
 
     private RecyclerView.LayoutManager layoutManager;
-    private List<DanhMuc> danhMucList;
+    private List<DanhMuc> danhMucList = new ArrayList<>();
 
     private ImageView imgBack;
     private TextView txtTenDanhMuc;
@@ -67,9 +67,7 @@ public class CategoryActivity extends AppCompatActivity implements View.OnClickL
     }
 
     private void loadCategory() {
-        danhMucList = new ArrayList<>();
-        if (danhMucList.size() > 0)
-            danhMucList.clear();
+        danhMucList.clear();
 
         db.collection("Danh Muc").whereEqualTo("Danh Muc Cha.madanhmuc", prefCategory.getString("maDanhMucCha", ""))
                 .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -82,6 +80,7 @@ public class CategoryActivity extends AppCompatActivity implements View.OnClickL
                 }
 
                 adapterDanhMuc = new ListDanhMucAdapter(danhMucList);
+                adapterDanhMuc.notifyDataSetChanged();
                 listDanhMuc.setAdapter(adapterDanhMuc);
             }
         }).addOnFailureListener(new OnFailureListener() {

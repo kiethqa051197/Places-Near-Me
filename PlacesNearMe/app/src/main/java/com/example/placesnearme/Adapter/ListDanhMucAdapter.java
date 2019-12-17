@@ -1,6 +1,8 @@
 package com.example.placesnearme.Adapter;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -16,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.placesnearme.Model.Firebase.DanhMuc;
 import com.example.placesnearme.R;
+import com.example.placesnearme.View.SearchResultActivity;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -84,6 +87,9 @@ public class ListDanhMucAdapter extends RecyclerView.Adapter<ListDanhMucViewHold
                 editor.putString("maDanhMuc", danhMuc.getMadanhmuc());
                 editor.putString("tenDanhMuc", danhMuc.getTendanhmuc());
                 editor.commit();
+
+                Intent intent = new Intent(context, SearchResultActivity.class);
+                context.startActivity(intent);
             }
         });
     }

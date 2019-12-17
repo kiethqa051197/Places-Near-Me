@@ -36,10 +36,4 @@ public class Address_components {
     {
         this.long_name = long_name;
     }
-
-    @Override
-    public String toString()
-    {
-        return "ClassPojo [types = "+types+", short_name = "+short_name+", long_name = "+long_name+"]";
-    }
 }
