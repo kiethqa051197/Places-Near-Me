@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Places Near Me</string>
-    <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">AIzaSyCHXskobrWfXIqL4RmS2ZlU5SFtHIKyrG8</string>
+    <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">AIzaSyDzvgBl7U7vNOc-Fv2M_u6cOFpCdrUJU5U</string>
     <string name="xinchao">Xin chào, </string>
     <string name="timkiem">Bạn tìm gì hôm nay?</string>
     <string name="tendanhmuc">Tên danh mục</string>
@@ -36,11 +36,13 @@
     <string name="diachi">Địa chỉ</string>
     <string name="diachimau">1, Vo Van Ngan, Quan Thu Duc, Tp. Ho Chi Minh</string>
     <string name="danhmuc">Danh mục</string>
+    <string name="themdanhmuc">Chọn lại danh mục</string>
     <string name="thoigianhoatdong">Thời gian hoạt động</string>
     <string name="nhanxetdanhgia">Nhận xét và Đánh giá</string>
     <string name="chupanh">Chụp ảnh</string>
     <string name="chonanh">Chọn ảnh</string>
     <string name="anhdiadiem">Ảnh địa điểm</string>
+    <string name="themanhdiadiem">Thêm ảnh địa điểm</string>
     <string name="nhapthu2">Thứ Hai:</string>
     <string name="nhapthu3">Thứ Ba:</string>
     <string name="nhapthu4">Thứ Tư:</string>
@@ -57,12 +59,13 @@
     <string name="khongcodulieudehienthi">Không có dữ liệu để hiển thị</string>
     <string name="khongcothoigianhoatdong">Không có thời gian hoạt động</string>
     <string name="mocuatheolich">Mở cửa theo lịch</string>
-    <string name="mocua24h">Mở cửa 24h</string>
+    <string name="mocua24h">Mở cửa cả ngày</string>
     <string name="datgio">Đặt giờ</string>
     <string name="khongmocua">Không mở cửa</string>
-    <string name="themdiadiem">Thêm địa điểm</string>
+    <string name="themdiadiem">Thêm địa điểm mới</string>
     <string name="kieuxem">Kiểu xem:</string>
     <string name="sapxep">Khoảng cách:</string>
+    <string name="capnhatdiadiem">cập nhật địa điểm</string>
 
     <string-array name="place_type">
         <item>accounting</item>

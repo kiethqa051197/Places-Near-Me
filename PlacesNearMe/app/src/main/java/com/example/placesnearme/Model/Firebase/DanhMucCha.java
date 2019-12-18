@@ -37,4 +37,9 @@ public class DanhMucCha {
     public void setHinhanh(String hinhanh) {
         this.hinhanh = hinhanh;
     }
+
+    @Override
+    public String toString() {
+        return tendanhmuc;
+    }
 }

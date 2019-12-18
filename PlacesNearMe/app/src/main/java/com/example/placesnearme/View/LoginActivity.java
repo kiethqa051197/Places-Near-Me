@@ -25,8 +25,6 @@ import static android.text.TextUtils.isEmpty;
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener{
 
-    ImageView imgBackgroundLogin;
-
     //Firebase
     private FirebaseAuth.AuthStateListener mAuthListener;
 

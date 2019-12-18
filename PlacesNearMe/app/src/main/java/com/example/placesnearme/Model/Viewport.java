@@ -24,10 +24,4 @@ public class Viewport {
     {
         this.northeast = northeast;
     }
-
-    @Override
-    public String toString()
-    {
-        return "ClassPojo [southwest = "+southwest+", northeast = "+northeast+"]";
-    }
 }

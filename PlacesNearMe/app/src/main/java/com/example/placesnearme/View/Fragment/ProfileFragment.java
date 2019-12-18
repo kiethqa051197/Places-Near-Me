@@ -206,10 +206,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 for (DocumentSnapshot doc : task.getResult()) {
-                    User userModel = new User(doc.getString("mauser"),
-                            doc.getString("email"),
-                            doc.getString("avatar"),
-                            doc.getString("username"));
+                    User userModel = doc.toObject(User.class);
 
                     users.add(userModel);
                 }
@@ -257,7 +254,8 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
     }
 
     private void loadAvatar(String ava){
-        StorageReference storageImgProductType = FirebaseStorage.getInstance().getReference().child("Avatar").child(prefUser.getString("uid", ""))
+        StorageReference storageImgProductType = storageReference.child("Avatar")
+                .child(prefUser.getString("uid", ""))
                 .child(ava);
 
         long ONE_MEGABYTE = 1024 * 1024;
@@ -280,7 +278,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
     }
 
     private void luuClick(){
-        updateData(prefUser.getString("uid", ""), prefFile.getString("filename", ""));
+        updateData(prefUser.getString("uid", ""), prefFile.getString("filename", "ava_man.png"));
 
         edTenHienThi.setEnabled(false);
 

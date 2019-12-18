@@ -1,12 +1,15 @@
 package com.example.placesnearme.View.Fragment;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.TimePickerDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.OpenableColumns;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -35,6 +38,7 @@ import com.example.placesnearme.Model.Firebase.DanhMuc;
 import com.example.placesnearme.Model.Firebase.DanhMucCha;
 import com.example.placesnearme.Model.Firebase.DiaDiem;
 import com.example.placesnearme.R;
+import com.example.placesnearme.View.DetailPlacesActivity;
 import com.example.placesnearme.View.MainActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -43,17 +47,21 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
@@ -79,11 +87,11 @@ public class AddPlaceFragment extends Fragment implements View.OnClickListener, 
 
     private List<Uri> uriList = new ArrayList<>();
     private List<String> fileNameList = new ArrayList<>();
-    private List<String> danhMucChaList = new ArrayList<>();
+    private List<DanhMucCha> danhMucChaList = new ArrayList<>();
     private List<String> danhMucDuocChonList = new ArrayList<>();
-    private List<String> thoigianhoatdong = new ArrayList<>();
+    private List<Map<String, Object>> thoigianhoatdong = new ArrayList<>();
 
-    private ArrayAdapter<String> arrayAdapterDanhMuc;
+    private ArrayAdapter<DanhMucCha> arrayAdapterDanhMuc;
     private List<DanhMuc> danhMucList = new ArrayList<>();
 
     private String danhMucDuocChon, gioMoCuaThu7, gioDongCuaThu7, gioMoCuaChuNhat, gioDongCuaChuNhat,
@@ -91,6 +99,9 @@ public class AddPlaceFragment extends Fragment implements View.OnClickListener, 
 
     private boolean hoatdong24h = false, khongcothoigianhoatdong = true, hoatdong24hthu2thu6, khonghoatdongthu2thu6,
             hoatdong24hthu7, khonghoatdongthu7, hoatdong24hchunhat, khonghoatdongchunhat;
+
+    private SharedPreferences preferences, preferencesDiaDiem;
+    private SharedPreferences.Editor editor;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -103,6 +114,11 @@ public class AddPlaceFragment extends Fragment implements View.OnClickListener, 
 
         db = FirebaseFirestore.getInstance();
         storageReference = FirebaseStorage.getInstance().getReference();
+
+        preferences = getActivity().getSharedPreferences("prefEdit", 0);
+        editor = preferences.edit();
+
+        preferencesDiaDiem = getActivity().getSharedPreferences("prefMaDiaDiem", 0);
 
         btnThemDiaDiem = view.findViewById(R.id.btnThemDiaDiem);
         btnChonAnh = view.findViewById(R.id.btnChonAnh);
@@ -142,8 +158,7 @@ public class AddPlaceFragment extends Fragment implements View.OnClickListener, 
         linearChonGio.setVisibility(View.GONE);
 
         layDanhMucCha();
-
-        arrayAdapterDanhMuc = new ArrayAdapter<String>(getContext(), android.R.layout.simple_list_item_1, danhMucChaList);
+        arrayAdapterDanhMuc = new ArrayAdapter<DanhMucCha>(getContext(), android.R.layout.simple_list_item_1, danhMucChaList);
 
         spinDanhMucCha.setAdapter(arrayAdapterDanhMuc);
         arrayAdapterDanhMuc.notifyDataSetChanged();
@@ -240,7 +255,7 @@ public class AddPlaceFragment extends Fragment implements View.OnClickListener, 
                 for (DocumentSnapshot doc : task.getResult()) {
                     DanhMucCha danhMucCha = doc.toObject(DanhMucCha.class);
 
-                    danhMucChaList.add(danhMucCha.getTendanhmuc());
+                    danhMucChaList.add(danhMucCha);
                 }
                 arrayAdapterDanhMuc.notifyDataSetChanged();
             }
@@ -252,11 +267,11 @@ public class AddPlaceFragment extends Fragment implements View.OnClickListener, 
         });
     }
 
-    private void layDanhMuc(String tendanhmuc) {
+    private void layDanhMuc(String madanhmuc) {
         danhMucList.clear();
         khungDanhMuc.removeAllViews();
 
-        db.collection("Danh Muc").whereEqualTo("Danh Muc Cha.tendanhmuc", tendanhmuc)
+        db.collection("Danh Muc").whereEqualTo("Danh Muc Cha.madanhmuc", madanhmuc)
                 .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -326,64 +341,97 @@ public class AddPlaceFragment extends Fragment implements View.OnClickListener, 
                 if (!documentSnapshot.exists()){
                     final DiaDiem diaDiem = new DiaDiem();
 
-                    GeoPoint location = new GeoPoint(MainActivity.latitude, MainActivity.longtitude);
+                    final GeoPoint location = new GeoPoint(MainActivity.latitude, MainActivity.longtitude);
 
                     if (hoatdong24h){
                         thoigianhoatdong.clear();
 
-                        thoigianhoatdong.add(getString(R.string.nhapthu2) + " " + getString(R.string.mocua24h));
-                        thoigianhoatdong.add(getString(R.string.nhapthu3) + " " + getString(R.string.mocua24h));
-                        thoigianhoatdong.add(getString(R.string.nhapthu4) + " " + getString(R.string.mocua24h));
-                        thoigianhoatdong.add(getString(R.string.nhapthu5) + " " + getString(R.string.mocua24h));
-                        thoigianhoatdong.add(getString(R.string.nhapthu6) + " " + getString(R.string.mocua24h));
-                        thoigianhoatdong.add(getString(R.string.nhapthu7) + " " + getString(R.string.mocua24h));
-                        thoigianhoatdong.add(getString(R.string.nhapchunhat) + " " + getString(R.string.mocua24h));
+                        Map<String, Object> map = new HashMap<>();
+
+                        for (int i = 0; i < 7; i++){
+                            map.put("mocua", getString(R.string.mocua24h));
+                            map.put("dongcua", getString(R.string.mocua24h));
+
+                            thoigianhoatdong.add(map);
+                        }
+
                     }else if(khongcothoigianhoatdong){
                         thoigianhoatdong.clear();
 
-                        thoigianhoatdong.add(getString(R.string.nhapthu2) + " " + getString(R.string.khongcothoigianhoatdong));
-                        thoigianhoatdong.add(getString(R.string.nhapthu3) + " " + getString(R.string.khongcothoigianhoatdong));
-                        thoigianhoatdong.add(getString(R.string.nhapthu4) + " " + getString(R.string.khongcothoigianhoatdong));
-                        thoigianhoatdong.add(getString(R.string.nhapthu5) + " " + getString(R.string.khongcothoigianhoatdong));
-                        thoigianhoatdong.add(getString(R.string.nhapthu6) + " " + getString(R.string.khongcothoigianhoatdong));
-                        thoigianhoatdong.add(getString(R.string.nhapthu7) + " " + getString(R.string.khongcothoigianhoatdong));
-                        thoigianhoatdong.add(getString(R.string.nhapchunhat) + " " + getString(R.string.khongcothoigianhoatdong));
+                        Map<String, Object> map = new HashMap<>();
+
+                        for (int i = 0; i < 7; i++){
+                            map.put("mocua", getString(R.string.khongcothoigianhoatdong));
+                            map.put("dongcua", getString(R.string.khongcothoigianhoatdong));
+
+                            thoigianhoatdong.add(map);
+                        }
                     }else{
                         thoigianhoatdong.clear();
 
+                        Map<String, Object> mapthu2 = new HashMap<>();
+
                         if (hoatdong24hthu2thu6){
-                            thoigianhoatdong.add(getString(R.string.nhapthu2) + " " + getString(R.string.mocua24h));
-                            thoigianhoatdong.add(getString(R.string.nhapthu3) + " " + getString(R.string.mocua24h));
-                            thoigianhoatdong.add(getString(R.string.nhapthu4) + " " + getString(R.string.mocua24h));
-                            thoigianhoatdong.add(getString(R.string.nhapthu5) + " " + getString(R.string.mocua24h));
-                            thoigianhoatdong.add(getString(R.string.nhapthu6) + " " + getString(R.string.mocua24h));
+                            for (int i = 0; i < 5; i++){
+                                mapthu2.put("mocua", getString(R.string.mocua24h));
+                                mapthu2.put("dongcua", getString(R.string.mocua24h));
+
+                                thoigianhoatdong.add(mapthu2);
+                            }
                         }else if (khonghoatdongthu2thu6){
-                            thoigianhoatdong.add(getString(R.string.nhapthu2) + " " + getString(R.string.khongmocua));
-                            thoigianhoatdong.add(getString(R.string.nhapthu3) + " " + getString(R.string.khongmocua));
-                            thoigianhoatdong.add(getString(R.string.nhapthu4) + " " + getString(R.string.khongmocua));
-                            thoigianhoatdong.add(getString(R.string.nhapthu5) + " " + getString(R.string.khongmocua));
-                            thoigianhoatdong.add(getString(R.string.nhapthu6) + " " + getString(R.string.khongmocua));
+                            for (int i = 0; i < 5; i++){
+                                mapthu2.put("mocua", getString(R.string.khongmocua));
+                                mapthu2.put("dongcua", getString(R.string.khongmocua));
+
+                                thoigianhoatdong.add(mapthu2);
+                            }
                         }else{
-                            thoigianhoatdong.add(getString(R.string.nhapthu2) + " " + gioMoCuaThu2Thu6 + " - " + gioDongCuaThu2Thu6);
-                            thoigianhoatdong.add(getString(R.string.nhapthu3) + " " + gioMoCuaThu2Thu6 + " - " + gioDongCuaThu2Thu6);
-                            thoigianhoatdong.add(getString(R.string.nhapthu4) + " " + gioMoCuaThu2Thu6 + " - " + gioDongCuaThu2Thu6);
-                            thoigianhoatdong.add(getString(R.string.nhapthu5) + " " + gioMoCuaThu2Thu6 + " - " + gioDongCuaThu2Thu6);
-                            thoigianhoatdong.add(getString(R.string.nhapthu6) + " " + gioMoCuaThu2Thu6 + " - " + gioDongCuaThu2Thu6);
+                            for (int i = 0; i < 5; i++){
+                                mapthu2.put("mocua", gioMoCuaThu2Thu6);
+                                mapthu2.put("dongcua", gioDongCuaThu2Thu6);
+
+                                thoigianhoatdong.add(mapthu2);
+                            }
                         }
 
-                        if (hoatdong24hthu7)
-                            thoigianhoatdong.add(getString(R.string.nhapthu7) + " " + getString(R.string.mocua24h));
-                        else if(khonghoatdongthu7)
-                            thoigianhoatdong.add(getString(R.string.nhapthu7) + " " + getString(R.string.khongmocua));
-                        else
-                            thoigianhoatdong.add(getString(R.string.nhapthu7) + " " + gioMoCuaThu7 + " - " + gioDongCuaThu7);
+                        Map<String, Object> mapThu7 = new HashMap<>();
 
-                        if (hoatdong24hchunhat)
-                            thoigianhoatdong.add(getString(R.string.nhapchunhat) + " " + getString(R.string.mocua24h));
-                        else if(khonghoatdongchunhat)
-                            thoigianhoatdong.add(getString(R.string.nhapchunhat) + " " + getString(R.string.khongmocua));
-                        else
-                            thoigianhoatdong.add(getString(R.string.nhapchunhat) + " " + gioMoCuaChuNhat + " - " + gioDongCuaChuNhat);
+                        if (hoatdong24hthu7){
+                            mapThu7.put("mocua", getString(R.string.mocua24h));
+                            mapThu7.put("dongcua", getString(R.string.mocua24h));
+
+                            thoigianhoatdong.add(mapThu7);
+                        } else if(khonghoatdongthu7){
+                            mapThu7.put("mocua", getString(R.string.khongmocua));
+                            mapThu7.put("dongcua", getString(R.string.khongmocua));
+
+                            thoigianhoatdong.add(mapThu7);
+                        } else {
+                            mapThu7.put("mocua", gioMoCuaThu7);
+                            mapThu7.put("dongcua", gioDongCuaThu7);
+
+                            thoigianhoatdong.add(mapThu7);
+                        }
+
+                        Map<String, Object> mapChuNhat = new HashMap<>();
+
+                        if (hoatdong24hchunhat){
+                            mapChuNhat.put("mocua", getString(R.string.mocua24h));
+                            mapChuNhat.put("dongcua", getString(R.string.mocua24h));
+
+                            thoigianhoatdong.add(mapChuNhat);
+                        }
+                        else if(khonghoatdongchunhat){
+                            mapChuNhat.put("mocua", getString(R.string.khongmocua));
+                            mapChuNhat.put("dongcua", getString(R.string.khongmocua));
+
+                            thoigianhoatdong.add(mapChuNhat);
+                        } else {
+                            mapChuNhat.put("mocua", gioMoCuaChuNhat);
+                            mapChuNhat.put("dongcua", gioDongCuaChuNhat);
+
+                            thoigianhoatdong.add(mapChuNhat);
+                        }
                     }
 
                     if(!edTenDiaDiem.getText().toString().equals("")){
@@ -404,6 +452,14 @@ public class AddPlaceFragment extends Fragment implements View.OnClickListener, 
                                     public void onSuccess(Void aVoid) {
                                         btnThemDiaDiem.setEnabled(false);
 
+                                        fileNameList.clear();
+                                        edTenDiaDiem.setText("");
+                                        edWebsite.setText("");
+                                        danhMucDuocChonList.clear();
+                                        edSoDienThoai.setText("");
+                                        thoigianhoatdong.clear();
+                                        edDiaChi.setText("");
+
                                         Toast.makeText(getContext(), "Thêm thành công", Toast.LENGTH_SHORT).show();
 
                                         for (int j = 0; j < uriList.size(); j++){
@@ -420,6 +476,8 @@ public class AddPlaceFragment extends Fragment implements View.OnClickListener, 
                                                 }
                                             });
                                         }
+
+                                        uriList.clear();
                                     }
                                 }).addOnFailureListener(new OnFailureListener() {
                                     @Override
@@ -439,6 +497,162 @@ public class AddPlaceFragment extends Fragment implements View.OnClickListener, 
                 }
             }
         });
+    }
+
+    private void CapNhatDiaDiem(final String madiadiem){
+        final DocumentReference docRef = db.collection("Dia Diem").document(madiadiem);
+
+        if (hoatdong24h){
+            thoigianhoatdong.clear();
+
+            Map<String, Object> map = new HashMap<>();
+
+            for (int i = 0; i < 7; i++){
+                map.put("mocua", getString(R.string.mocua24h));
+                map.put("dongcua", getString(R.string.mocua24h));
+
+                thoigianhoatdong.add(map);
+            }
+
+        }else if(khongcothoigianhoatdong){
+            thoigianhoatdong.clear();
+
+            Map<String, Object> map = new HashMap<>();
+
+            for (int i = 0; i < 7; i++){
+                map.put("mocua", getString(R.string.khongcothoigianhoatdong));
+                map.put("dongcua", getString(R.string.khongcothoigianhoatdong));
+
+                thoigianhoatdong.add(map);
+            }
+        }else{
+            thoigianhoatdong.clear();
+
+            Map<String, Object> mapthu2 = new HashMap<>();
+
+            if (hoatdong24hthu2thu6){
+                for (int i = 0; i < 5; i++){
+                    mapthu2.put("mocua", getString(R.string.mocua24h));
+                    mapthu2.put("dongcua", getString(R.string.mocua24h));
+
+                    thoigianhoatdong.add(mapthu2);
+                }
+            }else if (khonghoatdongthu2thu6){
+                for (int i = 0; i < 5; i++){
+                    mapthu2.put("mocua", getString(R.string.khongmocua));
+                    mapthu2.put("dongcua", getString(R.string.khongmocua));
+
+                    thoigianhoatdong.add(mapthu2);
+                }
+            }else{
+                for (int i = 0; i < 5; i++){
+                    mapthu2.put("mocua", gioMoCuaThu2Thu6);
+                    mapthu2.put("dongcua", gioDongCuaThu2Thu6);
+
+                    thoigianhoatdong.add(mapthu2);
+                }
+            }
+
+            Map<String, Object> mapThu7 = new HashMap<>();
+
+            if (hoatdong24hthu7){
+                mapThu7.put("mocua", getString(R.string.mocua24h));
+                mapThu7.put("dongcua", getString(R.string.mocua24h));
+
+                thoigianhoatdong.add(mapThu7);
+            } else if(khonghoatdongthu7){
+                mapThu7.put("mocua", getString(R.string.khongmocua));
+                mapThu7.put("dongcua", getString(R.string.khongmocua));
+
+                thoigianhoatdong.add(mapThu7);
+            } else {
+                mapThu7.put("mocua", gioMoCuaThu7);
+                mapThu7.put("dongcua", gioDongCuaThu7);
+
+                thoigianhoatdong.add(mapThu7);
+            }
+
+            Map<String, Object> mapChuNhat = new HashMap<>();
+
+            if (hoatdong24hchunhat){
+                mapChuNhat.put("mocua", getString(R.string.mocua24h));
+                mapChuNhat.put("dongcua", getString(R.string.mocua24h));
+
+                thoigianhoatdong.add(mapChuNhat);
+            }
+            else if(khonghoatdongchunhat){
+                mapChuNhat.put("mocua", getString(R.string.khongmocua));
+                mapChuNhat.put("dongcua", getString(R.string.khongmocua));
+
+                thoigianhoatdong.add(mapChuNhat);
+            } else {
+                mapChuNhat.put("mocua", gioMoCuaChuNhat);
+                mapChuNhat.put("dongcua", gioDongCuaChuNhat);
+
+                thoigianhoatdong.add(mapChuNhat);
+            }
+        }
+
+        if(!edTenDiaDiem.getText().toString().equals("")){
+            if (!edDiaChi.getText().toString().equals("")){
+                if (danhMucDuocChonList.size() > 0){
+
+                    if (fileNameList.size() > 0)
+                        for (int i = 0; i < fileNameList.size(); i++)
+                            docRef.update("hinhanh", FieldValue.arrayUnion(fileNameList.get(i)));
+
+                    docRef.update("thoigianhoatdong", FieldValue.delete());
+                    Map<String, Object> thoigianhoatdongMap = new HashMap<>();
+                    thoigianhoatdongMap.put("thoigianhoatdong", thoigianhoatdong);
+                    docRef.set(thoigianhoatdongMap, SetOptions.merge());
+
+                    docRef.update("danhmuc", FieldValue.delete());
+                    Map<String, Object> danhmucMap = new HashMap<>();
+                    danhmucMap.put("danhmuc", danhMucDuocChonList);
+                    docRef.set(danhmucMap, SetOptions.merge());
+
+                    docRef.update("tendiadiem", edTenDiaDiem.getText().toString());
+                    docRef.update("diachi", edDiaChi.getText().toString());
+                    docRef.update("dienthoai", edSoDienThoai.getText().toString());
+                    docRef.update("website", edWebsite.getText().toString());
+
+                    for (int j = 0; j < uriList.size(); j++){
+                        StorageReference fileUpload = storageReference.child("Images").child(madiadiem).child(getFileName(uriList.get(j)));
+                        fileUpload.putFile(uriList.get(j)).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                            @Override
+                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                Toast.makeText(getContext(), "Thêm hình ảnh thành công", Toast.LENGTH_SHORT).show();
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Toast.makeText(getContext(), "Thêm hình ảnh thất bại", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+
+                    uriList.clear();
+                    fileNameList.clear();
+
+                    editor.putBoolean("edit", false);
+                    editor.commit();
+
+                    btnThemDiaDiem.setText(R.string.themdiadiem);
+
+                    if (adapterHinhDaChon != null)
+                        adapterHinhDaChon.notifyDataSetChanged();
+
+                    Intent intent = new Intent(getContext(), DetailPlacesActivity.class);
+                    getContext().startActivity(intent);
+                }else {
+                    Toast.makeText(getContext(), "Địa điểm phải có ít nhất một danh mục!!!!", Toast.LENGTH_SHORT).show();
+                }
+            }
+            else{
+                Toast.makeText(getContext(), "Không được để trống địa chỉ!!!", Toast.LENGTH_SHORT).show();
+            }
+        }else
+            Toast.makeText(getContext(), "Không được để trống tên địa điểm!!!", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -534,7 +748,10 @@ public class AddPlaceFragment extends Fragment implements View.OnClickListener, 
 
             // nút thêm địa điểm
             case R.id.btnThemDiaDiem:
-                ThemDiaDiem();
+                if (btnThemDiaDiem.getText().toString().equals(getString(R.string.capnhatdiadiem))){
+                    CapNhatDiaDiem(preferencesDiaDiem.getString("maDiaDiem", ""));
+                }else
+                    ThemDiaDiem();
                 break;
         }
     }
@@ -543,7 +760,7 @@ public class AddPlaceFragment extends Fragment implements View.OnClickListener, 
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         switch (parent.getId()){
             case R.id.spinDanhMucCha:
-                danhMucDuocChon = danhMucChaList.get(position);
+                danhMucDuocChon = danhMucChaList.get(position).getMadanhmuc();
 
                 layDanhMuc(danhMucDuocChon);
                 break;
@@ -553,6 +770,45 @@ public class AddPlaceFragment extends Fragment implements View.OnClickListener, 
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
 
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if (preferences.getBoolean("edit", false)){
+            btnThemDiaDiem.setText(R.string.capnhatdiadiem);
+
+            layChiTietDiaDiem(preferencesDiaDiem.getString("maDiaDiem", ""));
+        }
+    }
+
+    private void layChiTietDiaDiem(final String madiadiem){
+        db.collection("Dia Diem").document(madiadiem)
+                .get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @SuppressLint("SetTextI18n")
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+
+                    if (document.exists()) {
+                        DiaDiem diaDiem = document.toObject(DiaDiem.class);
+
+                        edTenDiaDiem.setText(diaDiem.getTendiadiem());
+                        edDiaChi.setText(diaDiem.getDiachi());
+
+                        edSoDienThoai.setText(diaDiem.getDienthoai());
+
+                        edWebsite.setText(diaDiem.getWebsite());
+                    } else {
+                        Toast.makeText(getContext(), "Không tồn tại địa điểm này", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Toast.makeText(getContext(), "Lỗi! Không lấy dữ liệu được", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
     @Override
@@ -611,7 +867,7 @@ public class AddPlaceFragment extends Fragment implements View.OnClickListener, 
             /// khung chủ nhật
             case R.id.rdDatGioChuNhat:
                 hoatdong24hchunhat = false;
-                khonghoatdongthu2thu6 = false;
+                khonghoatdongchunhat = false;
                 linearChonGioChuNhat.setVisibility(View.VISIBLE);
                 break;
             case R.id.rdMoCua24hChuNhat:
@@ -620,8 +876,8 @@ public class AddPlaceFragment extends Fragment implements View.OnClickListener, 
                 linearChonGioChuNhat.setVisibility(View.GONE);
                 break;
             case R.id.rdKhongMoCuaChuNhat:
-                hoatdong24hthu2thu6 = false;
-                khonghoatdongthu2thu6 = true;
+                hoatdong24hchunhat = false;
+                khonghoatdongchunhat = true;
                 linearChonGioChuNhat.setVisibility(View.GONE);
                 break;
         }

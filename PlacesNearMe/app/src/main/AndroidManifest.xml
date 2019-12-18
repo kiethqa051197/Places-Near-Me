@@ -8,7 +8,7 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <application
         android:allowBackup="true"
@@ -19,6 +19,7 @@
         android:roundIcon="@drawable/logo_app"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".View.SearchResultActivity"></activity>
         <activity android:name=".View.DetailPlacesActivity" />
         <activity android:name=".View.MainActivity" />
         <activity android:name=".View.SplashScreenActivity">
@@ -30,8 +31,7 @@
         </activity>
         <activity
             android:name=".View.LoginActivity"
-            android:theme="@style/Theme.AppCompat.NoActionBar">
-        </activity>
+            android:theme="@style/Theme.AppCompat.NoActionBar"></activity>
         <activity
             android:name=".View.RegisterActivity"
             android:theme="@style/Theme.AppCompat.NoActionBar" />

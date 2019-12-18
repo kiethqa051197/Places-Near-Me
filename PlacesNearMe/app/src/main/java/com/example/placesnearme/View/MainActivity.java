@@ -3,6 +3,7 @@ package com.example.placesnearme.View;
 import android.Manifest;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.location.Location;
@@ -43,6 +44,7 @@ import androidx.appcompat.view.menu.ActionMenuItem;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.os.Looper;
@@ -61,7 +63,10 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -69,7 +74,7 @@ import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
 
-    private BottomNavigationView bottomNavigationView;
+    public static BottomNavigationView bottomNavigationView;
 
     private FusedLocationProviderClient fusedLocationProviderClient;
 
@@ -88,6 +93,17 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     public static FirebaseFirestore db;
 
+    final FragmentManager fm = getSupportFragmentManager();
+    final public static Fragment fragment1 = new CategoryFragment();
+    final public static Fragment fragment2 = new SearchFragment();
+    final public static Fragment fragment3 = new AddPlaceFragment();
+    final Fragment fragment4 = new ProfileFragment();
+
+    public static  Fragment active = fragment1;
+
+    private SharedPreferences preferences;
+    private SharedPreferences.Editor editor;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -100,8 +116,13 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         bottomNavigationView = findViewById(R.id.bottom_navigation);
         bottomNavigationView.getMenu().findItem(R.id.action_category).setChecked(true);
 
-        Fragment fragment = new CategoryFragment();
-        displaySelectedFragment(fragment);
+        fm.beginTransaction().add(R.id.frameLayout, fragment4, "4").hide(fragment4).commit();
+        fm.beginTransaction().add(R.id.frameLayout, fragment3, "3").hide(fragment3).commit();
+        fm.beginTransaction().add(R.id.frameLayout, fragment2, "2").hide(fragment2).commit();
+        fm.beginTransaction().add(R.id.frameLayout,fragment1, "1").commit();
+
+        preferences = getSharedPreferences("prefEdit", 0);
+        editor = preferences.edit();
 
         //Request Runtime permission
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
@@ -137,35 +158,25 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-        Fragment fragment = null;
-
         switch (menuItem.getItemId()) {
             case R.id.action_search:
-                fragment = new SearchFragment();
-                displaySelectedFragment(fragment);
-                break;
+                fm.beginTransaction().hide(active).show(fragment2).commit();
+                active = fragment2;
+                return true;
             case R.id.action_category:
-                fragment = new CategoryFragment();
-                displaySelectedFragment(fragment);
-                break;
+                fm.beginTransaction().hide(active).show(fragment1).commit();
+                active = fragment1;
+                return true;
             case R.id.action_user:
-                fragment = new ProfileFragment();
-                displaySelectedFragment(fragment);
-                break;
+                fm.beginTransaction().hide(active).show(fragment4).commit();
+                active = fragment4;
+                return true;
             case R.id.action_add_place:
-                fragment = new AddPlaceFragment();
-                displaySelectedFragment(fragment);
-                break;
-            default:
-                break;
+                fm.beginTransaction().hide(active).show(fragment3).commit();
+                active = fragment3;
+                return true;
         }
-        return true;
-    }
-
-    public void displaySelectedFragment(Fragment fragment) {
-        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.replace(R.id.frameLayout, fragment);
-        fragmentTransaction.commit();
+        return false;
     }
 
     @Override
@@ -267,7 +278,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
                                                 List<String> danhmuc = new ArrayList<>();
                                                 List<String> hinhAnh = new ArrayList<>();
-                                                List<String> thoiGianHoatDong = new ArrayList<>();
+                                                List<Map<String, Object>> thoiGianHoatDong = new ArrayList<>();
 
                                                 if (mPlace.getResult().getTypes() != null){
                                                     for (int j = 0; j < mPlace.getResult().getTypes().length; j++) {
@@ -288,8 +299,46 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                                                 }
 
                                                 if (mPlace.getResult().getOpening_hours() != null){
-                                                    for (int h = 0; h < mPlace.getResult().getOpening_hours().getWeekday_text().length; h++)
-                                                        thoiGianHoatDong.add(mPlace.getResult().getOpening_hours().getWeekday_text()[h]);
+                                                    int songay = mPlace.getResult().getOpening_hours().getWeekday_text().length;
+                                                    for(int i = 0; i < songay; i++) {
+                                                        String text = mPlace.getResult().getOpening_hours().getWeekday_text()[i];
+                                                        String textCut = text.substring(text.indexOf(":") + 1).trim();
+
+                                                        if(textCut.equals("Đóng cửa")){
+                                                            Map<String, Object> map = new HashMap<>();
+
+                                                            map.put("mocua", textCut);
+                                                            map.put("dongcua", textCut);
+
+                                                            thoiGianHoatDong.add(map);
+                                                        }else if (textCut.equals("Mở cửa cả ngày")){
+                                                            Map<String, Object> map = new HashMap<>();
+
+                                                            map.put("mocua", textCut);
+                                                            map.put("dongcua", textCut);
+
+                                                            thoiGianHoatDong.add(map);
+                                                        }else{
+                                                            String open = textCut.substring(0, 5);
+                                                            String close = textCut.substring(6, 11);
+
+                                                            Map<String, Object> map = new HashMap<>();
+
+                                                            map.put("mocua", open);
+                                                            map.put("dongcua", close);
+
+                                                            thoiGianHoatDong.add(map);
+                                                        }
+                                                    }
+                                                }else {
+                                                    Map<String, Object> map = new HashMap<>();
+
+                                                    for (int i = 0; i < 7; i++){
+                                                        map.put("mocua", getString(R.string.khongcothoigianhoatdong));
+                                                        map.put("dongcua", getString(R.string.khongcothoigianhoatdong));
+
+                                                        thoiGianHoatDong.add(map);
+                                                    }
                                                 }
 
                                                 DiaDiem diaDiem = new DiaDiem();
@@ -322,8 +371,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                                                         themReviews(madiadiem, review);
                                                     }
                                                 }
-
-                                                Log.d("diadiem", "");
                                             }
 
                                             @Override
@@ -355,7 +402,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     private String getPlaceDetailUrl(String place_id) {
         StringBuilder url = new StringBuilder("https://maps.googleapis.com/maps/api/place/details/json?");
-        url.append("place_id=" + place_id);
+        url.append("place_id=" + place_id + "&language=vi");
         url.append("&key=" + getResources().getString(R.string.google_maps_key));
         return url.toString();
     }
@@ -432,5 +479,17 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     protected void onDestroy() {
         super.onDestroy();
         fusedLocationProviderClient.removeLocationUpdates(mLocationCallback);
+
+        editor.putBoolean("edit", false);
+        editor.commit();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        fusedLocationProviderClient.removeLocationUpdates(mLocationCallback);
+
+        editor.putBoolean("edit", false);
+        editor.commit();
     }
 }

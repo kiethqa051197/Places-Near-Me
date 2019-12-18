@@ -129,10 +129,4 @@ public class Results {
     public void setOpening_hours(Opening_hours opening_hours) {
         this.opening_hours = opening_hours;
     }
-
-    @Override
-    public String toString()
-    {
-        return "ClassPojo [reference = "+reference+", types = "+types+", scope = "+scope+", icon = "+icon+", name = "+name+", geometry = "+geometry+", vicinity = "+vicinity+", id = "+id+", photos = "+photos+", place_id = "+place_id+"]";
-    }
 }

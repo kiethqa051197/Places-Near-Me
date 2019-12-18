@@ -28,6 +28,6 @@ public class Close {
     @Override
     public String toString()
     {
-        return "ClassPojo [time = "+time+", day = "+day+"]";
+        return time;
     }
 }

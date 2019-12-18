@@ -9,8 +9,7 @@
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/linearTong"
-        android:layout_marginBottom="50dp"/>
+        android:layout_below="@+id/linearTong"/>
 
     <LinearLayout
         android:id="@+id/linearTong"
@@ -28,7 +27,7 @@
             android:background="@color/white"
             android:gravity="center">
 
-            <EditText
+            <!--<EditText
                 android:id="@+id/edSearch"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -39,6 +38,25 @@
                 android:padding="10dp"
                 android:layout_weight="1"
                 android:layout_gravity="center"
+                android:capitalize="none"
+                android:background="@android:color/transparent"/>
+                -->
+
+            <AutoCompleteTextView
+                android:id="@+id/txtautocomplete"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:textColor="@android:color/black"
+                android:textSize="15sp"
+                android:hint="@string/timkiem"
+                android:gravity="start|center"
+                android:padding="10dp"
+                android:layout_weight="1"
+                android:layout_gravity="center"
+                android:capitalize="none"
+                android:imeOptions="actionSearch"
+                android:inputType="text"
+                android:singleLine="true"
                 android:background="@android:color/transparent"/>
 
             <ImageView
@@ -49,6 +67,7 @@
                 android:padding="10dp"
                 android:layout_gravity="center"/>
         </LinearLayout>
+
 
         <View
             android:layout_width="match_parent"
@@ -115,7 +134,6 @@
         android:layout_below="@id/linearTong"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="50dp"
         android:padding="5dp"
         android:background="@android:color/white"/>
 </RelativeLayout>

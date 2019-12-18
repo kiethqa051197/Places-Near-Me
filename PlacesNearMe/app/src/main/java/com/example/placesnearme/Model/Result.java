@@ -276,10 +276,4 @@ public class Result {
     {
         this.place_id = place_id;
     }
-
-    @Override
-    public String toString()
-    {
-        return "ClassPojo [utc_offset = "+utc_offset+", formatted_address = "+formatted_address+", types = "+types+", website = "+website+", icon = "+icon+", rating = "+rating+", address_components = "+address_components+", photos = "+photos+", url = "+url+", reference = "+reference+", user_ratings_total = "+user_ratings_total+", reviews = "+reviews+", scope = "+scope+", name = "+name+", opening_hours = "+opening_hours+", geometry = "+geometry+", vicinity = "+vicinity+", id = "+id+", adr_address = "+adr_address+", plus_code = "+plus_code+", formatted_phone_number = "+formatted_phone_number+", international_phone_number = "+international_phone_number+", place_id = "+place_id+"]";
-    }
 }

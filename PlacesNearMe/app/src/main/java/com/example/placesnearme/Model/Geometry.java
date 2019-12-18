@@ -24,10 +24,4 @@ public class Geometry {
     {
         this.location = location;
     }
-
-    @Override
-    public String toString()
-    {
-        return "ClassPojo [viewport = "+viewport+", location = "+location+"]";
-    }
 }

@@ -27,12 +27,4 @@ public class PolylineData {
     public void setLeg(DirectionsLeg leg) {
         this.leg = leg;
     }
-
-    @Override
-    public String toString() {
-        return "PolylineData{" +
-                "polyline=" + polyline +
-                ", leg=" + leg +
-                '}';
-    }
 }

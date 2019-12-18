@@ -94,9 +94,4 @@ public class Reviews {
     public void setRelative_time_description (String relative_time_description) {
         this.relative_time_description = relative_time_description;
     }
-
-    @Override
-    public String toString() {
-        return "ClassPojo [author_name = "+author_name+", profile_photo_url = "+profile_photo_url+", author_url = "+author_url+", rating = "+rating+", language = "+language+", text = "+text+", time = "+time+", relative_time_description = "+relative_time_description+"]";
-    }
 }

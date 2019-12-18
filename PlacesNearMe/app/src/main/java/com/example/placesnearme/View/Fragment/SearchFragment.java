@@ -11,28 +11,32 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.EditText;
+import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.placesnearme.Adapter.AutoCompleteCategoryAdapter;
 import com.example.placesnearme.Adapter.ListDiaDiemTimKiemAdapter;
 import com.example.placesnearme.Model.Firebase.DanhMuc;
 import com.example.placesnearme.Model.Firebase.DiaDiem;
 import com.example.placesnearme.Model.PolylineData;
 import com.example.placesnearme.R;
 import com.example.placesnearme.Remote.SortDiaDiem;
-import com.example.placesnearme.Remote.StringUtils;
 import com.example.placesnearme.View.MainActivity;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -45,7 +49,10 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -68,8 +75,10 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, View
     private GoogleMap mMap;
 
     private Spinner spinContextSapXep, spinContextKieuXem;
-    private EditText edSearch;
+    //private EditText edSearch;
     private ImageView imgSearch;
+
+    private AutoCompleteTextView autoCompleteTextView;
 
     private GeoApiContext mGeoApiContext;
 
@@ -79,6 +88,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, View
 
     private RecyclerView listDiaDiemTimKiem;
     private ListDiaDiemTimKiemAdapter adapterDiaDiemTimKiem;
+    private AutoCompleteCategoryAdapter adapter;
     private RecyclerView.LayoutManager layoutManagerDanhMuc;
     private Marker mSelectedMarker = null;
 
@@ -86,9 +96,11 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, View
 
     private List<DiaDiem> diaDiems = new ArrayList<>();
     private List<DanhMuc> danhMucs = new ArrayList<>();
+    private List<String> tukhoas = new ArrayList<>();
+    private List<String> arrTemp = new ArrayList<>();
     private ArrayList<Marker> mTripMarkers = new ArrayList<>();
     private ArrayList<PolylineData> mPolylinesData = new ArrayList<>();
-    List<String> kieuxems, sapxeps;
+    private List<String> kieuxems, sapxeps;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -105,8 +117,12 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, View
                     .build();
         }
 
-        edSearch = view.findViewById(R.id.edSearch);
+        //edSearch = view.findViewById(R.id.edSearch);
         imgSearch = view.findViewById(R.id.imgSearch);
+
+        layTuKhoa();
+
+        autoCompleteTextView = view.findViewById(R.id.txtautocomplete);
 
         spinContextKieuXem = view.findViewById(R.id.spinContextKieuXem);
         spinContextSapXep = view.findViewById(R.id.spinContextSapXep);
@@ -130,6 +146,17 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, View
 
         spinContextSapXep.setOnItemSelectedListener(this);
         spinContextKieuXem.setOnItemSelectedListener(this);
+
+        autoCompleteTextView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                    timkiem(autoCompleteTextView.getText().toString());
+                    return true;
+                }
+                return false;
+            }
+        });
 
         return view;
     }
@@ -231,7 +258,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, View
 
         switch (id){
             case R.id.imgSearch:
-                timkiem(StringUtils.removeAccent(edSearch.getText().toString()));
+                timkiem(autoCompleteTextView.getText().toString());
                 break;
         }
     }
@@ -239,6 +266,8 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, View
     private void timkiem(final String tukhoa){
         danhMucs.clear();
         diaDiems.clear();
+
+        resetSelectedMarker();
 
         if (adapterDiaDiemTimKiem != null){
             adapterDiaDiemTimKiem.notifyDataSetChanged();
@@ -262,6 +291,8 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, View
     }
 
     private void danhsach(String madanhmuc){
+        mMap.clear();
+
         db.collection("Dia Diem").whereArrayContains("danhmuc", madanhmuc).get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                     @Override
@@ -301,6 +332,37 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, View
                         listDiaDiemTimKiem.setAdapter(adapterDiaDiemTimKiem);
                     }
                 });
+    }
+
+    private void layTuKhoa(){
+        tukhoas.clear();
+        arrTemp.clear();
+
+        db.collection("Danh Muc").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                for (DocumentSnapshot doc : task.getResult()) {
+                    DanhMuc danhMuc = doc.toObject(DanhMuc.class);
+
+                    for(int i = 0; i < danhMuc.getTukhoa().size(); i++){
+                        tukhoas.add(danhMuc.getTukhoa().get(i));
+                    }
+                }
+
+                for (int j = 0; j < tukhoas.size(); j++){
+                    if (!arrTemp.contains(tukhoas.get(j))){
+                        arrTemp.add(tukhoas.get(j));
+                    }
+                }
+
+                tukhoas.clear();
+
+                tukhoas.addAll(arrTemp);
+
+                adapter = new AutoCompleteCategoryAdapter(getContext(), tukhoas);
+                autoCompleteTextView.setAdapter(adapter);
+            }
+        });
     }
 
     @Override
