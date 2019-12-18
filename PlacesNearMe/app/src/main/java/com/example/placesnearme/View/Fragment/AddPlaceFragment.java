@@ -38,6 +38,7 @@ import com.example.placesnearme.Model.Firebase.DanhMuc;
 import com.example.placesnearme.Model.Firebase.DanhMucCha;
 import com.example.placesnearme.Model.Firebase.DiaDiem;
 import com.example.placesnearme.R;
+import com.example.placesnearme.View.DetailPlacesActivity;
 import com.example.placesnearme.View.MainActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -640,6 +641,9 @@ public class AddPlaceFragment extends Fragment implements View.OnClickListener, 
 
                     if (adapterHinhDaChon != null)
                         adapterHinhDaChon.notifyDataSetChanged();
+
+                    Intent intent = new Intent(getContext(), DetailPlacesActivity.class);
+                    getContext().startActivity(intent);
                 }else {
                     Toast.makeText(getContext(), "Địa điểm phải có ít nhất một danh mục!!!!", Toast.LENGTH_SHORT).show();
                 }

@@ -83,7 +83,6 @@ public class SearchResultActivity extends AppCompatActivity implements OnMapRead
     private ArrayAdapter<String> arrayAdapterSapXep, arrayAdapterKieuXem;
 
     private List<DiaDiem> diaDiems = new ArrayList<>();
-    private List<DanhMuc> danhMucs = new ArrayList<>();
     private ArrayList<Marker> mTripMarkers = new ArrayList<>();
     private ArrayList<PolylineData> mPolylinesData = new ArrayList<>();
     private List<String> kieuxems, sapxeps;
@@ -381,7 +380,7 @@ public class SearchResultActivity extends AppCompatActivity implements OnMapRead
             @Override
             public void onInfoWindowClick(final Marker marker) {
                 if(marker.getTitle().contains("Trip #")){
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getApplicationContext());
+                    AlertDialog.Builder builder = new AlertDialog.Builder(SearchResultActivity.this);
                     builder.setMessage("Open Google Maps?")
                             .setCancelable(true)
                             .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
@@ -412,7 +411,7 @@ public class SearchResultActivity extends AppCompatActivity implements OnMapRead
                     if(marker.getTitle().equals("This is you"))
                         marker.hideInfoWindow();
                     else{
-                        AlertDialog.Builder builder = new AlertDialog.Builder(getApplicationContext());
+                        AlertDialog.Builder builder = new AlertDialog.Builder(SearchResultActivity.this);
                         builder.setMessage("Ban co muon xem duong di den: " + marker.getTitle() + " khong ?")
                                 .setCancelable(true)
                                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {

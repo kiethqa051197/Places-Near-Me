@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -309,7 +310,9 @@ public class DetailPlacesActivity extends AppCompatActivity implements View.OnCl
                 editor.putBoolean("edit", true);
                 editor.commit();
 
-                finish();
+                Intent intent = new Intent(this, MainActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
                 break;
             default:break;
         }
@@ -399,7 +402,6 @@ public class DetailPlacesActivity extends AppCompatActivity implements View.OnCl
     }
 
     private void dangbinhluan(String madiadiem, final String uid, final String ten, final String ava) {
-
         final DocumentReference docRef = db.collection("Danh Gia").document(madiadiem)
                                             .collection("Reviews").document();
 
@@ -410,7 +412,7 @@ public class DetailPlacesActivity extends AppCompatActivity implements View.OnCl
                     final Review review = new Review();
 
                     if (ratingBar.getRating() != 0){
-                        review.setDanhgia(String.valueOf(ratingBar.getRating()));
+                        review.setDanhgia(String.valueOf(Math.round(ratingBar.getRating())));
                         review.setManguoireview(uid);
                         review.setNoidungreview(edBinhLuan.getText().toString());
                         review.setTennguoireview(ten);
