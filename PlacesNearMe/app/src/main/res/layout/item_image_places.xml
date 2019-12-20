@@ -1,7 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ImageView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="120dp"
-    android:layout_height="120dp"
-    android:src="@drawable/img_loading"
-    android:id="@+id/imgDiaDiem">
-</ImageView>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:layout_margin="5dp"
+    android:background="@android:color/white">
+
+    <ImageView
+        android:id="@+id/imgDiaDiem"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:scaleType="centerCrop"/>
+
+    <FrameLayout
+        android:id="@+id/khungsohinh"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#50000000"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/txtSoHinh"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="30sp"
+            android:layout_gravity="center"
+            android:textColor="@android:color/white"
+            android:text="+10"/>
+    </FrameLayout>
+</FrameLayout>

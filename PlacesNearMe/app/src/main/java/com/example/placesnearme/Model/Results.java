@@ -14,103 +14,83 @@ public class Results {
     private String rating;
     private Opening_hours opening_hours;
 
-    public String getReference ()
-    {
+    public String getReference() {
         return reference;
     }
 
-    public void setReference (String reference)
-    {
+    public void setReference(String reference) {
         this.reference = reference;
     }
 
-    public String[] getTypes ()
-    {
+    public String[] getTypes() {
         return types;
     }
 
-    public void setTypes (String[] types)
-    {
+    public void setTypes(String[] types) {
         this.types = types;
     }
 
-    public String getScope ()
-    {
+    public String getScope() {
         return scope;
     }
 
-    public void setScope (String scope)
-    {
+    public void setScope(String scope) {
         this.scope = scope;
     }
 
-    public String getIcon ()
-    {
+    public String getIcon() {
         return icon;
     }
 
-    public void setIcon (String icon)
-    {
+    public void setIcon(String icon) {
         this.icon = icon;
     }
 
-    public String getName ()
-    {
+    public String getName() {
         return name;
     }
 
-    public void setName (String name)
-    {
+    public void setName(String name) {
         this.name = name;
     }
 
-    public Geometry getGeometry ()
-    {
+    public Geometry getGeometry() {
         return geometry;
     }
 
-    public void setGeometry (Geometry geometry)
-    {
+    public void setGeometry(Geometry geometry) {
         this.geometry = geometry;
     }
 
-    public String getVicinity ()
-    {
+    public String getVicinity() {
         return vicinity;
     }
 
-    public void setVicinity (String vicinity)
-    {
+    public void setVicinity(String vicinity) {
         this.vicinity = vicinity;
     }
 
-    public String getId ()
-    {
+    public String getId() {
         return id;
     }
 
-    public void setId (String id)
-    {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public Photos[] getPhotos ()
-    {
+    public Photos[] getPhotos() {
         return photos;
     }
 
-    public void setPhotos (Photos[] photos)
-    {
+    public void setPhotos(Photos[] photos) {
         this.photos = photos;
     }
 
-    public String getPlace_id ()
-    {
+    public String getPlace_id() {
         return place_id;
     }
 
-    public void setPlace_id (String place_id)
-    {
+    public void setPlace_id(String place_id) {
         this.place_id = place_id;
     }
 

@@ -1,11 +1,9 @@
 package com.example.placesnearme.View;
 
 import android.Manifest;
-import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.content.res.ColorStateList;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
@@ -31,7 +29,6 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResponse;
 import com.google.android.gms.location.SettingsClient;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -40,15 +37,12 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.view.menu.ActionMenuItem;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 
 import android.os.Looper;
-import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
 
@@ -56,38 +50,35 @@ import com.example.placesnearme.R;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.GeoPoint;
-import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.SetOptions;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
-
+    private static final int MY_PERMISSION_CODE = 1000;
     public static BottomNavigationView bottomNavigationView;
 
     private FusedLocationProviderClient fusedLocationProviderClient;
-
     private LocationCallback mLocationCallback;
     private LocationRequest mLocationRequest;
-
     public static Location mLastLocation;
-
     public static double latitude, longtitude;
 
-    private static final int MY_PERMISSION_CODE = 1000;
-
     private IGoogleAPIService mService;
+
     private MyPlaces currentPlaces;
     private PlaceDetail mPlace;
 
@@ -97,12 +88,13 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     final public static Fragment fragment1 = new CategoryFragment();
     final public static Fragment fragment2 = new SearchFragment();
     final public static Fragment fragment3 = new AddPlaceFragment();
-    final Fragment fragment4 = new ProfileFragment();
-
-    public static  Fragment active = fragment1;
+    final public static Fragment fragment4 = new ProfileFragment();
+    public static Fragment active = fragment1;
 
     private SharedPreferences preferences;
     private SharedPreferences.Editor editor;
+
+    private List<String> arrTemp = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,10 +108,10 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         bottomNavigationView = findViewById(R.id.bottom_navigation);
         bottomNavigationView.getMenu().findItem(R.id.action_category).setChecked(true);
 
-        fm.beginTransaction().add(R.id.frameLayout, fragment4, "4").hide(fragment4).commit();
-        fm.beginTransaction().add(R.id.frameLayout, fragment3, "3").hide(fragment3).commit();
-        fm.beginTransaction().add(R.id.frameLayout, fragment2, "2").hide(fragment2).commit();
         fm.beginTransaction().add(R.id.frameLayout,fragment1, "1").commit();
+        fm.beginTransaction().add(R.id.frameLayout, fragment2, "2").hide(fragment2).commit();
+        fm.beginTransaction().add(R.id.frameLayout, fragment3, "3").hide(fragment3).commit();
+        fm.beginTransaction().add(R.id.frameLayout, fragment4, "4").hide(fragment4).commit();
 
         preferences = getSharedPreferences("prefEdit", 0);
         editor = preferences.edit();
@@ -136,6 +128,9 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         fusedLocationProviderClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
 
+        Calendar c = Calendar.getInstance();
+        final int day = c.get(Calendar.DAY_OF_MONTH);
+
         final List<String> types = Arrays.asList(getResources().getStringArray(R.array.place_type));
 
         Thread thread = new Thread(new Runnable() {
@@ -145,8 +140,14 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                     Thread.sleep(10000);
                 } catch (Exception e) { }
                 finally {
-                    for (int i = 0; i < types.size(); i++){
-                        //nearByPlace(types.get(i));
+                    if (day != 1){
+                        for (int i = 0; i < types.size(); i++){
+                            //nearByPlaceAddNew(types.get(i));
+                        }
+                    }else {
+                        for (int i = 0; i < types.size(); i++){
+                            //nearByPlaceEdit(types.get(i));
+                        }
                     }
                 }
             }
@@ -156,27 +157,29 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         bottomNavigationView.setOnNavigationItemSelectedListener(this);
     }
 
+    // Change Fragment
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
         switch (menuItem.getItemId()) {
-            case R.id.action_search:
-                fm.beginTransaction().hide(active).show(fragment2).commit();
-                active = fragment2;
-                return true;
             case R.id.action_category:
-                fm.beginTransaction().hide(active).show(fragment1).commit();
-                active = fragment1;
+                changeFragment(fragment1);
                 return true;
-            case R.id.action_user:
-                fm.beginTransaction().hide(active).show(fragment4).commit();
-                active = fragment4;
+            case R.id.action_search:
+                changeFragment(fragment2);
                 return true;
             case R.id.action_add_place:
-                fm.beginTransaction().hide(active).show(fragment3).commit();
-                active = fragment3;
+                changeFragment(fragment3);
+                return true;
+            case R.id.action_user:
+                changeFragment(fragment4);
                 return true;
         }
         return false;
+    }
+
+    public void changeFragment(Fragment fragment){
+        fm.beginTransaction().hide(active).show(fragment).commit();
+        active = fragment;
     }
 
     @Override
@@ -192,7 +195,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                         fusedLocationProviderClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
                     }
                 } else
-                    Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, getString(R.string.tuchoicapquyen), Toast.LENGTH_SHORT).show();
             }
             break;
         }
@@ -246,7 +249,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         });
     }
 
-    private void nearByPlace(final String placeType) {
+    private void nearByPlaceAddNew(final String placeType) {
         String url = getUrl(latitude, longtitude, placeType);
 
         mService.getNearByPlaces(url)
@@ -304,38 +307,23 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                                                         String text = mPlace.getResult().getOpening_hours().getWeekday_text()[i];
                                                         String textCut = text.substring(text.indexOf(":") + 1).trim();
 
-                                                        if(textCut.equals("Đóng cửa")){
-                                                            Map<String, Object> map = new HashMap<>();
-
-                                                            map.put("mocua", textCut);
-                                                            map.put("dongcua", textCut);
-
-                                                            thoiGianHoatDong.add(map);
-                                                        }else if (textCut.equals("Mở cửa cả ngày")){
-                                                            Map<String, Object> map = new HashMap<>();
-
-                                                            map.put("mocua", textCut);
-                                                            map.put("dongcua", textCut);
-
-                                                            thoiGianHoatDong.add(map);
+                                                        if(textCut.equals(getString(R.string.dongcua))){
+                                                            addBusinessTiming(textCut, textCut, thoiGianHoatDong);
+                                                        }else if (textCut.equals(getString(R.string.mocua24h))){
+                                                            addBusinessTiming(textCut, textCut, thoiGianHoatDong);
                                                         }else{
                                                             String open = textCut.substring(0, 5);
                                                             String close = textCut.substring(6, 11);
 
-                                                            Map<String, Object> map = new HashMap<>();
-
-                                                            map.put("mocua", open);
-                                                            map.put("dongcua", close);
-
-                                                            thoiGianHoatDong.add(map);
+                                                            addBusinessTiming(open, close, thoiGianHoatDong);
                                                         }
                                                     }
                                                 }else {
                                                     Map<String, Object> map = new HashMap<>();
 
                                                     for (int i = 0; i < 7; i++){
-                                                        map.put("mocua", getString(R.string.khongcothoigianhoatdong));
-                                                        map.put("dongcua", getString(R.string.khongcothoigianhoatdong));
+                                                        map.put(Common.mocua, getString(R.string.khongcothoigianhoatdong));
+                                                        map.put(Common.dongcua, getString(R.string.khongcothoigianhoatdong));
 
                                                         thoiGianHoatDong.add(map);
                                                     }
@@ -389,8 +377,184 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 });
     }
 
+    private void addBusinessTiming(String open, String close, List<Map<String, Object>> thoiGianHoatDong){
+        Map<String, Object> map = new HashMap<>();
+
+        map.put(Common.mocua, open);
+        map.put(Common.dongcua, close);
+
+        thoiGianHoatDong.add(map);
+    }
+
+    private void nearByPlaceEdit(final String placeType) {
+        String url = getUrl(latitude, longtitude, placeType);
+
+        mService.getNearByPlaces(url)
+                .enqueue(new Callback<MyPlaces>() {
+                    @Override
+                    public void onResponse(Call<MyPlaces> call, Response<MyPlaces> response) {
+                        currentPlaces = response.body();
+
+                        if (response.isSuccessful()) {
+                            for (int i = 0; i < currentPlaces.getResults().length; i++) {
+                                Results googlePlaces = currentPlaces.getResults()[i];
+
+                                mService.getDetaislPlaces(getPlaceDetailUrl(googlePlaces.getPlace_id()))
+                                        .enqueue(new Callback<PlaceDetail>() {
+                                            @Override
+                                            public void onResponse(Call<PlaceDetail> call, Response<PlaceDetail> response) {
+                                                mPlace = response.body();
+
+                                                final String madiadiem = mPlace.getResult().getPlace_id();
+                                                final String tendiadiem = mPlace.getResult().getName();
+                                                final String diachi = mPlace.getResult().getVicinity();
+
+                                                String lati = mPlace.getResult().getGeometry().getLocation().getLat();
+                                                String longti = mPlace.getResult().getGeometry().getLocation().getLng();
+                                                final GeoPoint location = new GeoPoint(Double.parseDouble(lati), Double.parseDouble(longti));
+
+                                                final String website = mPlace.getResult().getWebsite();
+                                                final String dienthoai = mPlace.getResult().getFormatted_phone_number();
+
+                                                final List<String> danhmuc = new ArrayList<>();
+                                                final List<String> hinhAnh = new ArrayList<>();
+                                                final List<Map<String, Object>> thoiGianHoatDong = new ArrayList<>();
+
+                                                if (mPlace.getResult().getTypes() != null){
+                                                    for (int j = 0; j < mPlace.getResult().getTypes().length; j++) {
+                                                        danhmuc.add(mPlace.getResult().getTypes()[j]);
+                                                    }
+
+                                                    for (int l = 0; l < danhmuc.size(); l++) {
+                                                        if (danhmuc.get(l).equals("point_of_interest"))
+                                                            danhmuc.remove(l);
+                                                        if (danhmuc.get(l).equals("establishment"))
+                                                            danhmuc.remove(l);
+                                                    }
+                                                }
+
+                                                final Map<String, Object> danhmucMap = new HashMap<>();
+                                                danhmucMap.put(Common.danhmuc, danhmuc);
+
+                                                if (mPlace.getResult().getPhotos() != null){
+                                                    for (int k = 0; k < mPlace.getResult().getPhotos().length; k++)
+                                                        hinhAnh.add(getPhotoOfPlace(mPlace.getResult().getPhotos()[k].getPhoto_reference()));
+                                                }
+
+                                                if (mPlace.getResult().getOpening_hours() != null){
+                                                    int songay = mPlace.getResult().getOpening_hours().getWeekday_text().length;
+                                                    for(int i = 0; i < songay; i++) {
+                                                        String text = mPlace.getResult().getOpening_hours().getWeekday_text()[i];
+                                                        String textCut = text.substring(text.indexOf(":") + 1).trim();
+
+                                                        if(textCut.equals(getString(R.string.dongcua))){
+                                                            addBusinessTiming(textCut, textCut, thoiGianHoatDong);
+                                                        }else if (textCut.equals(getString(R.string.mocua24h))){
+                                                            addBusinessTiming(textCut, textCut, thoiGianHoatDong);
+                                                        }else{
+                                                            String open = textCut.substring(0, 5);
+                                                            String close = textCut.substring(6, 11);
+
+                                                            addBusinessTiming(open, close, thoiGianHoatDong);
+                                                        }
+                                                    }
+                                                }else {
+                                                    Map<String, Object> map = new HashMap<>();
+
+                                                    for (int i = 0; i < 7; i++){
+                                                        map.put(Common.mocua, getString(R.string.khongcothoigianhoatdong));
+                                                        map.put(Common.dongcua, getString(R.string.khongcothoigianhoatdong));
+
+                                                        thoiGianHoatDong.add(map);
+                                                    }
+                                                }
+
+                                                final Map<String, Object> thoigianhoatdongMap = new HashMap<>();
+                                                thoigianhoatdongMap.put(Common.thoigianhoatdong, thoiGianHoatDong);
+
+                                                db.collection(Common.DIADIEM).document(madiadiem)
+                                                        .addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                                                            @Override
+                                                            public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+                                                                if(e != null){
+                                                                    Toast.makeText(getApplicationContext(), getString(R.string.coloitrongquatrinhlaydulieu)
+                                                                            , Toast.LENGTH_SHORT).show();
+
+                                                                    return;
+                                                                }
+
+                                                                if (documentSnapshot.exists()){
+                                                                    DiaDiem diaDiem = documentSnapshot.toObject(DiaDiem.class);
+                                                                    hinhAnh.addAll(diaDiem.getHinhanh());
+
+                                                                    for (int j = 0; j < hinhAnh.size(); j++){
+                                                                        if (!arrTemp.contains(hinhAnh.get(j))){
+                                                                            arrTemp.add(hinhAnh.get(j));
+                                                                        }
+                                                                    }
+
+                                                                    hinhAnh.clear();
+                                                                    hinhAnh.addAll(arrTemp);
+
+                                                                    Map<String, Object> hinhanhMap = new HashMap<>();
+                                                                    hinhanhMap.put(Common.hinhanh, hinhAnh);
+
+                                                                    updateData(madiadiem, tendiadiem, diachi, location, website
+                                                                            , dienthoai, danhmucMap, hinhanhMap, thoigianhoatdongMap);
+                                                                }else {
+                                                                    DiaDiem diaDiem = new DiaDiem();
+                                                                    diaDiem.setMadiadiem(madiadiem);
+                                                                    diaDiem.setTendiadiem(tendiadiem);
+                                                                    diaDiem.setDiachi(diachi);
+                                                                    diaDiem.setLocation(location);
+                                                                    diaDiem.setWebsite(website);
+                                                                    diaDiem.setDienthoai(dienthoai);
+                                                                    diaDiem.setDanhmuc(danhmuc);
+                                                                    diaDiem.setHinhanh(hinhAnh);
+                                                                    diaDiem.setThoigianhoatdong(thoiGianHoatDong);
+
+                                                                    themDiaDiem(madiadiem, diaDiem);
+                                                                }
+                                                            }
+                                                        });
+
+                                                List<Reviews> reviews = new ArrayList<>();
+
+                                                if(mPlace.getResult().getReviews() != null){
+                                                    for (int n = 0; n < mPlace.getResult().getReviews().length; n++)
+                                                        reviews.add(mPlace.getResult().getReviews()[n]);
+
+                                                    for (int q = 0; q < reviews.size(); q++) {
+                                                        Review review = new Review();
+                                                        review.setManguoireview("");
+                                                        review.setTennguoireview(reviews.get(q).getAuthor_name());
+                                                        review.setDanhgia(reviews.get(q).getRating());
+                                                        review.setNoidungreview(reviews.get(q).getText());
+                                                        review.setHinhanhnguoireview(reviews.get(q).getProfile_photo_url());
+
+                                                        themReviews(madiadiem, review);
+                                                    }
+                                                }
+                                            }
+
+                                            @Override
+                                            public void onFailure(Call<PlaceDetail> call, Throwable t) {
+
+                                            }
+                                        });
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<MyPlaces> call, Throwable t) {
+
+                    }
+                });
+    }
+
     private String getUrl(double latitude, double longtitude, String placeType) {
-        StringBuilder googlePlacesUrl = new StringBuilder("https://maps.googleapis.com/maps/api/place/nearbysearch/json?");
+        StringBuilder googlePlacesUrl = new StringBuilder(Common.GET_URL_NEARBY_PLACES);
         googlePlacesUrl.append("location=" + latitude + "," + longtitude);
         googlePlacesUrl.append("&radius=" + 5000);
         googlePlacesUrl.append("&type=" + placeType);
@@ -401,14 +565,14 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     }
 
     private String getPlaceDetailUrl(String place_id) {
-        StringBuilder url = new StringBuilder("https://maps.googleapis.com/maps/api/place/details/json?");
+        StringBuilder url = new StringBuilder(Common.GET_URL_DETAIL_PLACES);
         url.append("place_id=" + place_id + "&language=vi");
         url.append("&key=" + getResources().getString(R.string.google_maps_key));
         return url.toString();
     }
 
     private String getPhotoOfPlace(String photo_reference) {
-        StringBuilder url = new StringBuilder("https://maps.googleapis.com/maps/api/place/photo");
+        StringBuilder url = new StringBuilder(Common.GET_URL_PHOTO);
         url.append("?maxwidth=1000");
         url.append("&photoreference=" + photo_reference);
         url.append("&key=" + getResources().getString(R.string.google_maps_key));
@@ -431,7 +595,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     }
 
     private void themDiaDiem(String madiadiem, final DiaDiem diaDiem) {
-        final DocumentReference docRef = db.collection("Dia Diem").document(madiadiem);
+        final DocumentReference docRef = db.collection(Common.DIADIEM).document(madiadiem);
 
         docRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
@@ -440,12 +604,12 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                     docRef.set(diaDiem).addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
-                            Toast.makeText(MainActivity.this, "Done", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this, getString(R.string.themthanhcong), Toast.LENGTH_SHORT).show();
                         }
                     }).addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
-                            Toast.makeText(MainActivity.this, "Fail", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this, getString(R.string.themloi), Toast.LENGTH_SHORT).show();
                         }
                     });
                 }
@@ -454,26 +618,49 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     }
 
     private void themReviews(final String madiadiem, final Review review) {
-        final DocumentReference docRef = db.collection("Danh Gia").document(madiadiem);
+        final DocumentReference docRef = db.collection(Common.DANHGIA).document(madiadiem);
         docRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
                 if (!documentSnapshot.exists()){
-                    docRef.collection("Reviews").document().set(review).addOnSuccessListener(new OnSuccessListener<Void>() {
+                    docRef.collection(Common.REVIEWS).document().set(review).addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
-                            Toast.makeText(MainActivity.this, "Done", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this, getString(R.string.themthanhcong), Toast.LENGTH_SHORT).show();
                         }
                     }).addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
-                            Toast.makeText(MainActivity.this, "Fail", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this, getString(R.string.themloi), Toast.LENGTH_SHORT).show();
                         }
                     });
                 }
             }
         });
     }
+
+    private void updateData(String madiadiem, String tendiadiem, String diachi, GeoPoint location, String website, String dienthoai
+            , Map<String, Object> danhmucMap, Map<String, Object> hinhanhMap, Map<String, Object> thoiGianHoatDongMap){
+        DocumentReference diadiem = db.collection(Common.DIADIEM).document(madiadiem);
+        diadiem.update(Common.danhmuc, FieldValue.delete());
+        diadiem.set(danhmucMap, SetOptions.merge());
+
+        diadiem.update(Common.diachi, diachi);
+        diadiem.update(Common.dienthoai, dienthoai);
+
+        diadiem.update(Common.hinhanh, FieldValue.delete());
+        diadiem.set(hinhanhMap, SetOptions.merge());
+
+        diadiem.update(Common.location, location);
+        diadiem.update(Common.madiadiem, madiadiem);
+        diadiem.update(Common.tendiadiem, tendiadiem);
+
+        diadiem.update(Common.thoigianhoatdong, FieldValue.delete());
+        diadiem.set(thoiGianHoatDongMap, SetOptions.merge());
+
+        diadiem.update(Common.website, website);
+    }
+
 
     @Override
     protected void onDestroy() {

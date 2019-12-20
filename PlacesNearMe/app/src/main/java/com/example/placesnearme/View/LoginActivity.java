@@ -1,11 +1,11 @@
 package com.example.placesnearme.View;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -21,6 +21,8 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import dmax.dialog.SpotsDialog;
+
 import static android.text.TextUtils.isEmpty;
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener{
@@ -30,7 +32,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     // widgets
     private EditText edEmail, edPassword;
-    private ProgressBar mProgressBar;
+
+    private AlertDialog alertDialog;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -40,7 +43,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         edEmail = findViewById(R.id.edEmail);
         edPassword = findViewById(R.id.edPassword);
 
-        mProgressBar = findViewById(R.id.progressBar);
+        alertDialog = new SpotsDialog(this);
 
         setupFirebaseAuth();
 
@@ -79,15 +82,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         }
     }
 
-    private void showDialog(){
-        mProgressBar.setVisibility(View.VISIBLE);
-    }
-
-    private void hideDialog(){
-        if(mProgressBar.getVisibility() == View.VISIBLE)
-            mProgressBar.setVisibility(View.INVISIBLE);
-    }
-
     private void hideSoftKeyboard(){
         this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
     }
@@ -95,24 +89,24 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private void signIn(){
         //check if the fields are filled out
         if(!isEmpty(edEmail.getText().toString()) && !isEmpty(edPassword.getText().toString())){
-            showDialog();
+            alertDialog.show();
 
             FirebaseAuth.getInstance().signInWithEmailAndPassword(edEmail.getText().toString(),
                     edPassword.getText().toString())
                     .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
-                            hideDialog();
+                            alertDialog.dismiss();
                         }
                     }).addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception e) {
                     Toast.makeText(LoginActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                    hideDialog();
+                    alertDialog.dismiss();
                 }
             });
         }else{
-            Toast.makeText(LoginActivity.this, "You didn't fill in all the fields.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(LoginActivity.this, getString(R.string.khongduocdetrong), Toast.LENGTH_SHORT).show();
         }
     }
 

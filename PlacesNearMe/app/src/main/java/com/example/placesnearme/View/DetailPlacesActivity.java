@@ -4,10 +4,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -24,6 +26,7 @@ import android.widget.Toast;
 
 import com.example.placesnearme.Adapter.ListDanhGiaDiaDiemAdapter;
 import com.example.placesnearme.Adapter.ListHinhAnhDiaDiemAdapter;
+import com.example.placesnearme.Common;
 import com.example.placesnearme.Model.Firebase.DiaDiem;
 import com.example.placesnearme.Model.Firebase.Review;
 import com.example.placesnearme.Model.Firebase.User;
@@ -48,11 +51,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import dmax.dialog.SpotsDialog;
 
 public class DetailPlacesActivity extends AppCompatActivity implements View.OnClickListener{
     private CircleImageView imgAvaDiaDiem, imgDienThoai, imgChrome, imgAva;
     private TextView txtTenDiaDiem, txtSdtDiaDiem, txtWebsite, txtDangHoatDong, txtDiaChi,
-            txtThu2, txtThu3, txtThu4, txtThu5, txtThu6, txtThu7, txtChuNhat, txtSoHinh, txtDangBinhLuan;
+            txtThu2, txtThu3, txtThu4, txtThu5, txtThu6, txtThu7, txtChuNhat, txtDangBinhLuan;
 
     private EditText edBinhLuan;
 
@@ -78,17 +82,21 @@ public class DetailPlacesActivity extends AppCompatActivity implements View.OnCl
     private StorageReference storageReference;
     private FirebaseUser user;
 
+    private AlertDialog alertDialog;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail_places);
 
-        preferences = getSharedPreferences("prefMaDiaDiem", 0);
-        preferencesUser = getSharedPreferences("prefUser", 0);
+        preferences = getSharedPreferences(Common.PREF_DIADIEM, 0);
+        preferencesUser = getSharedPreferences(Common.PREF_USER, 0);
         editor = preferencesUser.edit();
 
         db = FirebaseFirestore.getInstance();
         storageReference = FirebaseStorage.getInstance().getReference();
+
+        alertDialog = new SpotsDialog(this);
 
         imgAvaDiaDiem = findViewById(R.id.imgAvaDiaDiem);
         imgDienThoai = findViewById(R.id.imgDienThoai);
@@ -100,7 +108,6 @@ public class DetailPlacesActivity extends AppCompatActivity implements View.OnCl
         txtWebsite = findViewById(R.id.txtWebsite);
         txtDangHoatDong = findViewById(R.id.txtDangHoatDong);
         txtDiaChi = findViewById(R.id.txtDiaChi);
-        txtSoHinh = findViewById(R.id.txtSoHinh);
         txtDangBinhLuan = findViewById(R.id.txtDangBinhLuan);
 
         edBinhLuan = findViewById(R.id.edBinhLuan);
@@ -119,7 +126,7 @@ public class DetailPlacesActivity extends AppCompatActivity implements View.OnCl
 
         listHinhAnh = findViewById(R.id.recyclerHinhAnhDiaDiem);
         listHinhAnh.setHasFixedSize(true);
-        layoutManager = new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false);
+        layoutManager = new GridLayoutManager(this, 2);
         listHinhAnh.setLayoutManager(layoutManager);
 
         listReview = findViewById(R.id.recyclerReview);
@@ -127,8 +134,8 @@ public class DetailPlacesActivity extends AppCompatActivity implements View.OnCl
         layoutManager2 = new LinearLayoutManager(getApplicationContext());
         listReview.setLayoutManager(layoutManager2);
 
-        layChiTietDiaDiem(preferences.getString("maDiaDiem", ""));
-        layReview(preferences.getString("maDiaDiem", ""));
+        layChiTietDiaDiem(preferences.getString(Common.madiadiem, ""));
+        layReview(preferences.getString(Common.madiadiem, ""));
 
         setupFirebaseAuth();
 
@@ -140,9 +147,24 @@ public class DetailPlacesActivity extends AppCompatActivity implements View.OnCl
         txtDangBinhLuan.setOnClickListener(this);
     }
 
+    private void setBusinessTiming(TextView textView, String thu, String thoigianmocua, String thoigiandongcua){
+        if (thoigianmocua.equals(getString(R.string.dongcua)))
+            textView.setText(thu + " " + getString(R.string.dongcua));
+        else if (thoigianmocua.equals(getString(R.string.mocua24h)))
+            textView.setText(thu + " " + getString(R.string.mocua24h));
+        else if (thoigianmocua.equals(getString(R.string.khongcothoigianhoatdong)))
+            textView.setText(thu + " " + getString(R.string.khongcothoigianhoatdong));
+        else
+            textView.setText(thu + " " + thoigianmocua + " - " + thoigiandongcua);
+    }
+
     private void layChiTietDiaDiem(final String madiadiem){
-        db.collection("Dia Diem").document(madiadiem)
-                .get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+        alertDialog.show();
+
+        hinhanhs.clear();
+
+        db.collection(Common.DIADIEM).document(madiadiem).get()
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @SuppressLint("SetTextI18n")
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -160,25 +182,16 @@ public class DetailPlacesActivity extends AppCompatActivity implements View.OnCl
                         txtSdtDiaDiem.setText(diaDiem.getDienthoai());
 
                         if (diaDiem.getHinhanh().size() > 0){
+                            hinhanhs.addAll(diaDiem.getHinhanh());
 
-                            txtSoHinh.setText(diaDiem.getHinhanh().size() + "");
-
-                            if (diaDiem.getHinhanh().size() > 3)
-                                txtSoHinh.setVisibility(View.VISIBLE);
-                            else
-                                txtSoHinh.setVisibility(View.GONE);
-
-                            for (int i = 0; i < diaDiem.getHinhanh().size(); i++)
-                                hinhanhs.add(diaDiem.getHinhanh().get(i));
-
-                            if (hinhanhs.get(0).substring(0, hinhanhs.get(0).indexOf(":")).equals("https")){
+                            if (hinhanhs.get(0).substring(0, 5).equals("https")){
                                 Picasso.get()
                                         .load(hinhanhs.get(0))
                                         .placeholder(R.drawable.img_loading)
                                         .into(imgAvaDiaDiem);
                             }else {
-                                StorageReference storageImgProductType = FirebaseStorage.getInstance().getReference().child("Images")
-                                        .child(diaDiem.getMadiadiem()).child(hinhanhs.get(0));
+                                StorageReference storageImgProductType = FirebaseStorage.getInstance().getReference().child(Common.IMAGE)
+                                        .child(madiadiem).child(hinhanhs.get(0));
 
                                 long ONE_MEGABYTE = 1024 * 1024;
                                 storageImgProductType.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
@@ -192,80 +205,55 @@ public class DetailPlacesActivity extends AppCompatActivity implements View.OnCl
                         }
 
                         adapterHinhAnh = new ListHinhAnhDiaDiemAdapter(hinhanhs, madiadiem);
+                        adapterHinhAnh.notifyDataSetChanged();
                         listHinhAnh.setAdapter(adapterHinhAnh);
 
-                        if (diaDiem.getThoigianhoatdong().size() > 0){
-                            if (diaDiem.getThoigianhoatdong().get(0).get("mocua").equals(getString(R.string.dongcua)))
-                                txtThu2.setText(getString(R.string.nhapthu2) + " " + getString(R.string.dongcua));
-                            else if (diaDiem.getThoigianhoatdong().get(0).get("mocua").equals(getString(R.string.mocua24h)))
-                                txtThu2.setText(getString(R.string.nhapthu2) + " " + getString(R.string.mocua24h));
-                            else if (diaDiem.getThoigianhoatdong().get(0).get("mocua").equals(getString(R.string.khongcothoigianhoatdong)))
-                                txtThu2.setText(getString(R.string.nhapthu2) + " " + getString(R.string.khongcothoigianhoatdong));
-                            else
-                                txtThu2.setText(getString(R.string.nhapthu2) + " " + diaDiem.getThoigianhoatdong().get(0).get("mocua") + " - " + diaDiem.getThoigianhoatdong().get(0).get("dongcua"));
+                        if (diaDiem.getThoigianhoatdong().size() > 0) {
+                            for (int i = 0; i < diaDiem.getThoigianhoatdong().size(); i++) {
+                                String thoigianmocua = diaDiem.getThoigianhoatdong().get(i).get(Common.mocua).toString();
+                                String thoigiandongcua = diaDiem.getThoigianhoatdong().get(i).get(Common.dongcua).toString();
 
-                            if (diaDiem.getThoigianhoatdong().get(1).get("mocua").equals(getString(R.string.dongcua)))
-                                txtThu3.setText(getString(R.string.nhapthu3) + " " +getString(R.string.dongcua));
-                            else if (diaDiem.getThoigianhoatdong().get(1).get("mocua").equals(getString(R.string.mocua24h)))
-                                txtThu3.setText(getString(R.string.nhapthu3) + " " +getString(R.string.mocua24h));
-                            else if (diaDiem.getThoigianhoatdong().get(1).get("mocua").equals(getString(R.string.khongcothoigianhoatdong)))
-                                txtThu3.setText(getString(R.string.nhapthu3) + " " + getString(R.string.khongcothoigianhoatdong));
-                            else
-                                txtThu3.setText(getString(R.string.nhapthu3) + " " + diaDiem.getThoigianhoatdong().get(1).get("mocua") + " - " + diaDiem.getThoigianhoatdong().get(1).get("dongcua"));
-
-                            if (diaDiem.getThoigianhoatdong().get(2).get("mocua").equals(getString(R.string.dongcua)))
-                                txtThu4.setText(getString(R.string.nhapthu4) + " " + getString(R.string.dongcua));
-                            else if (diaDiem.getThoigianhoatdong().get(2).get("mocua").equals(getString(R.string.mocua24h)))
-                                txtThu4.setText(getString(R.string.nhapthu4) + " " + getString(R.string.mocua24h));
-                            else if (diaDiem.getThoigianhoatdong().get(2).get("mocua").equals(getString(R.string.khongcothoigianhoatdong)))
-                                txtThu4.setText(getString(R.string.nhapthu4) + " " + getString(R.string.khongcothoigianhoatdong));
-                            else
-                                txtThu4.setText(getString(R.string.nhapthu4) + " " + diaDiem.getThoigianhoatdong().get(2).get("mocua") + " - " + diaDiem.getThoigianhoatdong().get(2).get("dongcua"));
-
-                            if (diaDiem.getThoigianhoatdong().get(3).get("mocua").equals(getString(R.string.dongcua)))
-                                txtThu5.setText(getString(R.string.nhapthu5) + " " + getString(R.string.dongcua));
-                            else if (diaDiem.getThoigianhoatdong().get(3).get("mocua").equals(getString(R.string.mocua24h)))
-                                txtThu5.setText(getString(R.string.nhapthu5) + " " + getString(R.string.mocua24h));
-                            else if (diaDiem.getThoigianhoatdong().get(3).get("mocua").equals(getString(R.string.khongcothoigianhoatdong)))
-                                txtThu5.setText(getString(R.string.nhapthu5) + " " + getString(R.string.khongcothoigianhoatdong));
-                            else
-                                txtThu5.setText(getString(R.string.nhapthu5) + " " + diaDiem.getThoigianhoatdong().get(3).get("mocua") + " - " + diaDiem.getThoigianhoatdong().get(3).get("dongcua"));
-
-                            if (diaDiem.getThoigianhoatdong().get(4).get("mocua").equals(getString(R.string.dongcua)))
-                                txtThu6.setText(getString(R.string.nhapthu6) + " " + getString(R.string.dongcua));
-                            else if (diaDiem.getThoigianhoatdong().get(4).get("mocua").equals(getString(R.string.mocua24h)))
-                                txtThu6.setText(getString(R.string.nhapthu6) + " " + getString(R.string.mocua24h));
-                            else if (diaDiem.getThoigianhoatdong().get(4).get("mocua").equals(getString(R.string.khongcothoigianhoatdong)))
-                                txtThu6.setText(getString(R.string.nhapthu6) + " " + getString(R.string.khongcothoigianhoatdong));
-                            else
-                                txtThu6.setText(getString(R.string.nhapthu6) + " " + diaDiem.getThoigianhoatdong().get(4).get("mocua") + " - " + diaDiem.getThoigianhoatdong().get(4).get("dongcua"));
-
-                            if (diaDiem.getThoigianhoatdong().get(5).get("mocua").equals(getString(R.string.dongcua)))
-                                txtThu7.setText(getString(R.string.nhapthu7) + " " + getString(R.string.dongcua));
-                            else if (diaDiem.getThoigianhoatdong().get(5).get("mocua").equals(getString(R.string.mocua24h)))
-                                txtThu7.setText(getString(R.string.nhapthu7) + " " + getString(R.string.mocua24h));
-                            else if (diaDiem.getThoigianhoatdong().get(5).get("mocua").equals(getString(R.string.khongcothoigianhoatdong)))
-                                txtThu7.setText(getString(R.string.nhapthu7) + " " + getString(R.string.khongcothoigianhoatdong));
-                            else
-                                txtThu7.setText(getString(R.string.nhapthu7) + " " + diaDiem.getThoigianhoatdong().get(5).get("mocua") + " - " + diaDiem.getThoigianhoatdong().get(5).get("dongcua"));
-
-                            if (diaDiem.getThoigianhoatdong().get(6).get("mocua").equals(getString(R.string.dongcua)))
-                                txtChuNhat.setText(getString(R.string.nhapchunhat) + " " + getString(R.string.dongcua));
-                            else if (diaDiem.getThoigianhoatdong().get(6).get("mocua").equals(getString(R.string.mocua24h)))
-                                txtChuNhat.setText(getString(R.string.nhapchunhat) + " " + getString(R.string.mocua24h));
-                            else if (diaDiem.getThoigianhoatdong().get(6).get("mocua").equals(getString(R.string.khongcothoigianhoatdong)))
-                                txtChuNhat.setText(getString(R.string.nhapchunhat) + " " + getString(R.string.khongcothoigianhoatdong));
-                            else
-                                txtChuNhat.setText(getString(R.string.nhapchunhat) + " " + diaDiem.getThoigianhoatdong().get(6).get("mocua") + " - " + diaDiem.getThoigianhoatdong().get(6).get("dongcua"));
+                                switch (i) {
+                                    case 0:
+                                        setBusinessTiming(txtThu2, getString(R.string.nhapthu2), thoigianmocua, thoigiandongcua);
+                                        break;
+                                    case 1:
+                                        setBusinessTiming(txtThu3, getString(R.string.nhapthu3), thoigianmocua, thoigiandongcua);
+                                        break;
+                                    case 2:
+                                        setBusinessTiming(txtThu4, getString(R.string.nhapthu4), thoigianmocua, thoigiandongcua);
+                                        break;
+                                    case 3:
+                                        setBusinessTiming(txtThu5, getString(R.string.nhapthu5), thoigianmocua, thoigiandongcua);
+                                        break;
+                                    case 4:
+                                        setBusinessTiming(txtThu6, getString(R.string.nhapthu6), thoigianmocua, thoigiandongcua);
+                                        break;
+                                    case 5:
+                                        setBusinessTiming(txtThu7, getString(R.string.nhapthu7), thoigianmocua, thoigiandongcua);
+                                        break;
+                                    case 6:
+                                        setBusinessTiming(txtChuNhat, getString(R.string.nhapchunhat), thoigianmocua, thoigiandongcua);
+                                        break;
+                                }
                             }
+                        }
 
                         txtWebsite.setText(diaDiem.getWebsite());
                     } else {
-                        Toast.makeText(DetailPlacesActivity.this, "Không tồn tại địa điểm này", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(DetailPlacesActivity.this, getString(R.string.khongtontaidiadiem), Toast.LENGTH_SHORT).show();
+                        alertDialog.dismiss();
                     }
                 } else {
-                    Toast.makeText(DetailPlacesActivity.this, "Lỗi! Không lấy dữ liệu được", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(DetailPlacesActivity.this, getString(R.string.coloitrongquatrinhlaydulieu), Toast.LENGTH_SHORT).show();
+                    alertDialog.dismiss();
                 }
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(DetailPlacesActivity.this, getString(R.string.coloitrongquatrinhlaydulieu), Toast.LENGTH_SHORT).show();
+                alertDialog.dismiss();
             }
         });
     }
@@ -273,7 +261,7 @@ public class DetailPlacesActivity extends AppCompatActivity implements View.OnCl
     private void layReview(final String madiadiem){
         reviews.clear();
 
-        db.collection("Danh Gia").document(madiadiem).collection("Reviews")
+        db.collection(Common.DANHGIA).document(madiadiem).collection(Common.REVIEWS)
                 .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -283,9 +271,11 @@ public class DetailPlacesActivity extends AppCompatActivity implements View.OnCl
                     reviews.add(review);
                 }
 
-                adapterDanhGia = new ListDanhGiaDiaDiemAdapter(reviews, madiadiem);
+                adapterDanhGia = new ListDanhGiaDiaDiemAdapter(reviews);
                 adapterDanhGia.notifyDataSetChanged();
                 listReview.setAdapter(adapterDanhGia);
+
+                alertDialog.dismiss();
             }
         });
     }
@@ -304,10 +294,10 @@ public class DetailPlacesActivity extends AppCompatActivity implements View.OnCl
                 onBackPressed();
                 return true;
             case R.id.edit_menu_toolbar:
-                SharedPreferences preferences = getSharedPreferences("prefEdit", 0);
+                SharedPreferences preferences = getSharedPreferences(Common.PREF_EDIT, 0);
                 SharedPreferences.Editor editor = preferences.edit();
 
-                editor.putBoolean("edit", true);
+                editor.putBoolean(Common.edit, true);
                 editor.commit();
 
                 Intent intent = new Intent(this, MainActivity.class);
@@ -323,7 +313,7 @@ public class DetailPlacesActivity extends AppCompatActivity implements View.OnCl
     private void loadData(final String userId){
         users.clear();
 
-        db.collection("User").whereEqualTo("mauser", userId).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+        db.collection(Common.USER).whereEqualTo(Common.mauser, userId).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 for (DocumentSnapshot doc : task.getResult()) {
@@ -332,9 +322,9 @@ public class DetailPlacesActivity extends AppCompatActivity implements View.OnCl
                     users.add(userModel);
                 }
 
-                editor.putString("uid", users.get(0).getMauser());
-                editor.putString("ten", users.get(0).getUsername());
-                editor.putString("ava", users.get(0).getAvatar());
+                editor.putString(Common.mauser, users.get(0).getMauser());
+                editor.putString(Common.username, users.get(0).getUsername());
+                editor.putString(Common.avatar, users.get(0).getAvatar());
                 editor.commit();
 
                 loadAvatar(users.get(0).getAvatar(), userId);
@@ -349,16 +339,31 @@ public class DetailPlacesActivity extends AppCompatActivity implements View.OnCl
 
 
     private void loadAvatar(String ava, String uid){
-        StorageReference storageImgProductType = storageReference.child("Avatar").child(uid).child(ava);
+        if (ava.equals("ava_man.png")){
+            StorageReference storageImgProductType = storageReference.child(Common.AVATAR).child(ava);
 
-        long ONE_MEGABYTE = 1024 * 1024;
-        storageImgProductType.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
-            @Override
-            public void onSuccess(byte[] bytes) {
-                Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                imgAva.setImageBitmap(bitmap);
-            }
-        });
+            long ONE_MEGABYTE = 1024 * 1024;
+            storageImgProductType.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                @Override
+                public void onSuccess(byte[] bytes) {
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                    imgAva.setImageBitmap(bitmap);
+                }
+            });
+        }else {
+            StorageReference storageImgProductType = storageReference.child(Common.AVATAR)
+                    .child(uid)
+                    .child(ava);
+
+            long ONE_MEGABYTE = 1024 * 1024;
+            storageImgProductType.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                @Override
+                public void onSuccess(byte[] bytes) {
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                    imgAva.setImageBitmap(bitmap);
+                }
+            });
+        }
     }
 
     private void setupFirebaseAuth(){
@@ -393,17 +398,19 @@ public class DetailPlacesActivity extends AppCompatActivity implements View.OnCl
 
         switch (id){
             case R.id.txtDangBinhLuan:
-                dangbinhluan(preferences.getString("maDiaDiem", "")
-                        , preferencesUser.getString("uid", "")
-                        , preferencesUser.getString("ten", "")
-                        , preferencesUser.getString("ava", ""));
+                dangbinhluan(preferences.getString(Common.madiadiem, "")
+                        , preferencesUser.getString(Common.mauser, "")
+                        , preferencesUser.getString(Common.username, "")
+                        , preferencesUser.getString(Common.avatar, ""));
                 break;
         }
     }
 
-    private void dangbinhluan(String madiadiem, final String uid, final String ten, final String ava) {
-        final DocumentReference docRef = db.collection("Danh Gia").document(madiadiem)
-                                            .collection("Reviews").document();
+    private void dangbinhluan(final String madiadiem, final String uid, final String ten, final String ava) {
+        alertDialog.show();
+
+        final DocumentReference docRef = db.collection(Common.DANHGIA).document(madiadiem)
+                                            .collection(Common.REVIEWS).document();
 
         docRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
@@ -424,13 +431,22 @@ public class DetailPlacesActivity extends AppCompatActivity implements View.OnCl
                                 ratingBar.setRating(0);
                                 edBinhLuan.setText("");
 
-                                layReview(preferences.getString("maDiaDiem", ""));
-                                Toast.makeText(DetailPlacesActivity.this, "Thành công!!", Toast.LENGTH_SHORT).show();
+                                layReview(preferences.getString(Common.madiadiem, ""));
+                                Toast.makeText(DetailPlacesActivity.this, getString(R.string.dabinhluan), Toast.LENGTH_SHORT).show();
+
+                                alertDialog.dismiss();
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Toast.makeText(DetailPlacesActivity.this, getString(R.string.coloitrongquatrinhlaydulieu), Toast.LENGTH_SHORT).show();
+                                alertDialog.dismiss();
                             }
                         });
-                    } else
-                        Toast.makeText(DetailPlacesActivity.this, "Vui lòng đánh giá sao cho địa điểm! Bình luận có thể để trống!", Toast.LENGTH_SHORT).show();
-
+                    } else{
+                        Toast.makeText(DetailPlacesActivity.this, getString(R.string.loibinhluan), Toast.LENGTH_SHORT).show();
+                        alertDialog.dismiss();
+                    }
                 }
             }
         });

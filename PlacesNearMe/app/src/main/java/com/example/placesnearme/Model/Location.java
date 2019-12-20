@@ -2,7 +2,6 @@ package com.example.placesnearme.Model;
 
 public class Location {
     private String lng;
-
     private String lat;
 
     public String getLng ()

@@ -32,6 +32,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.placesnearme.Adapter.AutoCompleteCategoryAdapter;
 import com.example.placesnearme.Adapter.ListDiaDiemTimKiemAdapter;
+import com.example.placesnearme.Common;
 import com.example.placesnearme.Model.Firebase.DanhMuc;
 import com.example.placesnearme.Model.Firebase.DiaDiem;
 import com.example.placesnearme.Model.PolylineData;
@@ -50,6 +51,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -68,6 +70,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import dmax.dialog.SpotsDialog;
+
 public class SearchFragment extends Fragment implements OnMapReadyCallback, View.OnClickListener,
         GoogleMap.OnPolylineClickListener, AdapterView.OnItemSelectedListener {
 
@@ -75,14 +79,14 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, View
     private GoogleMap mMap;
 
     private Spinner spinContextSapXep, spinContextKieuXem;
-    //private EditText edSearch;
+
     private ImageView imgSearch;
+
+    private AlertDialog alertDialog;
 
     private AutoCompleteTextView autoCompleteTextView;
 
     private GeoApiContext mGeoApiContext;
-
-    private FirebaseFirestore db;
 
     private Marker mMarker;
 
@@ -106,8 +110,6 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, View
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_search, container, false);
 
-        db = FirebaseFirestore.getInstance();
-
         mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
@@ -117,10 +119,11 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, View
                     .build();
         }
 
-        //edSearch = view.findViewById(R.id.edSearch);
         imgSearch = view.findViewById(R.id.imgSearch);
 
         layTuKhoa();
+
+        alertDialog = new SpotsDialog(getContext());
 
         autoCompleteTextView = view.findViewById(R.id.txtautocomplete);
 
@@ -168,7 +171,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, View
         LatLng latLng = new LatLng(MainActivity.latitude, MainActivity.longtitude);
         MarkerOptions markerOptions = new MarkerOptions()
                 .position(latLng)
-                .title("This is you")
+                .title(getString(R.string.daylaban))
                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
 
         mMarker = mMap.addMarker(markerOptions);
@@ -187,11 +190,11 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, View
         mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
             @Override
             public void onInfoWindowClick(final Marker marker) {
-                if(marker.getTitle().contains("Trip #")){
+                if(marker.getTitle().contains(getString(R.string.duongdi))){
                     AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                    builder.setMessage("Open Google Maps?")
+                    builder.setMessage(getString(R.string.mogoogleMap))
                             .setCancelable(true)
-                            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            .setPositiveButton(getString(R.string.mo), new DialogInterface.OnClickListener() {
                                 public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
                                     String latitude = String.valueOf(marker.getPosition().latitude);
                                     String longitude = String.valueOf(marker.getPosition().longitude);
@@ -203,11 +206,11 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, View
                                         if (mapIntent.resolveActivity(getActivity().getPackageManager()) != null)
                                             startActivity(mapIntent);
                                     }catch (NullPointerException e){
-                                        Toast.makeText(getActivity(), "Couldn't open map", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(getActivity(), getString(R.string.khongthemomap), Toast.LENGTH_SHORT).show();
                                     }
 
                                 }
-                            }).setNegativeButton("No", new DialogInterface.OnClickListener() {
+                            }).setNegativeButton(getString(R.string.khong), new DialogInterface.OnClickListener() {
                         public void onClick(final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
                             dialog.cancel();
                         }
@@ -216,20 +219,20 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, View
                     AlertDialog alert = builder.create();
                     alert.show();
                 }else {
-                    if(marker.getTitle().equals("This is you"))
+                    if(marker.getTitle().equals(getString(R.string.daylaban)))
                         marker.hideInfoWindow();
                     else{
                         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                        builder.setMessage("Ban co muon xem duong di den: " + marker.getTitle() + " khong ?")
+                        builder.setMessage(getString(R.string.hoichiduong) + " " + marker.getTitle() + " không ?")
                                 .setCancelable(true)
-                                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                .setPositiveButton(getString(R.string.mo), new DialogInterface.OnClickListener() {
                                     public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
                                         resetSelectedMarker();
                                         mSelectedMarker = marker;
                                         calculateDirections(marker);
                                         dialog.dismiss();
                                     }
-                                }).setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                }).setNegativeButton(getString(R.string.khong), new DialogInterface.OnClickListener() {
                             public void onClick(final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
                                 dialog.cancel();
                             }
@@ -264,6 +267,8 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, View
     }
 
     private void timkiem(final String tukhoa){
+        alertDialog.show();
+
         danhMucs.clear();
         diaDiems.clear();
 
@@ -273,7 +278,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, View
             adapterDiaDiemTimKiem.notifyDataSetChanged();
         }
 
-        db.collection("Danh Muc").whereArrayContains("tukhoa", tukhoa).get()
+        MainActivity.db.collection(Common.DANHMUC).whereArrayContains(Common.tukhoa, tukhoa).get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                     @Override
                     public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
@@ -293,7 +298,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, View
     private void danhsach(String madanhmuc){
         mMap.clear();
 
-        db.collection("Dia Diem").whereArrayContains("danhmuc", madanhmuc).get()
+        MainActivity.db.collection(Common.DIADIEM).whereArrayContains(Common.danhmuc, madanhmuc).get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                     @Override
                     public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
@@ -329,16 +334,25 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, View
                         Collections.sort(diaDiems, new SortDiaDiem());
 
                         adapterDiaDiemTimKiem = new ListDiaDiemTimKiemAdapter(diaDiems, MainActivity.latitude, MainActivity.longtitude);
+                        adapterDiaDiemTimKiem.notifyDataSetChanged();
                         listDiaDiemTimKiem.setAdapter(adapterDiaDiemTimKiem);
+
+                        alertDialog.dismiss();
                     }
-                });
+                }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(getContext(), getString(R.string.coloitrongquatrinhlaydulieu), Toast.LENGTH_SHORT).show();
+                alertDialog.dismiss();
+            }
+        });
     }
 
     private void layTuKhoa(){
         tukhoas.clear();
         arrTemp.clear();
 
-        db.collection("Danh Muc").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+        MainActivity.db.collection(Common.DANHMUC).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 for (DocumentSnapshot doc : task.getResult()) {
@@ -382,8 +396,8 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, View
 
                 Marker marker = mMap.addMarker(new MarkerOptions()
                         .position(endLocation)
-                        .title("Trip #" + index)
-                        .snippet("Duration: " + polylineData.getLeg().duration)
+                        .title(getString(R.string.duongdi) + index)
+                        .snippet(getString(R.string.thoigian) + ": " + polylineData.getLeg().duration)
                 );
 
                 marker.showInfoWindow();
@@ -523,5 +537,12 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, View
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
 
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        layTuKhoa();
     }
 }

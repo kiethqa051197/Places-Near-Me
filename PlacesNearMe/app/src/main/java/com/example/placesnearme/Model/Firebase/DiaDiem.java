@@ -6,15 +6,15 @@ import java.util.List;
 import java.util.Map;
 
 public class DiaDiem {
-    List<String> danhmuc;
-    List<String> hinhanh;
-    List<Map<String, Object>> thoigianhoatdong;
-    String diachi;
-    GeoPoint location;
-    String madiadiem;
-    String tendiadiem;
-    String website;
-    String dienthoai;
+    private List<String> danhmuc;
+    private List<String> hinhanh;
+    private List<Map<String, Object>> thoigianhoatdong;
+    private String diachi;
+    private GeoPoint location;
+    private String madiadiem;
+    private String tendiadiem;
+    private String website;
+    private String dienthoai;
 
     public DiaDiem() { }
 

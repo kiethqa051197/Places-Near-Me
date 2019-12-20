@@ -14,7 +14,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="15dp">
+        android:padding="@dimen/margin10dp">
 
         <ImageView
             android:id="@id/imgBack"
@@ -29,7 +29,7 @@
             android:textStyle="bold"
             android:textColor="@color/white"
             android:text="@string/tendanhmuc"
-            android:textSize="16sp"
+            android:textSize="@dimen/textsize15sp"
             android:layout_marginStart="10dp"
             android:layout_gravity="center"/>
     </LinearLayout>
@@ -38,8 +38,8 @@
         android:id="@+id/recyclerDanhMucCon"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_margin="10dp"
-        android:padding="10dp"
+        android:layout_margin="@dimen/margin10dp"
+        android:padding="@dimen/padding10dp"
         android:layout_below="@id/linearToolbar"
         android:background="@color/white"/>
 </RelativeLayout>

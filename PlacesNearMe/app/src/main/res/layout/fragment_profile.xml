@@ -141,5 +141,14 @@
                 android:text="@string/emailExample"
                 android:enabled="false"/>
         </LinearLayout>
+
+        <Button
+            android:id="@+id/btnDangXuat"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:text="@string/dangxuat"
+            android:textStyle="bold"
+            android:textColor="@android:color/white"
+            android:background="@android:color/holo_red_dark"/>
     </LinearLayout>
 </RelativeLayout>

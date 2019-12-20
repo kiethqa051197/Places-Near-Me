@@ -1,5 +1,6 @@
 package com.example.placesnearme.Adapter;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -18,6 +19,7 @@ import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.placesnearme.Common;
 import com.example.placesnearme.Model.Firebase.DiaDiem;
 import com.example.placesnearme.Model.Firebase.Review;
 import com.example.placesnearme.R;
@@ -44,7 +46,7 @@ class ListDiaDiemTimKiemViewHolder extends RecyclerView.ViewHolder{
     FirebaseFirestore db;
     List<Review> reviews = new ArrayList<>();
 
-    public ListDiaDiemTimKiemViewHolder(@NonNull View itemView) {
+    ListDiaDiemTimKiemViewHolder(@NonNull View itemView) {
         super(itemView);
 
         txtTenDiaDiem = itemView.findViewById(R.id.txtTenDiaDiem);
@@ -85,6 +87,7 @@ public class ListDiaDiemTimKiemAdapter extends RecyclerView.Adapter<ListDiaDiemT
         return new ListDiaDiemTimKiemViewHolder(view);
     }
 
+    @SuppressLint("DefaultLocale")
     @Override
     public void onBindViewHolder(@NonNull final ListDiaDiemTimKiemViewHolder holder, final int position) {
         final DiaDiem diaDiem = diaDiemList.get(position);
@@ -104,13 +107,13 @@ public class ListDiaDiemTimKiemAdapter extends RecyclerView.Adapter<ListDiaDiemT
         holder.txtKm.setText(String.format("%.1f km", distance));
 
         if(diaDiem.getHinhanh().size() > 0){
-            if (diaDiem.getHinhanh().get(0).substring(0, diaDiem.getHinhanh().get(0).indexOf(":")).equals("https")){
+            if (diaDiem.getHinhanh().get(0).substring(0, 5).equals("https")){
                 Picasso.get()
                         .load(diaDiem.getHinhanh().get(0))
                         .placeholder(R.drawable.img_loading)
                         .into(holder.imgDanhMuc);
             }else {
-                StorageReference storageImgProductType = FirebaseStorage.getInstance().getReference().child("Images")
+                StorageReference storageImgProductType = FirebaseStorage.getInstance().getReference().child(Common.IMAGE)
                         .child(diaDiem.getMadiadiem()).child(diaDiem.getHinhanh().get(0));
 
                 long ONE_MEGABYTE = 1024 * 1024;
@@ -124,7 +127,7 @@ public class ListDiaDiemTimKiemAdapter extends RecyclerView.Adapter<ListDiaDiemT
             }
         }
 
-        holder.db.collection("Danh Gia").document(diaDiem.getMadiadiem()).collection("Reviews").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+        holder.db.collection(Common.DANHGIA).document(diaDiem.getMadiadiem()).collection(Common.REVIEWS).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 for (DocumentSnapshot doc : task.getResult()) {
@@ -156,10 +159,10 @@ public class ListDiaDiemTimKiemAdapter extends RecyclerView.Adapter<ListDiaDiemT
         holder.cardViewPlaces.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                pref = context.getSharedPreferences("prefMaDiaDiem", 0); // 0 - for private mode
+                pref = context.getSharedPreferences(Common.PREF_DIADIEM, 0); // 0 - for private mode
                 editor = pref.edit();
 
-                editor.putString("maDiaDiem", diaDiem.getMadiadiem());
+                editor.putString(Common.madiadiem, diaDiem.getMadiadiem());
                 editor.commit();
 
                 Intent intent = new Intent(context, DetailPlacesActivity.class);

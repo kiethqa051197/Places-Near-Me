@@ -1,5 +1,6 @@
 package com.example.placesnearme.View;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -15,6 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.placesnearme.Common;
 import com.example.placesnearme.Model.Firebase.User;
 import com.example.placesnearme.R;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -25,17 +27,20 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import dmax.dialog.SpotsDialog;
+
 import static android.text.TextUtils.isEmpty;
 import static com.example.placesnearme.Remote.Check.doStringsMatch;
 
 public class RegisterActivity extends AppCompatActivity implements View.OnClickListener{
     private EditText mEmail, mPassword, mConfirmPassword;
-    private ProgressBar mProgressBar;
     private Button btnRegister;
     private TextView txtSignIn;
     private ImageView imgBack;
 
     private FirebaseFirestore mDb;
+
+    private AlertDialog alertDialog;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -49,8 +54,9 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
 
         txtSignIn = findViewById(R.id.txtSignIn);
         btnRegister = findViewById(R.id.btnRegister);
-        mProgressBar = findViewById(R.id.progressBar);
         imgBack = findViewById(R.id.imgBack);
+
+        alertDialog = new SpotsDialog(this);
 
         hideSoftKeyboard();
 
@@ -60,7 +66,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
     }
 
     public void registerNewEmail(final String email, String password){
-        showDialog();
+        alertDialog.show();
 
         FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
@@ -72,28 +78,29 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                             user.setEmail(email);
                             user.setUsername(email.substring(0, email.indexOf("@")));
                             user.setMauser(FirebaseAuth.getInstance().getUid());
+                            user.setAvatar("ava_man.png");
 
                             DocumentReference newUserRef = mDb
-                                    .collection("User").document(FirebaseAuth.getInstance().getUid());
+                                    .collection(Common.USER).document(FirebaseAuth.getInstance().getUid());
 
                             newUserRef.set(user).addOnCompleteListener(new OnCompleteListener<Void>() {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
-                                    hideDialog();
+                                    alertDialog.dismiss();
 
                                     if(task.isSuccessful()){
                                         redirectLoginScreen();
                                     }else{
                                         View parentLayout = findViewById(android.R.id.content);
-                                        Snackbar.make(parentLayout, "Something went wrong.", Snackbar.LENGTH_SHORT).show();
+                                        Snackbar.make(parentLayout, getString(R.string.coloitrongquatrinhlaydulieu), Snackbar.LENGTH_SHORT).show();
                                     }
                                 }
                             });
                         }
                         else {
                             View parentLayout = findViewById(android.R.id.content);
-                            Snackbar.make(parentLayout, "Something went wrong.", Snackbar.LENGTH_SHORT).show();
-                            hideDialog();
+                            Snackbar.make(parentLayout, getString(R.string.coloidangky), Snackbar.LENGTH_SHORT).show();
+                            alertDialog.dismiss();
                         }
                     }
                 });
@@ -103,15 +110,6 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
         Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
         startActivity(intent);
         finish();
-    }
-
-    private void showDialog(){
-        mProgressBar.setVisibility(View.VISIBLE);
-    }
-
-    private void hideDialog(){
-        if(mProgressBar.getVisibility() == View.VISIBLE)
-            mProgressBar.setVisibility(View.INVISIBLE);
     }
 
     private void hideSoftKeyboard(){
@@ -132,10 +130,10 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                         //Initiate registration task
                         registerNewEmail(mEmail.getText().toString(), mPassword.getText().toString());
                     }else
-                        Toast.makeText(RegisterActivity.this, "Passwords do not Match", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(RegisterActivity.this, getString(R.string.matkhaukhongkhop), Toast.LENGTH_SHORT).show();
 
                 }else
-                    Toast.makeText(RegisterActivity.this, "You must fill out all the fields", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(RegisterActivity.this, getString(R.string.khongduocdetrong), Toast.LENGTH_SHORT).show();
                 break;
             case R.id.txtSignIn:
                 redirectLoginScreen();

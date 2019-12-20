@@ -34,7 +34,7 @@ public class SplashScreenActivity extends AppCompatActivity {
             @Override
             public void run() {
                 try {
-                    Thread.sleep(5000);
+                    Thread.sleep(2000);
                 } catch (Exception e) {
 
                 } finally {
@@ -48,7 +48,7 @@ public class SplashScreenActivity extends AppCompatActivity {
 
         try{
             PackageInfo packageInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
-            txtVersion.setText("Version: " + packageInfo.versionName);
+            txtVersion.setText(getString(R.string.phienban) + " " + packageInfo.versionName);
         }
         catch (PackageManager.NameNotFoundException e){
             e.printStackTrace();

@@ -1,3 +1,16 @@
 <resources>
     <dimen name="fab_margin">16dp</dimen>
+
+    <dimen name="margin10dp">10dp</dimen>
+    <dimen name="margin5dp">5dp</dimen>
+    <dimen name="margin15dp">15dp</dimen>
+    <dimen name="margin80dp">80dp</dimen>
+
+    <dimen name="padding10dp">10dp</dimen>
+    <dimen name="padding5dp">5dp</dimen>
+
+    <dimen name="textsize15sp">15sp</dimen>
+    <dimen name="textsize20sp">20sp</dimen>
+
+    <dimen name="heightToolbar">50dp</dimen>
 </resources>

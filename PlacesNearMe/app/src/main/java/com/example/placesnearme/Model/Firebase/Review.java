@@ -7,8 +7,7 @@ public class Review {
     private String danhgia;
     private String noidungreview;
 
-    public Review() {
-    }
+    public Review() { }
 
     public Review(String manguoireview, String tennguoireview, String hinhanhnguoireview, String danhgia, String noidungreview) {
         this.manguoireview = manguoireview;
