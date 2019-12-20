@@ -1,5 +1,6 @@
 package com.example.placesnearme.View;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -26,6 +27,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.placesnearme.Adapter.ListDiaDiemTimKiemAdapter;
+import com.example.placesnearme.Common;
 import com.example.placesnearme.Model.Firebase.DanhMuc;
 import com.example.placesnearme.Model.Firebase.DiaDiem;
 import com.example.placesnearme.Model.PolylineData;
@@ -42,6 +44,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -57,6 +60,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import dmax.dialog.SpotsDialog;
 
 public class SearchResultActivity extends AppCompatActivity implements OnMapReadyCallback, View.OnClickListener,
         GoogleMap.OnPolylineClickListener, AdapterView.OnItemSelectedListener{
@@ -89,6 +94,8 @@ public class SearchResultActivity extends AppCompatActivity implements OnMapRead
 
     private SharedPreferences prefCategory;
 
+    private AlertDialog alertDialog;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -108,8 +115,10 @@ public class SearchResultActivity extends AppCompatActivity implements OnMapRead
         imgBack = findViewById(R.id.imgBack);
         txtTenDanhMuc = findViewById(R.id.txtTenDanhMuc);
 
-        prefCategory = getSharedPreferences("prefDanhMuc", 0);
-        txtTenDanhMuc.setText(prefCategory.getString("tenDanhMuc", ""));
+        prefCategory = getSharedPreferences(Common.PREF_DANHMUC, 0);
+        txtTenDanhMuc.setText(prefCategory.getString(Common.tendanhmuc, ""));
+
+        alertDialog = new SpotsDialog(this);
 
         spinContextKieuXem = findViewById(R.id.spinContextKieuXem);
         spinContextSapXep = findViewById(R.id.spinContextSapXep);
@@ -129,7 +138,7 @@ public class SearchResultActivity extends AppCompatActivity implements OnMapRead
         layoutManagerDanhMuc = new LinearLayoutManager(getApplicationContext());
         listDiaDiemTimKiem.setLayoutManager(layoutManagerDanhMuc);
 
-        danhsach(prefCategory.getString("maDanhMuc", ""));
+        danhsach(prefCategory.getString(Common.madanhmuc, ""));
 
         spinContextSapXep.setOnItemSelectedListener(this);
         spinContextKieuXem.setOnItemSelectedListener(this);
@@ -138,10 +147,14 @@ public class SearchResultActivity extends AppCompatActivity implements OnMapRead
     }
 
     private void danhsach(String madanhmuc){
+        alertDialog.show();
+
+        diaDiems.clear();
+
         if (mMap != null)
             mMap.clear();
 
-        db.collection("Dia Diem").whereArrayContains("danhmuc", madanhmuc).get()
+        db.collection(Common.DIADIEM).whereArrayContains(Common.danhmuc, madanhmuc).get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                     @Override
                     public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
@@ -177,9 +190,18 @@ public class SearchResultActivity extends AppCompatActivity implements OnMapRead
                         Collections.sort(diaDiems, new SortDiaDiem());
 
                         adapterDiaDiemTimKiem = new ListDiaDiemTimKiemAdapter(diaDiems, MainActivity.latitude, MainActivity.longtitude);
+                        adapterDiaDiemTimKiem.notifyDataSetChanged();
                         listDiaDiemTimKiem.setAdapter(adapterDiaDiemTimKiem);
+
+                        alertDialog.dismiss();
                     }
-                });
+                }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(SearchResultActivity.this, getString(R.string.coloitrongquatrinhlaydulieu), Toast.LENGTH_SHORT).show();
+                alertDialog.dismiss();
+            }
+        });
     }
 
     @Override
@@ -241,8 +263,8 @@ public class SearchResultActivity extends AppCompatActivity implements OnMapRead
 
                 Marker marker = mMap.addMarker(new MarkerOptions()
                         .position(endLocation)
-                        .title("Trip #" + index)
-                        .snippet("Duration: " + polylineData.getLeg().duration)
+                        .title(getString(R.string.duongdi) + index)
+                        .snippet(getString(R.string.thoigian) + ": " + polylineData.getLeg().duration)
                 );
 
                 marker.showInfoWindow();
@@ -352,7 +374,6 @@ public class SearchResultActivity extends AppCompatActivity implements OnMapRead
         mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, routePadding),600,null);
     }
 
-
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
@@ -360,7 +381,7 @@ public class SearchResultActivity extends AppCompatActivity implements OnMapRead
         LatLng latLng = new LatLng(MainActivity.latitude, MainActivity.longtitude);
         MarkerOptions markerOptions = new MarkerOptions()
                 .position(latLng)
-                .title("This is you")
+                .title(getString(R.string.daylaban))
                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
 
         mMarker = mMap.addMarker(markerOptions);
@@ -379,11 +400,11 @@ public class SearchResultActivity extends AppCompatActivity implements OnMapRead
         mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
             @Override
             public void onInfoWindowClick(final Marker marker) {
-                if(marker.getTitle().contains("Trip #")){
+                if(marker.getTitle().contains(getString(R.string.daylaban))){
                     AlertDialog.Builder builder = new AlertDialog.Builder(SearchResultActivity.this);
-                    builder.setMessage("Open Google Maps?")
+                    builder.setMessage(getString(R.string.mogoogleMap))
                             .setCancelable(true)
-                            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            .setPositiveButton(getString(R.string.mo), new DialogInterface.OnClickListener() {
                                 public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
                                     String latitude = String.valueOf(marker.getPosition().latitude);
                                     String longitude = String.valueOf(marker.getPosition().longitude);
@@ -395,11 +416,11 @@ public class SearchResultActivity extends AppCompatActivity implements OnMapRead
                                         if (mapIntent.resolveActivity(getApplication().getPackageManager()) != null)
                                             startActivity(mapIntent);
                                     }catch (NullPointerException e){
-                                        Toast.makeText(getApplication(), "Couldn't open map", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(getApplication(), getString(R.string.khongthemomap), Toast.LENGTH_SHORT).show();
                                     }
 
                                 }
-                            }).setNegativeButton("No", new DialogInterface.OnClickListener() {
+                            }).setNegativeButton(getString(R.string.khong), new DialogInterface.OnClickListener() {
                         public void onClick(final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
                             dialog.cancel();
                         }
@@ -408,20 +429,20 @@ public class SearchResultActivity extends AppCompatActivity implements OnMapRead
                     AlertDialog alert = builder.create();
                     alert.show();
                 }else {
-                    if(marker.getTitle().equals("This is you"))
+                    if(marker.getTitle().equals(getString(R.string.daylaban)))
                         marker.hideInfoWindow();
                     else{
                         AlertDialog.Builder builder = new AlertDialog.Builder(SearchResultActivity.this);
-                        builder.setMessage("Ban co muon xem duong di den: " + marker.getTitle() + " khong ?")
+                        builder.setMessage(getString(R.string.hoichiduong) + ": " + marker.getTitle() + " không ?")
                                 .setCancelable(true)
-                                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                .setPositiveButton(getString(R.string.mo), new DialogInterface.OnClickListener() {
                                     public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
                                         resetSelectedMarker();
                                         mSelectedMarker = marker;
                                         calculateDirections(marker);
                                         dialog.dismiss();
                                     }
-                                }).setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                }).setNegativeButton(getString(R.string.khong), new DialogInterface.OnClickListener() {
                             public void onClick(final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
                                 dialog.cancel();
                             }

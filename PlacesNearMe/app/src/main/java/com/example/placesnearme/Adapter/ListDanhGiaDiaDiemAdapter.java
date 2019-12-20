@@ -12,6 +12,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.placesnearme.Common;
 import com.example.placesnearme.Model.Firebase.Review;
 import com.example.placesnearme.R;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -29,27 +30,24 @@ class ListDanhGiaDiaDiemViewHolder extends RecyclerView.ViewHolder{
     RatingBar ratingBarReview;
     ImageView imgCamXuc;
 
-    public ListDanhGiaDiaDiemViewHolder(@NonNull View itemView) {
+    ListDanhGiaDiaDiemViewHolder(@NonNull View itemView) {
         super(itemView);
 
         imgAvaUserReview = itemView.findViewById(R.id.imgAvaUserReview);
+        imgCamXuc = itemView.findViewById(R.id.imgCamXuc);
 
         txtUserName = itemView.findViewById(R.id.txtUserName);
         txtReview = itemView.findViewById(R.id.txtReview);
 
         ratingBarReview = itemView.findViewById(R.id.ratingBarReview);
-
-        imgCamXuc = itemView.findViewById(R.id.imgCamXuc);
     }
 }
 
 public class ListDanhGiaDiaDiemAdapter extends RecyclerView.Adapter<ListDanhGiaDiaDiemViewHolder>{
-    List<Review> reviews;
-    String madiadiem;
+    private List<Review> reviews;
 
-    public ListDanhGiaDiaDiemAdapter(List<Review> reviews, String madiadiem) {
+    public ListDanhGiaDiaDiemAdapter(List<Review> reviews) {
         this.reviews = reviews;
-        this.madiadiem = madiadiem;
     }
 
     @NonNull
@@ -85,7 +83,7 @@ public class ListDanhGiaDiaDiemAdapter extends RecyclerView.Adapter<ListDanhGiaD
                     .placeholder(R.drawable.img_loading)
                     .into(holder.imgAvaUserReview);
         }else {
-            StorageReference storageImgProductType = FirebaseStorage.getInstance().getReference().child("Avatar")
+            StorageReference storageImgProductType = FirebaseStorage.getInstance().getReference().child(Common.AVATAR)
                     .child(review.getManguoireview()).child(review.getHinhanhnguoireview());
 
             long ONE_MEGABYTE = 1024 * 1024;

@@ -1,5 +1,6 @@
 package com.example.placesnearme.View;
 
+import android.app.AlertDialog;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.MenuItem;
@@ -14,6 +15,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.placesnearme.Adapter.ListDanhMucAdapter;
+import com.example.placesnearme.Common;
 import com.example.placesnearme.Model.Firebase.DanhMuc;
 import com.example.placesnearme.Model.Firebase.DanhMucCha;
 import com.example.placesnearme.R;
@@ -26,6 +28,8 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import dmax.dialog.SpotsDialog;
 
 public class CategoryActivity extends AppCompatActivity implements View.OnClickListener{
 
@@ -40,7 +44,9 @@ public class CategoryActivity extends AppCompatActivity implements View.OnClickL
     private ImageView imgBack;
     private TextView txtTenDanhMuc;
 
-    SharedPreferences prefCategory;
+    private SharedPreferences prefCategory;
+
+    private AlertDialog alertDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +55,9 @@ public class CategoryActivity extends AppCompatActivity implements View.OnClickL
 
         db = FirebaseFirestore.getInstance();
 
-        prefCategory = getSharedPreferences("prefDanhMucCha", 0);
+        prefCategory = getSharedPreferences(Common.PREF_DANHMUCCHA, 0);
+
+        alertDialog = new SpotsDialog(this);
 
         imgBack = findViewById(R.id.imgBack);
         txtTenDanhMuc = findViewById(R.id.txtTenDanhMuc);
@@ -59,7 +67,7 @@ public class CategoryActivity extends AppCompatActivity implements View.OnClickL
         layoutManager = new GridLayoutManager(getApplicationContext(), 3);
         listDanhMuc.setLayoutManager(layoutManager);
 
-        txtTenDanhMuc.setText(prefCategory.getString("tenDanhMucCha", ""));
+        txtTenDanhMuc.setText(prefCategory.getString(Common.tendanhmuc, ""));
 
         loadCategory();
 
@@ -67,9 +75,10 @@ public class CategoryActivity extends AppCompatActivity implements View.OnClickL
     }
 
     private void loadCategory() {
+        alertDialog.show();
         danhMucList.clear();
 
-        db.collection("Danh Muc").whereEqualTo("Danh Muc Cha.madanhmuc", prefCategory.getString("maDanhMucCha", ""))
+        db.collection(Common.DANHMUC).whereEqualTo(Common.DANHMUCCHA + "." + Common.madanhmuc, prefCategory.getString(Common.madanhmuc, ""))
                 .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -82,11 +91,14 @@ public class CategoryActivity extends AppCompatActivity implements View.OnClickL
                 adapterDanhMuc = new ListDanhMucAdapter(danhMucList);
                 adapterDanhMuc.notifyDataSetChanged();
                 listDanhMuc.setAdapter(adapterDanhMuc);
+
+                alertDialog.dismiss();
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
                 Toast.makeText(getApplicationContext(), e.getMessage() + "", Toast.LENGTH_SHORT).show();
+                alertDialog.dismiss();
             }
         });
     }

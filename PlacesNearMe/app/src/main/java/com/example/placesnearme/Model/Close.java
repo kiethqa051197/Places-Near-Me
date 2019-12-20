@@ -2,7 +2,6 @@ package com.example.placesnearme.Model;
 
 public class Close {
     private String time;
-
     private String day;
 
     public String getTime ()

@@ -1,6 +1,5 @@
 package com.example.placesnearme.Adapter;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -16,6 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.placesnearme.Common;
 import com.example.placesnearme.Model.Firebase.DanhMuc;
 import com.example.placesnearme.R;
 import com.example.placesnearme.View.SearchResultActivity;
@@ -26,11 +26,11 @@ import com.google.firebase.storage.StorageReference;
 import java.util.List;
 
 class ListDanhMucViewHolder extends RecyclerView.ViewHolder{
-    public TextView txtTenDanhMuc;
-    public ImageView imgDanhMuc;
-    public CardView cardView;
+    TextView txtTenDanhMuc;
+    ImageView imgDanhMuc;
+    CardView cardView;
 
-    public ListDanhMucViewHolder(@NonNull View itemView) {
+    ListDanhMucViewHolder(@NonNull View itemView) {
         super(itemView);
 
         txtTenDanhMuc = itemView.findViewById(R.id.txtTenDanhMuc);
@@ -40,11 +40,11 @@ class ListDanhMucViewHolder extends RecyclerView.ViewHolder{
 }
 
 public class ListDanhMucAdapter extends RecyclerView.Adapter<ListDanhMucViewHolder>{
-    List<DanhMuc> danhMucList;
-    Context context;
+    private List<DanhMuc> danhMucList;
+    private Context context;
 
-    SharedPreferences pref;
-    SharedPreferences.Editor editor;
+    private SharedPreferences pref;
+    private SharedPreferences.Editor editor;
 
     public ListDanhMucAdapter(List<DanhMuc> danhMucList) {
         this.danhMucList = danhMucList;
@@ -66,7 +66,7 @@ public class ListDanhMucAdapter extends RecyclerView.Adapter<ListDanhMucViewHold
 
         holder.txtTenDanhMuc.setText(danhMuc.getTendanhmuc());
 
-        StorageReference storageImgProductType = FirebaseStorage.getInstance().getReference().child("Danh Muc")
+        StorageReference storageImgProductType = FirebaseStorage.getInstance().getReference().child(Common.DANHMUC)
                 .child(danhMuc.getHinhanh());
 
         long ONE_MEGABYTE = 1024 * 1024;
@@ -81,11 +81,11 @@ public class ListDanhMucAdapter extends RecyclerView.Adapter<ListDanhMucViewHold
         holder.cardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                pref = context.getSharedPreferences("prefDanhMuc", 0); // 0 - for private mode
+                pref = context.getSharedPreferences(Common.PREF_DANHMUC, 0); // 0 - for private mode
                 editor = pref.edit();
 
-                editor.putString("maDanhMuc", danhMuc.getMadanhmuc());
-                editor.putString("tenDanhMuc", danhMuc.getTendanhmuc());
+                editor.putString(Common.madanhmuc, danhMuc.getMadanhmuc());
+                editor.putString(Common.tendanhmuc, danhMuc.getTendanhmuc());
                 editor.commit();
 
                 Intent intent = new Intent(context, SearchResultActivity.class);

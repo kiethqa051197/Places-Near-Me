@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,11 +15,10 @@ import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.placesnearme.Common;
 import com.example.placesnearme.Model.Firebase.DanhMucCha;
 import com.example.placesnearme.R;
 import com.example.placesnearme.View.CategoryActivity;
-import com.example.placesnearme.View.Fragment.CategoryFragment;
-import com.example.placesnearme.View.MainActivity;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -32,7 +30,7 @@ class ListDanhMucChaViewHolder extends RecyclerView.ViewHolder{
     ImageView imgDanhMuc;
     CardView cardView;
 
-    public ListDanhMucChaViewHolder(@NonNull View itemView) {
+    ListDanhMucChaViewHolder(@NonNull View itemView) {
         super(itemView);
 
         txtTenDanhMuc = itemView.findViewById(R.id.txtTenDanhMuc);
@@ -42,11 +40,11 @@ class ListDanhMucChaViewHolder extends RecyclerView.ViewHolder{
 }
 
 public class ListDanhMucChaAdapter extends RecyclerView.Adapter<ListDanhMucChaViewHolder>{
-    List<DanhMucCha> danhMucChaList;
-    Context context;
+    private List<DanhMucCha> danhMucChaList;
+    private Context context;
 
-    SharedPreferences pref;
-    SharedPreferences.Editor editor;
+    private SharedPreferences pref;
+    private SharedPreferences.Editor editor;
 
     public ListDanhMucChaAdapter(List<DanhMucCha> danhMucChaList) {
         this.danhMucChaList = danhMucChaList;
@@ -69,7 +67,7 @@ public class ListDanhMucChaAdapter extends RecyclerView.Adapter<ListDanhMucChaVi
 
         holder.txtTenDanhMuc.setText(danhMucCha.getTendanhmuc());
 
-        StorageReference storage = FirebaseStorage.getInstance().getReference().child("Danh Muc Cha").child(danhMucCha.getHinhanh());
+        StorageReference storage = FirebaseStorage.getInstance().getReference().child(Common.DANHMUCCHA).child(danhMucCha.getHinhanh());
         long ONE_MEGABYTE = 1024 * 1024;
         storage.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
             @Override
@@ -82,11 +80,11 @@ public class ListDanhMucChaAdapter extends RecyclerView.Adapter<ListDanhMucChaVi
         holder.cardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                pref = context.getSharedPreferences("prefDanhMucCha", 0); // 0 - for private mode
+                pref = context.getSharedPreferences(Common.PREF_DANHMUCCHA, 0); // 0 - for private mode
                 editor = pref.edit();
 
-                editor.putString("maDanhMucCha", danhMucCha.getMadanhmuc());
-                editor.putString("tenDanhMucCha", danhMucCha.getTendanhmuc());
+                editor.putString(Common.madanhmuc, danhMucCha.getMadanhmuc());
+                editor.putString(Common.tendanhmuc, danhMucCha.getTendanhmuc());
                 editor.commit();
 
                 Intent intent = new Intent(context, CategoryActivity.class);

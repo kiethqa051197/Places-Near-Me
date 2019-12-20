@@ -2,6 +2,7 @@ package com.example.placesnearme.View.Fragment;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -9,7 +10,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.OpenableColumns;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,6 +34,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.placesnearme.Adapter.ListHinhDaChonAdapter;
+import com.example.placesnearme.Common;
 import com.example.placesnearme.Model.Firebase.DanhMuc;
 import com.example.placesnearme.Model.Firebase.DanhMucCha;
 import com.example.placesnearme.Model.Firebase.DiaDiem;
@@ -65,8 +66,10 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import dmax.dialog.SpotsDialog;
+
 public class AddPlaceFragment extends Fragment implements View.OnClickListener, AdapterView.OnItemSelectedListener,
-        RadioGroup.OnCheckedChangeListener{
+        RadioGroup.OnCheckedChangeListener {
     private static final int RESULT_LOAD_IMAGE = 1;
 
     private Button btnThemDiaDiem, btnGioMoCuaThu2Thu6, btnGioDongCuaThu2Thu6, btnGioMoCuaThu7, btnGioDongCuaThu7,
@@ -79,8 +82,9 @@ public class AddPlaceFragment extends Fragment implements View.OnClickListener, 
     private GridLayout khungDanhMuc;
     private ImageView btnChonAnh;
 
-    private FirebaseFirestore db;
     private StorageReference storageReference;
+
+    private AlertDialog alertDialog;
 
     private ListHinhDaChonAdapter adapterHinhDaChon;
     private RecyclerView.LayoutManager layoutManager;
@@ -101,7 +105,7 @@ public class AddPlaceFragment extends Fragment implements View.OnClickListener, 
             hoatdong24hthu7, khonghoatdongthu7, hoatdong24hchunhat, khonghoatdongchunhat;
 
     private SharedPreferences preferences, preferencesDiaDiem;
-    private SharedPreferences.Editor editor;
+    private SharedPreferences.Editor editor, editorDiaDiem;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -112,13 +116,15 @@ public class AddPlaceFragment extends Fragment implements View.OnClickListener, 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_add_new_places, container, false);
 
-        db = FirebaseFirestore.getInstance();
         storageReference = FirebaseStorage.getInstance().getReference();
 
-        preferences = getActivity().getSharedPreferences("prefEdit", 0);
+        preferences = getActivity().getSharedPreferences(Common.PREF_EDIT, 0);
         editor = preferences.edit();
 
-        preferencesDiaDiem = getActivity().getSharedPreferences("prefMaDiaDiem", 0);
+        preferencesDiaDiem = getActivity().getSharedPreferences(Common.PREF_DIADIEM, 0);
+        editorDiaDiem = preferencesDiaDiem.edit();
+
+        alertDialog = new SpotsDialog(getContext());
 
         btnThemDiaDiem = view.findViewById(R.id.btnThemDiaDiem);
         btnChonAnh = view.findViewById(R.id.btnChonAnh);
@@ -182,23 +188,23 @@ public class AddPlaceFragment extends Fragment implements View.OnClickListener, 
         return view;
     }
 
-    private void openGallary(){
+    private void openGallary() {
         Intent intent = new Intent();
-        intent.setType("image/*");
+        intent.setType(Common.setStype);
         intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
         intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(Intent.createChooser(intent, "Select Picture"), RESULT_LOAD_IMAGE);
+        startActivityForResult(Intent.createChooser(intent, Common.titleChooseImage), RESULT_LOAD_IMAGE);
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @androidx.annotation.Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == RESULT_LOAD_IMAGE && resultCode == Activity.RESULT_OK){
-            if(data.getClipData() != null){
+        if (requestCode == RESULT_LOAD_IMAGE && resultCode == Activity.RESULT_OK) {
+            if (data.getClipData() != null) {
                 int total = data.getClipData().getItemCount();
 
-                for (int i = 0; i < total; i++){
+                for (int i = 0; i < total; i++) {
                     Uri uri = data.getClipData().getItemAt(i).getUri();
                     String fileName = getFileName(uri);
 
@@ -208,7 +214,7 @@ public class AddPlaceFragment extends Fragment implements View.OnClickListener, 
 
                 adapterHinhDaChon = new ListHinhDaChonAdapter(uriList);
                 recyclerChonHinh.setAdapter(adapterHinhDaChon);
-            }else if (data.getData() != null){
+            } else if (data.getData() != null) {
                 Uri uri = data.getData();
                 String fileName = getFileName(uri);
 
@@ -221,26 +227,26 @@ public class AddPlaceFragment extends Fragment implements View.OnClickListener, 
         }
     }
 
-    public String getFileName(Uri uri){
+    public String getFileName(Uri uri) {
         String result = null;
 
-        if (uri.getScheme().equals("content")){
+        if (uri.getScheme().equals(Common.content)) {
             Cursor cursor = getContext().getContentResolver().query(uri, null, null, null, null);
             try {
-                if (cursor != null && cursor.moveToFirst()){
+                if (cursor != null && cursor.moveToFirst()) {
                     result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
                 }
-            }finally {
+            } finally {
                 cursor.close();
             }
         }
 
-        if (result == null){
+        if (result == null) {
             result = uri.getPath();
 
             int cut = result.lastIndexOf('/');
 
-            if (cut != -1){
+            if (cut != -1) {
                 result = result.substring(cut + 1);
             }
         }
@@ -248,8 +254,8 @@ public class AddPlaceFragment extends Fragment implements View.OnClickListener, 
         return result;
     }
 
-    private void layDanhMucCha(){
-        db.collection("Danh Muc Cha").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+    private void layDanhMucCha() {
+        MainActivity.db.collection(Common.DANHMUCCHA).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 for (DocumentSnapshot doc : task.getResult()) {
@@ -271,7 +277,7 @@ public class AddPlaceFragment extends Fragment implements View.OnClickListener, 
         danhMucList.clear();
         khungDanhMuc.removeAllViews();
 
-        db.collection("Danh Muc").whereEqualTo("Danh Muc Cha.madanhmuc", madanhmuc)
+        MainActivity.db.collection(Common.DANHMUC).whereEqualTo(Common.DANHMUCCHA + "." + Common.madanhmuc, madanhmuc)
                 .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -286,11 +292,10 @@ public class AddPlaceFragment extends Fragment implements View.OnClickListener, 
                 khungDanhMuc.setColumnCount(column);
                 khungDanhMuc.setRowCount(row + 1);
 
-                for (int i = 0, c = 0, r = 0; i < danhMucList.size(); i++, c++){
+                for (int i = 0, c = 0, r = 0; i < danhMucList.size(); i++, c++) {
                     String maDanhMuc = danhMucList.get(i).getMadanhmuc();
 
-                    if(c == column)
-                    {
+                    if (c == column) {
                         c = 0;
                         r++;
                     }
@@ -314,7 +319,7 @@ public class AddPlaceFragment extends Fragment implements View.OnClickListener, 
                         @Override
                         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                             String maDanhMuc = buttonView.getTag().toString();
-                            if(isChecked){
+                            if (isChecked) {
                                 danhMucDuocChonList.add(maDanhMuc);
                             } else {
                                 danhMucDuocChonList.remove(maDanhMuc);
@@ -332,111 +337,101 @@ public class AddPlaceFragment extends Fragment implements View.OnClickListener, 
         });
     }
 
-    private void ThemDiaDiem(){
-        final DocumentReference docRef = db.collection("Dia Diem").document();
+    private void addMapBusinessTiming(Map<String, Object> map, String mocua, String dongcua){
+        map.put(Common.mocua, mocua);
+        map.put(Common.dongcua, dongcua);
+
+        thoigianhoatdong.add(map);
+    }
+
+    private void addBusinessTiming(){
+        if (hoatdong24h) {
+            thoigianhoatdong.clear();
+
+            Map<String, Object> map = new HashMap<>();
+
+            for (int i = 0; i < 7; i++)
+                addMapBusinessTiming(map, getString(R.string.mocua24h), getString(R.string.mocua24h));
+
+        } else if (khongcothoigianhoatdong) {
+            thoigianhoatdong.clear();
+
+            Map<String, Object> map = new HashMap<>();
+
+            for (int i = 0; i < 7; i++)
+                addMapBusinessTiming(map, getString(R.string.khongcothoigianhoatdong), getString(R.string.khongcothoigianhoatdong));
+
+        } else {
+            thoigianhoatdong.clear();
+
+            Map<String, Object> mapthu2 = new HashMap<>();
+
+            if (hoatdong24hthu2thu6) {
+                for (int i = 0; i < 5; i++)
+                    addMapBusinessTiming(mapthu2, getString(R.string.mocua24h), getString(R.string.mocua24h));
+            } else if (khonghoatdongthu2thu6) {
+                for (int i = 0; i < 5; i++)
+                    addMapBusinessTiming(mapthu2, getString(R.string.khongmocua), getString(R.string.khongmocua));
+            } else {
+                for (int i = 0; i < 5; i++)
+                    addMapBusinessTiming(mapthu2, gioMoCuaThu2Thu6, gioDongCuaThu2Thu6);
+            }
+
+            Map<String, Object> mapThu7 = new HashMap<>();
+
+            if (hoatdong24hthu7) {
+                addMapBusinessTiming(mapThu7, getString(R.string.mocua24h), getString(R.string.mocua24h));
+            } else if (khonghoatdongthu7) {
+                addMapBusinessTiming(mapThu7, getString(R.string.khongmocua), getString(R.string.khongmocua));
+            } else
+                addMapBusinessTiming(mapThu7, gioMoCuaThu7, gioDongCuaThu7);
+
+            Map<String, Object> mapChuNhat = new HashMap<>();
+
+            if (hoatdong24hchunhat)
+                addMapBusinessTiming(mapChuNhat, getString(R.string.mocua24h), getString(R.string.mocua24h));
+            else if (khonghoatdongchunhat)
+                addMapBusinessTiming(mapChuNhat, getString(R.string.khongmocua), getString(R.string.khongmocua));
+            else
+                addMapBusinessTiming(mapChuNhat, gioMoCuaChuNhat, gioDongCuaChuNhat);
+        }
+    }
+
+    private void addImage(final List<Uri> uriList, String madiadiem){
+        for (int j = 0; j < uriList.size(); j++) {
+            StorageReference fileUpload = storageReference.child(Common.IMAGE).child(madiadiem).child(getFileName(uriList.get(j)));
+            fileUpload.putFile(uriList.get(j)).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    Toast.makeText(getContext(), getString(R.string.themhinhthanhcong), Toast.LENGTH_SHORT).show();
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Toast.makeText(getContext(), getString(R.string.themhinhanhthatbai), Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    }
+
+    private void ThemDiaDiem() {
+        alertDialog.show();
+
+        final DocumentReference docRef = MainActivity.db.collection(Common.DIADIEM).document();
 
         docRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@androidx.annotation.Nullable DocumentSnapshot documentSnapshot, @androidx.annotation.Nullable FirebaseFirestoreException e) {
-                if (!documentSnapshot.exists()){
+                if (!documentSnapshot.exists()) {
                     final DiaDiem diaDiem = new DiaDiem();
 
                     final GeoPoint location = new GeoPoint(MainActivity.latitude, MainActivity.longtitude);
 
-                    if (hoatdong24h){
-                        thoigianhoatdong.clear();
+                    addBusinessTiming();
 
-                        Map<String, Object> map = new HashMap<>();
-
-                        for (int i = 0; i < 7; i++){
-                            map.put("mocua", getString(R.string.mocua24h));
-                            map.put("dongcua", getString(R.string.mocua24h));
-
-                            thoigianhoatdong.add(map);
-                        }
-
-                    }else if(khongcothoigianhoatdong){
-                        thoigianhoatdong.clear();
-
-                        Map<String, Object> map = new HashMap<>();
-
-                        for (int i = 0; i < 7; i++){
-                            map.put("mocua", getString(R.string.khongcothoigianhoatdong));
-                            map.put("dongcua", getString(R.string.khongcothoigianhoatdong));
-
-                            thoigianhoatdong.add(map);
-                        }
-                    }else{
-                        thoigianhoatdong.clear();
-
-                        Map<String, Object> mapthu2 = new HashMap<>();
-
-                        if (hoatdong24hthu2thu6){
-                            for (int i = 0; i < 5; i++){
-                                mapthu2.put("mocua", getString(R.string.mocua24h));
-                                mapthu2.put("dongcua", getString(R.string.mocua24h));
-
-                                thoigianhoatdong.add(mapthu2);
-                            }
-                        }else if (khonghoatdongthu2thu6){
-                            for (int i = 0; i < 5; i++){
-                                mapthu2.put("mocua", getString(R.string.khongmocua));
-                                mapthu2.put("dongcua", getString(R.string.khongmocua));
-
-                                thoigianhoatdong.add(mapthu2);
-                            }
-                        }else{
-                            for (int i = 0; i < 5; i++){
-                                mapthu2.put("mocua", gioMoCuaThu2Thu6);
-                                mapthu2.put("dongcua", gioDongCuaThu2Thu6);
-
-                                thoigianhoatdong.add(mapthu2);
-                            }
-                        }
-
-                        Map<String, Object> mapThu7 = new HashMap<>();
-
-                        if (hoatdong24hthu7){
-                            mapThu7.put("mocua", getString(R.string.mocua24h));
-                            mapThu7.put("dongcua", getString(R.string.mocua24h));
-
-                            thoigianhoatdong.add(mapThu7);
-                        } else if(khonghoatdongthu7){
-                            mapThu7.put("mocua", getString(R.string.khongmocua));
-                            mapThu7.put("dongcua", getString(R.string.khongmocua));
-
-                            thoigianhoatdong.add(mapThu7);
-                        } else {
-                            mapThu7.put("mocua", gioMoCuaThu7);
-                            mapThu7.put("dongcua", gioDongCuaThu7);
-
-                            thoigianhoatdong.add(mapThu7);
-                        }
-
-                        Map<String, Object> mapChuNhat = new HashMap<>();
-
-                        if (hoatdong24hchunhat){
-                            mapChuNhat.put("mocua", getString(R.string.mocua24h));
-                            mapChuNhat.put("dongcua", getString(R.string.mocua24h));
-
-                            thoigianhoatdong.add(mapChuNhat);
-                        }
-                        else if(khonghoatdongchunhat){
-                            mapChuNhat.put("mocua", getString(R.string.khongmocua));
-                            mapChuNhat.put("dongcua", getString(R.string.khongmocua));
-
-                            thoigianhoatdong.add(mapChuNhat);
-                        } else {
-                            mapChuNhat.put("mocua", gioMoCuaChuNhat);
-                            mapChuNhat.put("dongcua", gioDongCuaChuNhat);
-
-                            thoigianhoatdong.add(mapChuNhat);
-                        }
-                    }
-
-                    if(!edTenDiaDiem.getText().toString().equals("")){
-                        if (!edDiaChi.getText().toString().equals("")){
-                            if (danhMucDuocChonList.size() > 0){
+                    if (!edTenDiaDiem.getText().toString().equals("")) {
+                        if (!edDiaChi.getText().toString().equals("")) {
+                            if (danhMucDuocChonList.size() > 0) {
                                 diaDiem.setMadiadiem(docRef.getId());
                                 diaDiem.setTendiadiem(edTenDiaDiem.getText().toString());
                                 diaDiem.setWebsite(edWebsite.getText().toString());
@@ -460,199 +455,122 @@ public class AddPlaceFragment extends Fragment implements View.OnClickListener, 
                                         thoigianhoatdong.clear();
                                         edDiaChi.setText("");
 
-                                        Toast.makeText(getContext(), "Thêm thành công", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(getContext(), getString(R.string.themthanhcong), Toast.LENGTH_SHORT).show();
 
-                                        for (int j = 0; j < uriList.size(); j++){
-                                            StorageReference fileUpload = storageReference.child("Images").child(diaDiem.getMadiadiem()).child(getFileName(uriList.get(j)));
-                                            fileUpload.putFile(uriList.get(j)).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                                                @Override
-                                                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                                                    Toast.makeText(getContext(), "Thêm hình ảnh thành công", Toast.LENGTH_SHORT).show();
-                                                }
-                                            }).addOnFailureListener(new OnFailureListener() {
-                                                @Override
-                                                public void onFailure(@NonNull Exception e) {
-                                                    Toast.makeText(getContext(), "Thêm hình ảnh thất bại", Toast.LENGTH_SHORT).show();
-                                                }
-                                            });
-                                        }
+                                        editorDiaDiem.putString(Common.madiadiem, diaDiem.getMadiadiem());
+                                        editorDiaDiem.commit();
+
+                                        addImage(uriList, diaDiem.getMadiadiem());
 
                                         uriList.clear();
+                                        khungDanhMuc.removeAllViews();
+
+                                        alertDialog.dismiss();
+
+                                        Thread thread = new Thread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                try {
+                                                    Thread.sleep(5000);
+                                                } catch (Exception e) { }
+                                                finally {
+                                                    Intent intent = new Intent(getContext(), DetailPlacesActivity.class);
+                                                    getContext().startActivity(intent);
+                                                }
+                                            }
+                                        });
+                                        thread.start();
                                     }
                                 }).addOnFailureListener(new OnFailureListener() {
                                     @Override
                                     public void onFailure(@NonNull Exception e) {
-                                        Toast.makeText(getContext(), "Thêm thất bại!!!", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(getContext(), getString(R.string.themloi), Toast.LENGTH_SHORT).show();
+                                        alertDialog.dismiss();
                                     }
                                 });
-                            }else {
-                                Toast.makeText(getContext(), "Địa điểm phải có ít nhất một danh mục!!!!", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(getContext(), getString(R.string.loidanhmuc), Toast.LENGTH_SHORT).show();
+                                alertDialog.dismiss();
                             }
+                        } else {
+                            Toast.makeText(getContext(), getString(R.string.diachitrong), Toast.LENGTH_SHORT).show();
+                            alertDialog.dismiss();
                         }
-                        else{
-                            Toast.makeText(getContext(), "Không được để trống địa chỉ!!!", Toast.LENGTH_SHORT).show();
-                        }
-                    }else
-                        Toast.makeText(getContext(), "Không được để trống tên địa điểm!!!", Toast.LENGTH_SHORT).show();
+                    } else{
+                        Toast.makeText(getContext(), getString(R.string.tendiadiemtrong), Toast.LENGTH_SHORT).show();
+                        alertDialog.dismiss();
+                    }
                 }
             }
         });
     }
 
-    private void CapNhatDiaDiem(final String madiadiem){
-        final DocumentReference docRef = db.collection("Dia Diem").document(madiadiem);
+    private void CapNhatDiaDiem(final String madiadiem) {
+        alertDialog.show();
+        final DocumentReference docRef = MainActivity.db.collection(Common.DIADIEM).document(madiadiem);
 
-        if (hoatdong24h){
-            thoigianhoatdong.clear();
+        addBusinessTiming();
 
-            Map<String, Object> map = new HashMap<>();
-
-            for (int i = 0; i < 7; i++){
-                map.put("mocua", getString(R.string.mocua24h));
-                map.put("dongcua", getString(R.string.mocua24h));
-
-                thoigianhoatdong.add(map);
-            }
-
-        }else if(khongcothoigianhoatdong){
-            thoigianhoatdong.clear();
-
-            Map<String, Object> map = new HashMap<>();
-
-            for (int i = 0; i < 7; i++){
-                map.put("mocua", getString(R.string.khongcothoigianhoatdong));
-                map.put("dongcua", getString(R.string.khongcothoigianhoatdong));
-
-                thoigianhoatdong.add(map);
-            }
-        }else{
-            thoigianhoatdong.clear();
-
-            Map<String, Object> mapthu2 = new HashMap<>();
-
-            if (hoatdong24hthu2thu6){
-                for (int i = 0; i < 5; i++){
-                    mapthu2.put("mocua", getString(R.string.mocua24h));
-                    mapthu2.put("dongcua", getString(R.string.mocua24h));
-
-                    thoigianhoatdong.add(mapthu2);
-                }
-            }else if (khonghoatdongthu2thu6){
-                for (int i = 0; i < 5; i++){
-                    mapthu2.put("mocua", getString(R.string.khongmocua));
-                    mapthu2.put("dongcua", getString(R.string.khongmocua));
-
-                    thoigianhoatdong.add(mapthu2);
-                }
-            }else{
-                for (int i = 0; i < 5; i++){
-                    mapthu2.put("mocua", gioMoCuaThu2Thu6);
-                    mapthu2.put("dongcua", gioDongCuaThu2Thu6);
-
-                    thoigianhoatdong.add(mapthu2);
-                }
-            }
-
-            Map<String, Object> mapThu7 = new HashMap<>();
-
-            if (hoatdong24hthu7){
-                mapThu7.put("mocua", getString(R.string.mocua24h));
-                mapThu7.put("dongcua", getString(R.string.mocua24h));
-
-                thoigianhoatdong.add(mapThu7);
-            } else if(khonghoatdongthu7){
-                mapThu7.put("mocua", getString(R.string.khongmocua));
-                mapThu7.put("dongcua", getString(R.string.khongmocua));
-
-                thoigianhoatdong.add(mapThu7);
-            } else {
-                mapThu7.put("mocua", gioMoCuaThu7);
-                mapThu7.put("dongcua", gioDongCuaThu7);
-
-                thoigianhoatdong.add(mapThu7);
-            }
-
-            Map<String, Object> mapChuNhat = new HashMap<>();
-
-            if (hoatdong24hchunhat){
-                mapChuNhat.put("mocua", getString(R.string.mocua24h));
-                mapChuNhat.put("dongcua", getString(R.string.mocua24h));
-
-                thoigianhoatdong.add(mapChuNhat);
-            }
-            else if(khonghoatdongchunhat){
-                mapChuNhat.put("mocua", getString(R.string.khongmocua));
-                mapChuNhat.put("dongcua", getString(R.string.khongmocua));
-
-                thoigianhoatdong.add(mapChuNhat);
-            } else {
-                mapChuNhat.put("mocua", gioMoCuaChuNhat);
-                mapChuNhat.put("dongcua", gioDongCuaChuNhat);
-
-                thoigianhoatdong.add(mapChuNhat);
-            }
-        }
-
-        if(!edTenDiaDiem.getText().toString().equals("")){
-            if (!edDiaChi.getText().toString().equals("")){
-                if (danhMucDuocChonList.size() > 0){
+        if (!edTenDiaDiem.getText().toString().equals("")) {
+            if (!edDiaChi.getText().toString().equals("")) {
+                if (danhMucDuocChonList.size() > 0) {
 
                     if (fileNameList.size() > 0)
                         for (int i = 0; i < fileNameList.size(); i++)
-                            docRef.update("hinhanh", FieldValue.arrayUnion(fileNameList.get(i)));
+                            docRef.update(Common.hinhanh, FieldValue.arrayUnion(fileNameList.get(i)));
 
-                    docRef.update("thoigianhoatdong", FieldValue.delete());
+                    docRef.update(Common.thoigianhoatdong, FieldValue.delete());
                     Map<String, Object> thoigianhoatdongMap = new HashMap<>();
-                    thoigianhoatdongMap.put("thoigianhoatdong", thoigianhoatdong);
+                    thoigianhoatdongMap.put(Common.thoigianhoatdong, thoigianhoatdong);
                     docRef.set(thoigianhoatdongMap, SetOptions.merge());
 
-                    docRef.update("danhmuc", FieldValue.delete());
+                    docRef.update(Common.danhmuc, FieldValue.delete());
                     Map<String, Object> danhmucMap = new HashMap<>();
-                    danhmucMap.put("danhmuc", danhMucDuocChonList);
+                    danhmucMap.put(Common.danhmuc, danhMucDuocChonList);
                     docRef.set(danhmucMap, SetOptions.merge());
 
-                    docRef.update("tendiadiem", edTenDiaDiem.getText().toString());
-                    docRef.update("diachi", edDiaChi.getText().toString());
-                    docRef.update("dienthoai", edSoDienThoai.getText().toString());
-                    docRef.update("website", edWebsite.getText().toString());
+                    docRef.update(Common.tendiadiem, edTenDiaDiem.getText().toString());
+                    docRef.update(Common.diachi, edDiaChi.getText().toString());
+                    docRef.update(Common.dienthoai, edSoDienThoai.getText().toString());
+                    docRef.update(Common.website, edWebsite.getText().toString());
 
-                    for (int j = 0; j < uriList.size(); j++){
-                        StorageReference fileUpload = storageReference.child("Images").child(madiadiem).child(getFileName(uriList.get(j)));
-                        fileUpload.putFile(uriList.get(j)).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                            @Override
-                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                                Toast.makeText(getContext(), "Thêm hình ảnh thành công", Toast.LENGTH_SHORT).show();
-                            }
-                        }).addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                Toast.makeText(getContext(), "Thêm hình ảnh thất bại", Toast.LENGTH_SHORT).show();
-                            }
-                        });
-                    }
+                    addImage(uriList, madiadiem);
 
                     uriList.clear();
                     fileNameList.clear();
 
-                    editor.putBoolean("edit", false);
+                    editor.putBoolean(Common.edit, false);
                     editor.commit();
+
+                    edWebsite.setText("");
+                    edSoDienThoai.setText("");
+                    edTenDiaDiem.setText("");
+                    edDiaChi.setText("");
 
                     btnThemDiaDiem.setText(R.string.themdiadiem);
 
                     if (adapterHinhDaChon != null)
                         adapterHinhDaChon.notifyDataSetChanged();
 
+                    alertDialog.dismiss();
+
+                    uriList.clear();
+                    khungDanhMuc.removeAllViews();
+
                     Intent intent = new Intent(getContext(), DetailPlacesActivity.class);
                     getContext().startActivity(intent);
-                }else {
-                    Toast.makeText(getContext(), "Địa điểm phải có ít nhất một danh mục!!!!", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getContext(), getString(R.string.loidanhmuc), Toast.LENGTH_SHORT).show();
+                    alertDialog.dismiss();
                 }
+            } else {
+                Toast.makeText(getContext(), getString(R.string.diachitrong), Toast.LENGTH_SHORT).show();
+                alertDialog.dismiss();
             }
-            else{
-                Toast.makeText(getContext(), "Không được để trống địa chỉ!!!", Toast.LENGTH_SHORT).show();
-            }
-        }else
-            Toast.makeText(getContext(), "Không được để trống tên địa điểm!!!", Toast.LENGTH_SHORT).show();
+        } else{
+            Toast.makeText(getContext(), getString(R.string.tendiadiemtrong), Toast.LENGTH_SHORT).show();
+            alertDialog.dismiss();
+        }
     }
 
     @Override
@@ -669,29 +587,29 @@ public class AddPlaceFragment extends Fragment implements View.OnClickListener, 
         int gio = calendar.get(Calendar.HOUR_OF_DAY);
         int phut = calendar.get(Calendar.MINUTE);
 
-        switch (v.getId()){
+        switch (v.getId()) {
             case R.id.btnChonAnh:
                 openGallary();
                 break;
 
             //Chọn giờ mở cửa thứ 2 đến thứ 6
             case R.id.btnGioMoCuaThu2Thu6:
-                TimePickerDialog timePickerDialog = new TimePickerDialog(getContext(), new TimePickerDialog.OnTimeSetListener(){
+                TimePickerDialog timePickerDialog = new TimePickerDialog(getContext(), new TimePickerDialog.OnTimeSetListener() {
                     @Override
                     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
                         gioMoCuaThu2Thu6 = hourOfDay + ":" + minute;
-                        ((Button)v).setText(gioMoCuaThu2Thu6);
+                        ((Button) v).setText(gioMoCuaThu2Thu6);
                     }
                 }, gio, phut, true);
 
                 timePickerDialog.show();
                 break;
             case R.id.btnGioDongCuaThu2Thu6:
-                TimePickerDialog timePickerDialog2 = new TimePickerDialog(getContext(), new TimePickerDialog.OnTimeSetListener(){
+                TimePickerDialog timePickerDialog2 = new TimePickerDialog(getContext(), new TimePickerDialog.OnTimeSetListener() {
                     @Override
                     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
                         gioDongCuaThu2Thu6 = hourOfDay + ":" + minute;
-                        ((Button)v).setText(gioDongCuaThu2Thu6);
+                        ((Button) v).setText(gioDongCuaThu2Thu6);
                     }
                 }, gio, phut, true);
 
@@ -700,22 +618,22 @@ public class AddPlaceFragment extends Fragment implements View.OnClickListener, 
 
             // chọn giờ mở cửa thứ 7
             case R.id.btnGioMoCuaThu7:
-                TimePickerDialog timePickerDialog3 = new TimePickerDialog(getContext(), new TimePickerDialog.OnTimeSetListener(){
+                TimePickerDialog timePickerDialog3 = new TimePickerDialog(getContext(), new TimePickerDialog.OnTimeSetListener() {
                     @Override
                     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
                         gioMoCuaThu7 = hourOfDay + ":" + minute;
-                        ((Button)v).setText(gioMoCuaThu7);
+                        ((Button) v).setText(gioMoCuaThu7);
                     }
                 }, gio, phut, true);
 
                 timePickerDialog3.show();
                 break;
             case R.id.btnGioDongCuaThu7:
-                TimePickerDialog timePickerDialog4 = new TimePickerDialog(getContext(), new TimePickerDialog.OnTimeSetListener(){
+                TimePickerDialog timePickerDialog4 = new TimePickerDialog(getContext(), new TimePickerDialog.OnTimeSetListener() {
                     @Override
                     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
                         gioDongCuaThu7 = hourOfDay + ":" + minute;
-                        ((Button)v).setText(gioDongCuaThu7);
+                        ((Button) v).setText(gioDongCuaThu7);
                     }
                 }, gio, phut, true);
 
@@ -724,22 +642,22 @@ public class AddPlaceFragment extends Fragment implements View.OnClickListener, 
 
             // chọn giờ mở cửa chủ nhật
             case R.id.btnGioMoCuaChuNhat:
-                TimePickerDialog timePickerDialog5 = new TimePickerDialog(getContext(), new TimePickerDialog.OnTimeSetListener(){
+                TimePickerDialog timePickerDialog5 = new TimePickerDialog(getContext(), new TimePickerDialog.OnTimeSetListener() {
                     @Override
                     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
                         gioMoCuaChuNhat = hourOfDay + ":" + minute;
-                        ((Button)v).setText(gioMoCuaChuNhat);
+                        ((Button) v).setText(gioMoCuaChuNhat);
                     }
                 }, gio, phut, true);
 
                 timePickerDialog5.show();
                 break;
             case R.id.btnGioDongCuaChuNhat:
-                TimePickerDialog timePickerDialog6 = new TimePickerDialog(getContext(), new TimePickerDialog.OnTimeSetListener(){
+                TimePickerDialog timePickerDialog6 = new TimePickerDialog(getContext(), new TimePickerDialog.OnTimeSetListener() {
                     @Override
                     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
                         gioDongCuaChuNhat = hourOfDay + ":" + minute;
-                        ((Button)v).setText(gioDongCuaChuNhat);
+                        ((Button) v).setText(gioDongCuaChuNhat);
                     }
                 }, gio, phut, true);
 
@@ -748,9 +666,9 @@ public class AddPlaceFragment extends Fragment implements View.OnClickListener, 
 
             // nút thêm địa điểm
             case R.id.btnThemDiaDiem:
-                if (btnThemDiaDiem.getText().toString().equals(getString(R.string.capnhatdiadiem))){
-                    CapNhatDiaDiem(preferencesDiaDiem.getString("maDiaDiem", ""));
-                }else
+                if (btnThemDiaDiem.getText().toString().equals(getString(R.string.capnhatdiadiem))) {
+                    CapNhatDiaDiem(preferencesDiaDiem.getString(Common.madiadiem, ""));
+                } else
                     ThemDiaDiem();
                 break;
         }
@@ -758,7 +676,7 @@ public class AddPlaceFragment extends Fragment implements View.OnClickListener, 
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        switch (parent.getId()){
+        switch (parent.getId()) {
             case R.id.spinDanhMucCha:
                 danhMucDuocChon = danhMucChaList.get(position).getMadanhmuc();
 
@@ -776,20 +694,23 @@ public class AddPlaceFragment extends Fragment implements View.OnClickListener, 
     public void onResume() {
         super.onResume();
 
-        if (preferences.getBoolean("edit", false)){
+        if (preferences.getBoolean(Common.edit, false)) {
             btnThemDiaDiem.setText(R.string.capnhatdiadiem);
 
-            layChiTietDiaDiem(preferencesDiaDiem.getString("maDiaDiem", ""));
+            layChiTietDiaDiem(preferencesDiaDiem.getString(Common.madiadiem, ""));
         }
     }
 
-    private void layChiTietDiaDiem(final String madiadiem){
-        db.collection("Dia Diem").document(madiadiem)
+    private void layChiTietDiaDiem(final String madiadiem) {
+        alertDialog.show();
+
+        MainActivity.db.collection(Common.DIADIEM).document(madiadiem)
                 .get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @SuppressLint("SetTextI18n")
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 if (task.isSuccessful()) {
+                    alertDialog.dismiss();
                     DocumentSnapshot document = task.getResult();
 
                     if (document.exists()) {
@@ -802,10 +723,11 @@ public class AddPlaceFragment extends Fragment implements View.OnClickListener, 
 
                         edWebsite.setText(diaDiem.getWebsite());
                     } else {
-                        Toast.makeText(getContext(), "Không tồn tại địa điểm này", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), getString(R.string.khongtontaidiadiem), Toast.LENGTH_SHORT).show();
                     }
                 } else {
-                    Toast.makeText(getContext(), "Lỗi! Không lấy dữ liệu được", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), getString(R.string.coloitrongquatrinhlaydulieu), Toast.LENGTH_SHORT).show();
+                    alertDialog.dismiss();
                 }
             }
         });
@@ -813,7 +735,7 @@ public class AddPlaceFragment extends Fragment implements View.OnClickListener, 
 
     @Override
     public void onCheckedChanged(RadioGroup group, int checkedId) {
-        switch (checkedId){
+        switch (checkedId) {
             case R.id.rdMoCua:
                 hoatdong24h = false;
                 khongcothoigianhoatdong = false;

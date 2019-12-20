@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Places Near Me</string>
-    <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">AIzaSyDzvgBl7U7vNOc-Fv2M_u6cOFpCdrUJU5U</string>
+    <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">AIzaSyD2ess1s_lta6cc6OLMi4ygIvlHiBLXftU</string>
     <string name="xinchao">Xin chào, </string>
     <string name="timkiem">Bạn tìm gì hôm nay?</string>
     <string name="tendanhmuc">Tên danh mục</string>
@@ -8,13 +8,12 @@
     <string name="sua">Sửa</string>
     <string name="luu">Lưu</string>
     <string name="tennguoidung">Ha Quoc Anh Kiet</string>
-    <string name="tenhienthi">Tên hiển thị:</string>
-    <string name="email">Email:</string>
+    <string name="tenhienthi">Tên hiển thị</string>
+    <string name="email">Email</string>
     <string name="emailExample">anhkietxl051197@gmail.com</string>
-    <string name="matkhau">Mật khẩu:</string>
+    <string name="matkhau">Mật khẩu</string>
     <string name="doimatkhau">Đổi mật khẩu:</string>
     <string name="btndoimatkhau">Đổi mật khẩu</string>
-    <string name="nhaplaimatkhau">Nhập lại mật khẩu:</string>
     <string name="hintmatkhaumoi">Nhập mật khẩu mới</string>
     <string name="hintnhaplaimatkhau">Nhập lại mật khẩu mới</string>
     <string name="thu2">Thứ Hai: 5:00 am - 10:00 pm</string>
@@ -66,7 +65,58 @@
     <string name="kieuxem">Kiểu xem:</string>
     <string name="sapxep">Khoảng cách:</string>
     <string name="capnhatdiadiem">cập nhật địa điểm</string>
+    <string name="capnhatkhongthanhcong">Cập nhật không thành công!</string>
 
+    <string name="coloitrongquatrinhlaydulieu">Có lỗi trong quá trình lấy dữ liệu!</string>
+    <string name="themthanhcong">Thêm thành công!</string>
+    <string name="themloi">Có lỗi khi thêm!!!</string>
+
+    <string name="dangnhap">Đăng nhập</string>
+    <string name="khongcotaikhoan">Bạn không có tài khoản? Đăng ký ngay</string>
+    <string name="khongduocdetrong">Bạn không được để trống!!!</string>
+
+    <string name="dangky">Đăng ký</string>
+    <string name="nhaplaimatkhau">Nhập lại mật khẩu</string>
+    <string name="dacotaikhoan">Bạn đã có tài khoản? Đăng nhập</string>
+    <string name="coloidangky">Mật khẩu phải có ít nhất 6 ký tự!</string>
+    <string name="matkhaukhongkhop">Mật khẩu không khớp</string>
+
+    <string name="noidungbinhluan">Nội dung bình luận</string>
+    <string name="dang">Đăng</string>
+    <string name="tatcabinhluan">Tất cả bình luận</string>
+
+    <string name="tukhoa">Từ khoá</string>
+
+    <string name="themhinhthanhcong">Thêm hình ảnh thành công!</string>
+    <string name="themhinhanhthatbai">Thêm hình ảnh thất bại!!!</string>
+
+    <string name="loidanhmuc">Địa điểm phải có ít nhất một danh mục!!!</string>
+    <string name="diachitrong">Không được để trống địa chỉ!!!</string>
+    <string name="tendiadiemtrong">Không được để trống tên địa điểm!!!</string>
+    <string name="khongtontaidiadiem">Không tồn tại địa điểm này</string>
+    <string name="capnhatthanhcong">Cập nhật thành công!</string>
+
+    <string name="daylaban">Đây là bạn</string>
+    <string name="duongdi">Đường đi #</string>
+    <string name="mogoogleMap">Mở Google Maps?</string>
+    <string name="mo">Có</string>
+    <string name="khong">Không</string>
+    <string name="khongthemomap">Không thể mở map</string>
+    <string name="hoichiduong">Bạn có muốn xem đường đi đến</string>
+    <string name="thoigian">Thời gian</string>
+    <string name="dabinhluan">Đã bình luận</string>
+    <string name="loibinhluan">Vui lòng đánh giá sao cho địa điểm! Bình luận có thể để trống</string>
+
+    <string name="phienban">Phiên bản: </string>
+    <string name="dangtai">Đang tải ...</string>
+
+
+    <string name="dangxuat">Đăng xuất</string>
+
+    <!-- Permission -->
+    <string name="tuchoicapquyen">Quyền yêu cầu bị từ chối</string>
+
+    <!-- Places Type -->
     <string-array name="place_type">
         <item>accounting</item>
         <item>airport</item>
@@ -167,11 +217,13 @@
         <item>zoo</item>
     </string-array>
 
+    <!-- View -->
     <string-array name="array_kieuxem">
         <item>Danh sách</item>
         <item>Bản đồ</item>
     </string-array>
 
+    <!-- Sort -->
     <string-array name="array_sapxep">
         <item>Tăng dần</item>
         <item>Giảm dần</item>

@@ -3,14 +3,13 @@ package com.example.placesnearme.Model.Firebase;
 import java.util.List;
 
 public class DanhMuc {
-    String madanhmuc;
-    String tendanhmuc;
-    String hinhanh;
-    DanhMucCha danhMucCha;
-    List<String> tukhoa;
+    private String madanhmuc;
+    private String tendanhmuc;
+    private String hinhanh;
+    private DanhMucCha danhMucCha;
+    private List<String> tukhoa;
 
-    public DanhMuc() {
-    }
+    public DanhMuc() { }
 
     public DanhMuc(String madanhmuc, String tendanhmuc, String hinhanh, DanhMucCha danhMucCha, List<String> tukhoa) {
         this.madanhmuc = madanhmuc;

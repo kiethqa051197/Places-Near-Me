@@ -1,12 +1,11 @@
 package com.example.placesnearme.Model.Firebase;
 
 public class DanhMucCha {
-    String madanhmuc;
-    String tendanhmuc;
-    String hinhanh;
+    private String madanhmuc;
+    private String tendanhmuc;
+    private String hinhanh;
 
-    public DanhMucCha() {
-    }
+    public DanhMucCha() { }
 
     public DanhMucCha(String madanhmuc, String tendanhmuc, String hinhanh) {
         this.madanhmuc = madanhmuc;
@@ -38,6 +37,7 @@ public class DanhMucCha {
         this.hinhanh = hinhanh;
     }
 
+    @androidx.annotation.NonNull
     @Override
     public String toString() {
         return tendanhmuc;

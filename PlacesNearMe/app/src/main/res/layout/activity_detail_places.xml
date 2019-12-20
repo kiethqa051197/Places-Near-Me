@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -8,7 +9,7 @@
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="@dimen/heightToolbar"
         android:background="@color/colorPrimaryDark"/>
 
     <androidx.core.widget.NestedScrollView
@@ -29,11 +30,11 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_centerHorizontal="true"
-                    android:layout_marginTop="80dp"
+                    android:layout_marginTop="@dimen/margin80dp"
                     android:background="@drawable/border_linear"
                     android:orientation="vertical"
-                    android:layout_marginLeft="15dp"
-                    android:layout_marginRight="15dp">
+                    android:layout_marginLeft="@dimen/margin15dp"
+                    android:layout_marginRight="@dimen/margin15dp">
 
                     <TextView
                         android:id="@+id/txtTenDiaDiem"
@@ -41,17 +42,17 @@
                         android:layout_height="wrap_content"
                         android:text="@string/tendiadiem"
                         android:textColor="@android:color/black"
-                        android:textSize="22sp"
+                        android:textSize="@dimen/textsize20sp"
                         android:textStyle="bold"
                         android:textAlignment="center"
-                        android:layout_marginTop="80dp"
-                        android:padding="10dp"/>
+                        android:layout_marginTop="@dimen/margin80dp"
+                        android:padding="@dimen/padding10dp"/>
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:layout_margin="5dp">
+                        android:layout_margin="@dimen/margin5dp">
 
                         <TextView
                             android:id="@+id/txtSdtDiaDiem"
@@ -61,7 +62,9 @@
                             android:layout_gravity="center"
                             android:paddingStart="10dp"
                             android:layout_weight="1"
-                            android:textColor="@android:color/black"/>
+                            android:textSize="@dimen/textsize15sp"
+                            android:textColor="@android:color/black"
+                            tools:ignore="RtlSymmetry" />
 
                         <de.hdodenhof.circleimageview.CircleImageView
                             android:id="@+id/imgDienThoai"
@@ -69,6 +72,7 @@
                             android:layout_height="30dp"
                             android:src="@drawable/item_phone"
                             android:layout_gravity="center"
+                            android:textSize="@dimen/textsize15sp"
                             android:layout_marginEnd="10dp"/>
                     </LinearLayout>
 
@@ -84,9 +88,10 @@
                             android:layout_height="wrap_content"
                             android:text="@string/website"
                             android:layout_gravity="center"
-                            android:paddingStart="10dp"
+                            android:paddingStart="@dimen/margin10dp"
                             android:layout_weight="1"
-                            android:textColor="@android:color/black"/>
+                            android:textColor="@android:color/black"
+                            tools:ignore="RtlSymmetry" />
 
                         <de.hdodenhof.circleimageview.CircleImageView
                             android:id="@+id/imgChrome"
@@ -94,7 +99,7 @@
                             android:layout_height="30dp"
                             android:src="@drawable/item_chrome"
                             android:layout_gravity="center"
-                            android:layout_marginEnd="10dp"/>
+                            android:layout_marginEnd="@dimen/margin10dp"/>
                     </LinearLayout>
 
                     <LinearLayout
@@ -109,7 +114,7 @@
                             android:layout_height="wrap_content"
                             android:text="@string/danghoatdong"
                             android:layout_weight="1"
-                            android:textSize="15sp"
+                            android:textSize="@dimen/textsize15sp"
                             android:gravity="start"
                             android:layout_gravity="center"/>
 
@@ -131,7 +136,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/danhgia"
-                                android:textSize="15sp"
+                                android:textSize="@dimen/textsize15sp"
                                 android:layout_marginEnd="2dp"
                                 android:layout_gravity="center"/>
                         </LinearLayout>
@@ -142,7 +147,7 @@
                     android:id="@+id/imgAvaDiaDiem"
                     android:layout_width="150dp"
                     android:layout_height="150dp"
-                    android:layout_marginTop="15dp"
+                    android:layout_marginTop="@dimen/margin15dp"
                     android:layout_centerHorizontal="true"
                     android:src="@drawable/img_loading"/>
             </RelativeLayout>
@@ -151,9 +156,9 @@
                 android:id="@+id/linearImage"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:layout_marginRight="15dp"
-                android:layout_marginLeft="15dp"
+                android:layout_marginTop="@dimen/margin10dp"
+                android:layout_marginRight="@dimen/margin15dp"
+                android:layout_marginLeft="@dimen/margin15dp"
                 android:orientation="vertical"
                 android:background="@drawable/border_linear">
 
@@ -162,46 +167,26 @@
                     android:layout_height="wrap_content"
                     android:text="@string/hinhanh"
                     android:textStyle="bold"
-                    android:textSize="20sp"
+                    android:textSize="@dimen/textsize20sp"
                     android:textColor="@android:color/black"
-                    android:layout_marginLeft="10dp"
-                    android:layout_marginTop="10dp"
-                    android:layout_marginRight="10dp"/>
+                    android:layout_marginLeft="@dimen/margin10dp"
+                    android:layout_marginTop="@dimen/margin10dp"
+                    android:layout_marginRight="@dimen/margin10dp"/>
 
-                <RelativeLayout
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerHinhAnhDiaDiem"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/recyclerHinhAnhDiaDiem"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:nestedScrollingEnabled="false"
-                        android:padding="10dp"/>
-
-                    <TextView
-                        android:id="@+id/txtSoHinh"
-                        android:layout_width="50dp"
-                        android:layout_height="50dp"
-                        android:background="@color/colorPrimaryDark"
-                        android:layout_centerVertical="true"
-                        android:text="@string/soanh"
-                        android:gravity="center"
-                        android:textStyle="bold"
-                        android:textColor="@android:color/white"
-                        android:textSize="12sp"
-                        android:padding="5dp"
-                        android:layout_alignParentEnd="true"
-                        android:layout_marginEnd="10dp"/>
-                </RelativeLayout>
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"
+                    android:padding="@dimen/padding10dp"/>
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:layout_marginRight="15dp"
-                android:layout_marginLeft="15dp"
+                android:layout_marginTop="@dimen/margin10dp"
+                android:layout_marginRight="@dimen/margin15dp"
+                android:layout_marginLeft="@dimen/margin15dp"
                 android:orientation="vertical"
                 android:background="@drawable/border_linear">
 
@@ -210,16 +195,16 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_marginLeft="10dp"
-                    android:layout_marginTop="10dp"
-                    android:layout_marginRight="10dp">
+                    android:layout_marginLeft="@dimen/margin10dp"
+                    android:layout_marginTop="@dimen/margin10dp"
+                    android:layout_marginRight="@dimen/margin10dp">
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:text="@string/diachi"
                         android:textStyle="bold"
-                        android:textSize="20sp"
+                        android:textSize="@dimen/textsize20sp"
                         android:textColor="@android:color/black"
                         android:layout_weight="1"/>
                 </LinearLayout>
@@ -228,17 +213,17 @@
                     android:id="@+id/txtDiaChi"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="10dp"
+                    android:padding="@dimen/padding10dp"
                     android:text="@string/diachimau"
-                    android:textSize="16sp"/>
+                    android:textSize="@dimen/textsize15sp"/>
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:layout_marginRight="15dp"
-                android:layout_marginLeft="15dp"
+                android:layout_marginTop="@dimen/margin10dp"
+                android:layout_marginRight="@dimen/margin15dp"
+                android:layout_marginLeft="@dimen/margin15dp"
                 android:orientation="vertical"
                 android:background="@drawable/border_linear">
 
@@ -247,16 +232,16 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_marginLeft="10dp"
-                    android:layout_marginTop="10dp"
-                    android:layout_marginRight="10dp">
+                    android:layout_marginLeft="@dimen/margin10dp"
+                    android:layout_marginTop="@dimen/margin10dp"
+                    android:layout_marginRight="@dimen/margin10dp">
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:text="@string/thoigianhoatdong"
                         android:textStyle="bold"
-                        android:textSize="20sp"
+                        android:textSize="@dimen/textsize20sp"
                         android:textColor="@android:color/black"
                         android:layout_weight="1"/>
                 </LinearLayout>
@@ -271,32 +256,32 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/thu2"
-                        android:textSize="15sp"
-                        android:layout_margin="10dp"/>
+                        android:textSize="@dimen/textsize15sp"
+                        android:layout_margin="@dimen/margin10dp"/>
 
                     <TextView
                         android:id="@+id/txtThu3"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/thu3"
-                        android:textSize="15sp"
-                        android:layout_margin="10dp"/>
+                        android:textSize="@dimen/textsize15sp"
+                        android:layout_margin="@dimen/margin10dp"/>
 
                     <TextView
                         android:id="@+id/txtThu4"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/thu4"
-                        android:textSize="15sp"
-                        android:layout_margin="10dp"/>
+                        android:textSize="@dimen/textsize15sp"
+                        android:layout_margin="@dimen/margin10dp"/>
 
                     <TextView
                         android:id="@+id/txtThu5"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/thu5"
-                        android:textSize="15sp"
-                        android:layout_margin="10dp"/>
+                        android:textSize="@dimen/textsize15sp"
+                        android:layout_margin="@dimen/margin10dp"/>
 
 
                     <TextView
@@ -304,24 +289,24 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/thu6"
-                        android:textSize="15sp"
-                        android:layout_margin="10dp"/>
+                        android:textSize="@dimen/textsize15sp"
+                        android:layout_margin="@dimen/margin10dp"/>
 
                     <TextView
                         android:id="@+id/txtThu7"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/thu7"
-                        android:textSize="15sp"
-                        android:layout_margin="10dp"/>
+                        android:textSize="@dimen/textsize15sp"
+                        android:layout_margin="@dimen/margin10dp"/>
 
                     <TextView
                         android:id="@+id/txtChuNhat"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/chunhat"
-                        android:textSize="15sp"
-                        android:layout_margin="10dp"/>
+                        android:textSize="@dimen/textsize15sp"
+                        android:layout_margin="@dimen/margin10dp"/>
                 </LinearLayout>
             </LinearLayout>
 
@@ -329,11 +314,11 @@
                 android:id="@+id/linearReviews"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:layout_marginRight="15dp"
-                android:layout_marginLeft="15dp"
+                android:layout_marginTop="@dimen/margin10dp"
+                android:layout_marginRight="@dimen/margin15dp"
+                android:layout_marginLeft="@dimen/margin15dp"
                 android:orientation="vertical"
-                android:layout_marginBottom="10dp"
+                android:layout_marginBottom="@dimen/margin10dp"
                 android:background="@drawable/border_linear">
 
                 <TextView
@@ -341,16 +326,16 @@
                     android:layout_height="wrap_content"
                     android:text="@string/nhanxetdanhgia"
                     android:textStyle="bold"
-                    android:textSize="20sp"
+                    android:textSize="@dimen/textsize20sp"
                     android:textColor="@android:color/black"
-                    android:layout_marginStart="10dp"
-                    android:layout_marginTop="10dp"/>
+                    android:layout_marginStart="@dimen/margin10dp"
+                    android:layout_marginTop="@dimen/margin10dp"/>
 
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_margin="10dp"
+                    android:layout_margin="@dimen/margin10dp"
                     android:gravity="center"
                     android:orientation="vertical">
 
@@ -380,8 +365,8 @@
                             android:id="@+id/edBinhLuan"
                             android:layout_width="0dp"
                             android:layout_height="50dp"
-                            android:hint="Binh luan"
-                            android:padding="5dp"
+                            android:hint="@string/noidungbinhluan"
+                            android:padding="@dimen/padding5dp"
                             android:background="#10000000"
                             android:layout_weight="1"/>
 
@@ -389,19 +374,19 @@
                             android:id="@+id/txtDangBinhLuan"
                             android:layout_width="50dp"
                             android:layout_height="50dp"
-                            android:text="Đăng"
-                            android:textSize="15sp"
+                            android:text="@string/dang"
+                            android:textSize="@dimen/textsize15sp"
                             android:textStyle="bold"
                             android:textColor="@color/colorPrimaryDark"
                             android:textAllCaps="false"
-                            android:padding="5dp"/>
+                            android:padding="@dimen/padding5dp"/>
                     </LinearLayout>
                 </LinearLayout>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Tat ca nhan xet:"
+                    android:text="@string/tatcabinhluan"
                     android:layout_margin="10dp"/>
 
                 <androidx.recyclerview.widget.RecyclerView
@@ -410,7 +395,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:nestedScrollingEnabled="false"
-                    android:padding="10dp"/>
+                    android:padding="@dimen/padding10dp"/>
             </LinearLayout>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

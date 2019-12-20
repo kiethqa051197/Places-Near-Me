@@ -1,6 +1,7 @@
 package com.example.placesnearme.View.Fragment;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -9,17 +10,11 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.OpenableColumns;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,9 +22,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.example.placesnearme.Common;
 import com.example.placesnearme.Model.Firebase.User;
 import com.example.placesnearme.R;
 import com.example.placesnearme.View.LoginActivity;
+import com.example.placesnearme.View.MainActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -38,9 +35,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -50,18 +44,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import dmax.dialog.SpotsDialog;
 
 import static android.text.TextUtils.isEmpty;
 import static com.example.placesnearme.Remote.Check.doStringsMatch;
 
 public class ProfileFragment extends Fragment implements View.OnClickListener{
-
     private CircleImageView imgAva, imgCamera;
     private EditText edTenHienThi, edEmail;
     private TextView txtSua, txtLuu;
+    private Button btnDangXuat;
+
+    private AlertDialog alertDialog;
 
     private FirebaseAuth.AuthStateListener mAuthListener;
-    private FirebaseFirestore db;
     private StorageReference storageReference;
 
     private List<User> users = new ArrayList<>();
@@ -77,13 +73,12 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             View view = inflater.inflate(R.layout.fragment_profile, container, false);
 
-            db = FirebaseFirestore.getInstance();
             storageReference = FirebaseStorage.getInstance().getReference();
 
-            prefUser = getActivity().getSharedPreferences("prefUser", 0);
+            prefUser = getActivity().getSharedPreferences(Common.PREF_USER, 0);
             editorUser = prefUser.edit();
 
-            prefFile = getActivity().getSharedPreferences("prefFile", 0);
+            prefFile = getActivity().getSharedPreferences(Common.PREF_FILE, 0);
             editorFile = prefFile.edit();
 
             setupFirebaseAuth();
@@ -97,11 +92,16 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
             txtLuu = view.findViewById(R.id.txtLuu);
             txtSua = view.findViewById(R.id.txtSua);
 
+            btnDangXuat = view.findViewById(R.id.btnDangXuat);
+
+            alertDialog = new SpotsDialog(getContext());
+            
             txtSua.setOnClickListener(this);
             txtLuu.setOnClickListener(this);
 
             imgCamera.setOnClickListener(this);
 
+            btnDangXuat.setOnClickListener(this);
             return view;
     }
 
@@ -118,15 +118,24 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
             case R.id.imgCamera:
                 openGallary();
                 break;
+            case R.id.btnDangXuat:
+                SignOut();
+                break;
         }
+    }
+
+    private void SignOut() {
+        FirebaseAuth.getInstance().signOut();
+        getActivity().finish();
+        getContext().startActivity(new Intent(getContext(), LoginActivity.class));
     }
 
     private void openGallary(){
         Intent intent = new Intent();
-        intent.setType("image/*");
+        intent.setType(Common.setStype);
         intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
         intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(Intent.createChooser(intent, "Select Picture"), RESULT_LOAD_IMAGE);
+        startActivityForResult(Intent.createChooser(intent, Common.titleChooseImage), RESULT_LOAD_IMAGE);
     }
 
     @Override
@@ -138,22 +147,23 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
                 Uri uri = data.getData();
                 String fileName = getFileName(uri);
 
+                imgAva.setImageResource(android.R.color.transparent);
                 imgAva.setImageURI(uri);
 
                 upLoadAvatar(uri, fileName);
 
-                editorFile.putString("filename", fileName);
+                editorFile.putString(Common.filename, fileName);
                 editorFile.commit();
             }
         }
     }
 
-    private void upLoadAvatar(Uri uri, String fileName){
-        StorageReference fileUpload = storageReference.child("Avatar").child(prefUser.getString("uid", "")).child(fileName);
+    private void upLoadAvatar(Uri uri, final String fileName){
+        StorageReference fileUpload = storageReference.child(Common.AVATAR).child(prefUser.getString(Common.mauser, "")).child(fileName);
         fileUpload.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                Toast.makeText(getContext(), "DONE", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), getString(R.string.themhinhthanhcong), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -161,7 +171,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
     private String getFileName(Uri uri){
         String result = null;
 
-        if (uri.getScheme().equals("content")){
+        if (uri.getScheme().equals(Common.content)){
             Cursor cursor = getContext().getContentResolver().query(uri, null, null, null, null);
             try {
                 if (cursor != null && cursor.moveToFirst()){
@@ -194,7 +204,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
                     String idUser = user.getUid();
                     loadData(idUser);
 
-                    editorUser.putString("uid", idUser);
+                    editorUser.putString(Common.mauser, idUser);
                     editorUser.commit();
                 }
             }
@@ -202,7 +212,9 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
     }
 
     private void loadData(final String userId){
-        db.collection("User").whereEqualTo("mauser", userId).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+        users.clear();
+
+        MainActivity.db.collection(Common.USER).whereEqualTo(Common.mauser, userId).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 for (DocumentSnapshot doc : task.getResult()) {
@@ -214,6 +226,9 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
                 edTenHienThi.setText(users.get(0).getUsername());
                 edEmail.setText(users.get(0).getEmail());
                 loadAvatar(users.get(0).getAvatar());
+
+                editorUser.putString(Common.avatar, users.get(0).getAvatar());
+                editorUser.commit();
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
@@ -224,48 +239,57 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
     }
 
     private void updateData(final String idUser, String fileName) {
-        DocumentReference user = db.collection("User").document(idUser);
-        user.update("username", edTenHienThi.getText().toString());
-        user.update("email", edEmail.getText().toString());
-        user.update("avatar", fileName)
+        alertDialog.show();
+
+        DocumentReference user = MainActivity.db.collection(Common.USER).document(idUser);
+        user.update(Common.username, edTenHienThi.getText().toString());
+        user.update(Common.email, edEmail.getText().toString());
+        user.update(Common.avatar, fileName)
                 .addOnSuccessListener(new OnSuccessListener < Void > () {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        Toast.makeText(getContext(), "Updated Successfully", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), getString(R.string.capnhatthanhcong), Toast.LENGTH_SHORT).show();
+                        alertDialog.dismiss();
                     }
-                });
+                }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(getContext(), getString(R.string.capnhatkhongthanhcong), Toast.LENGTH_SHORT).show();
+                alertDialog.dismiss();
+            }
+        });
 
-        db.collection("User").document(idUser)
-                .addSnapshotListener(new EventListener<DocumentSnapshot>() {
-                    @Override
-                    public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
-                        if (e != null){
-                            Toast.makeText(getContext(), "Có lỗi", Toast.LENGTH_SHORT).show();
-                            return;
-                        }
 
-                        if (documentSnapshot.exists()){
-                            edTenHienThi.setText(documentSnapshot.getString("username"));
-                            edEmail.setText(documentSnapshot.getString("email"));
-                            loadAvatar(documentSnapshot.getString("avatar"));
-                        }
-                    }
-                });
+        loadData(idUser);
+        loadAvatar(fileName);
     }
 
     private void loadAvatar(String ava){
-        StorageReference storageImgProductType = storageReference.child("Avatar")
-                .child(prefUser.getString("uid", ""))
-                .child(ava);
+        if (ava.equals("ava_man.png")){
+            StorageReference storageImgProductType = storageReference.child(Common.AVATAR).child(ava);
 
-        long ONE_MEGABYTE = 1024 * 1024;
-        storageImgProductType.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
-            @Override
-            public void onSuccess(byte[] bytes) {
-                Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                imgAva.setImageBitmap(bitmap);
-            }
-        });
+            long ONE_MEGABYTE = 1024 * 1024;
+            storageImgProductType.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                @Override
+                public void onSuccess(byte[] bytes) {
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                    imgAva.setImageBitmap(bitmap);
+                }
+            });
+        }else {
+            StorageReference storageImgProductType = storageReference.child(Common.AVATAR)
+                    .child(prefUser.getString(Common.mauser, ""))
+                    .child(ava);
+
+            long ONE_MEGABYTE = 1024 * 1024;
+            storageImgProductType.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                @Override
+                public void onSuccess(byte[] bytes) {
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                    imgAva.setImageBitmap(bitmap);
+                }
+            });
+        }
     }
 
     private void suaClick(){
@@ -278,7 +302,9 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
     }
 
     private void luuClick(){
-        updateData(prefUser.getString("uid", ""), prefFile.getString("filename", "ava_man.png"));
+        updateData(prefUser.getString(Common.mauser, "")
+                        , prefFile.getString(Common.filename
+                        , prefUser.getString(Common.avatar, "")));
 
         edTenHienThi.setEnabled(false);
 

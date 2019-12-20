@@ -1,13 +1,12 @@
 package com.example.placesnearme.Model.Firebase;
 
 public class User {
-    String mauser;
-    String email;
-    String avatar;
-    String username;
+    private String mauser;
+    private String email;
+    private String avatar;
+    private String username;
 
-    public User() {
-    }
+    public User() { }
 
     public User(String mauser, String email, String avatar, String username) {
         this.mauser = mauser;

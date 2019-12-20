@@ -6,21 +6,18 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.placesnearme.Model.Firebase.DanhMuc;
 import com.example.placesnearme.R;
 
 import java.util.List;
 
 class ListHinhDaChonViewHolder extends RecyclerView.ViewHolder{
-    public ImageView imgHinhDuocChon, imgXoaHinh;
+    ImageView imgHinhDuocChon, imgXoaHinh;
 
-    public ListHinhDaChonViewHolder(@NonNull View itemView) {
+    ListHinhDaChonViewHolder(@NonNull View itemView) {
         super(itemView);
 
         imgHinhDuocChon = itemView.findViewById(R.id.imgHinhDuocChon);
@@ -29,7 +26,7 @@ class ListHinhDaChonViewHolder extends RecyclerView.ViewHolder{
 }
 
 public class ListHinhDaChonAdapter extends RecyclerView.Adapter<ListHinhDaChonViewHolder>{
-    List<Uri> uriList;
+    private List<Uri> uriList;
     Context context;
 
     public ListHinhDaChonAdapter(List<Uri> uriList) {

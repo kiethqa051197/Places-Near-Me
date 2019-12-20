@@ -11,39 +11,18 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:fontFamily="@font/alex_brush"
-                android:text="Register"
+                android:text="@string/dangky"
                 android:textColor="@android:color/white"
-                android:textSize="60dp"
+                android:textSize="60sp"
                 android:textStyle="bold"
                 android:layout_marginTop="60dp"/>
-
-            <RelativeLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:layout_gravity="center">
-
-                <ImageView
-                    android:id="@+id/imgAva"
-                    android:layout_width="150dp"
-                    android:layout_height="150dp"
-                    android:src="@drawable/ava_man"/>
-
-                <de.hdodenhof.circleimageview.CircleImageView
-                    android:layout_width="60dp"
-                    android:layout_height="60dp"
-                    android:src="@drawable/icon_camera"
-                    android:layout_alignBottom="@+id/imgAva"
-                    android:layout_alignRight="@id/imgAva"/>
-            </RelativeLayout>
 
             <EditText
                 android:id="@+id/edEmail"
@@ -53,7 +32,8 @@
                 android:layout_marginTop="40dp"
                 android:layout_marginLeft="40dp"
                 android:layout_marginRight="40dp"
-                android:hint="Email"
+                android:hint="@string/email"
+                android:inputType="textEmailAddress"
                 android:textColorHint="@android:color/white"
                 android:textColor="@android:color/white"/>
 
@@ -65,7 +45,7 @@
                 android:layout_marginTop="30dp"
                 android:layout_marginLeft="40dp"
                 android:layout_marginRight="40dp"
-                android:hint="Password"
+                android:hint="@string/matkhau"
                 android:textColorHint="@android:color/white"
                 android:textColor="@android:color/white"
                 android:inputType="textPassword"/>
@@ -78,7 +58,7 @@
                 android:layout_marginTop="30dp"
                 android:layout_marginLeft="40dp"
                 android:layout_marginRight="40dp"
-                android:hint="Password"
+                android:hint="@string/nhaplaimatkhau"
                 android:textColorHint="@android:color/white"
                 android:textColor="@android:color/white"
                 android:inputType="textPassword"/>
@@ -87,7 +67,7 @@
                 android:id="@+id/btnRegister"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
-                android:text="REGISTER"
+                android:text="@string/dangky"
                 android:layout_marginTop="40dp"
                 android:layout_marginLeft="40dp"
                 android:layout_marginRight="40dp"
@@ -95,36 +75,17 @@
                 android:textColor="@android:color/white">
             </Button>
 
-            <LinearLayout
+            <TextView
+                android:id="@+id/txtSignIn"
+                android:layout_weight="1"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
+                android:layout_height="0dp"
+                android:layout_gravity="center"
                 android:layout_marginTop="10dp"
-                android:layout_marginLeft="40dp"
-                android:layout_marginRight="40dp">
-
-                <TextView
-                    android:id="@+id/txtSignIn"
-                    android:layout_weight="1"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:textColorHint="@android:color/white"
-                    android:textColor="@android:color/white"
-                    android:text="You have an account? Sign in"/>
-
-                <TextView
-                    android:id="@+id/txtForgotPassword"
-                    android:layout_weight="1"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:textColorHint="@android:color/white"
-                    android:textColor="@android:color/white"
-                    android:text="Forgot password?"
-                    android:gravity="right" />
-            </LinearLayout>
-
+                android:layout_marginStart="30dp"
+                android:textColorHint="@android:color/white"
+                android:textColor="@android:color/white"
+                android:text="@string/dacotaikhoan"/>
         </LinearLayout>
     </ScrollView>
 
@@ -134,12 +95,4 @@
         android:layout_height="wrap_content"
         android:src="@drawable/ic_back"
         android:layout_margin="10dp"/>
-
-    <ProgressBar
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/progressBar"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        android:visibility="invisible"/>
 </RelativeLayout>

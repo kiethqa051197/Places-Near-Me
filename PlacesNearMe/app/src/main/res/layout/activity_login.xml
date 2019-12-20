@@ -11,17 +11,16 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:fontFamily="@font/alex_brush"
-                android:text="Login"
+                android:text="@string/dangnhap"
                 android:textColor="@android:color/white"
-                android:textSize="60dp"
+                android:textSize="50sp"
                 android:textStyle="bold"
                 android:layout_marginTop="60dp"/>
 
@@ -33,7 +32,8 @@
                 android:layout_marginTop="80dp"
                 android:layout_marginLeft="40dp"
                 android:layout_marginRight="40dp"
-                android:hint="Email"
+                android:inputType="textEmailAddress"
+                android:hint="@string/email"
                 android:textColorHint="@android:color/white"
                 android:textColor="@android:color/white"/>
 
@@ -45,7 +45,7 @@
                 android:layout_marginTop="30dp"
                 android:layout_marginLeft="40dp"
                 android:layout_marginRight="40dp"
-                android:hint="Password"
+                android:hint="@string/matkhau"
                 android:textColorHint="@android:color/white"
                 android:textColor="@android:color/white"
                 android:inputType="textPassword"/>
@@ -54,7 +54,7 @@
                 android:id="@+id/btnSignIn"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
-                android:text="SIGN IN"
+                android:text="@string/dangnhap"
                 android:layout_marginTop="40dp"
                 android:layout_marginLeft="40dp"
                 android:layout_marginRight="40dp"
@@ -62,102 +62,17 @@
                 android:textColor="@android:color/white">
             </Button>
 
-            <LinearLayout
+
+            <TextView
+                android:id="@+id/txtRegister"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
+                android:layout_gravity="center"
+                android:textColorHint="@android:color/white"
+                android:textColor="@android:color/white"
                 android:layout_marginTop="10dp"
-                android:layout_marginLeft="40dp"
-                android:layout_marginRight="40dp">
-
-                <TextView
-                    android:id="@+id/txtRegister"
-                    android:layout_weight="1"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:textColorHint="@android:color/white"
-                    android:textColor="@android:color/white"
-                    android:text="Don't have an account? Register"/>
-
-                <TextView
-                    android:id="@+id/txtForgotPassword"
-                    android:layout_weight="1"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:textColorHint="@android:color/white"
-                    android:textColor="@android:color/white"
-                    android:text="Forgot password?"
-                    android:gravity="right" />
-            </LinearLayout>
-
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="50dp"
-                android:layout_marginLeft="40dp"
-                android:layout_marginRight="40dp">
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="2dp"
-                    android:layout_weight="1"
-                    android:background="@android:color/white"
-                    android:layout_gravity="center"/>
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:textColor="@android:color/white"
-                    android:text="or"
-                    android:gravity="center"
-                    android:layout_gravity="center"/>
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="2dp"
-                    android:layout_weight="1"
-                    android:background="@android:color/white"
-                    android:layout_gravity="center"/>
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="30dp"
-                android:layout_marginLeft="40dp"
-                android:layout_marginRight="40dp"
-                android:orientation="horizontal">
-
-                <ImageView
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:src="@drawable/icon_google"
-                    android:background="@android:color/white"
-                    android:padding="10dp"/>
-
-                <Button
-                    android:id="@+id/btnSignInGoogle"
-                    android:layout_weight="1"
-                    android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:background="@android:color/white"
-                    android:text="Sign in with Google"
-                    android:textAllCaps="false"
-                    android:textColor="@android:color/black"/>
-            </LinearLayout>
+                android:layout_marginLeft="30dp"
+                android:text="@string/khongcotaikhoan"/>
         </LinearLayout>
     </ScrollView>
-
-    <ProgressBar
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/progressBar"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="300dp"
-        android:visibility="invisible"/>
 </RelativeLayout>

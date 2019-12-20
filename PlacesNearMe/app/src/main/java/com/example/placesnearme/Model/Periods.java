@@ -2,26 +2,21 @@ package com.example.placesnearme.Model;
 
 public class Periods {
     private Close close;
-
     private Open open;
 
-    public Close getClose ()
-    {
+    public Close getClose() {
         return close;
     }
 
-    public void setClose (Close close)
-    {
+    public void setClose(Close close) {
         this.close = close;
     }
 
-    public Open getOpen ()
-    {
+    public Open getOpen() {
         return open;
     }
 
-    public void setOpen (Open open)
-    {
+    public void setOpen(Open open) {
         this.open = open;
     }
 }
