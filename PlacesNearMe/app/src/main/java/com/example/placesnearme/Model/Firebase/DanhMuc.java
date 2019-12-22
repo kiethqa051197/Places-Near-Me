@@ -6,15 +6,15 @@ public class DanhMuc {
     private String madanhmuc;
     private String tendanhmuc;
     private String hinhanh;
-    private DanhMucCha danhMucCha;
+    private DanhMucCha danhmuccha;
     private List<String> tukhoa;
 
     public DanhMuc() { }
 
-    public DanhMuc(String madanhmuc, String tendanhmuc, String hinhanh, DanhMucCha danhMucCha, List<String> tukhoa) {
+    public DanhMuc(String madanhmuc, String tendanhmuc, String hinhanh, DanhMucCha danhmuccha, List<String> tukhoa) {
         this.madanhmuc = madanhmuc;
         this.tendanhmuc = tendanhmuc;
-        this.danhMucCha = danhMucCha;
+        this.danhmuccha = danhmuccha;
         this.hinhanh = hinhanh;
         this.tukhoa = tukhoa;
     }
@@ -36,11 +36,11 @@ public class DanhMuc {
     }
 
     public DanhMucCha getDanhMucCha() {
-        return danhMucCha;
+        return danhmuccha;
     }
 
-    public void setDanhMucCha(DanhMucCha danhMucCha) {
-        this.danhMucCha = danhMucCha;
+    public void setDanhMucCha(DanhMucCha danhmuccha) {
+        this.danhmuccha = danhmuccha;
     }
 
     public String getHinhanh() {

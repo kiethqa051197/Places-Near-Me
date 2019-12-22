@@ -94,7 +94,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
 
             btnDangXuat = view.findViewById(R.id.btnDangXuat);
 
-            alertDialog = new SpotsDialog(getContext());
+            alertDialog = new SpotsDialog(getContext(), R.style.Custom);
             
             txtSua.setOnClickListener(this);
             txtLuu.setOnClickListener(this);

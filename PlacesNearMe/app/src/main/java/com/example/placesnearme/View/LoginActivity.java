@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -43,7 +42,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         edEmail = findViewById(R.id.edEmail);
         edPassword = findViewById(R.id.edPassword);
 
-        alertDialog = new SpotsDialog(this);
+        alertDialog = new SpotsDialog(this, R.style.Custom);
 
         setupFirebaseAuth();
 

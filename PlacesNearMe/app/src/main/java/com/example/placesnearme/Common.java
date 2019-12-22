@@ -55,6 +55,7 @@ public class Common {
     public static final String mocua = "mocua";
     public static final String edit = "edit";
     public static final String filename ="filename";
+    public static final String bitmap ="bitmap";
 
     public static final String PREF_DANHMUC = "prefDanhMuc";
     public static final String PREF_DANHMUCCHA = "prefDanhMucCha";

@@ -89,6 +89,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     final public static Fragment fragment2 = new SearchFragment();
     final public static Fragment fragment3 = new AddPlaceFragment();
     final public static Fragment fragment4 = new ProfileFragment();
+
     public static Fragment active = fragment1;
 
     private SharedPreferences preferences;
@@ -350,7 +351,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
                                                     for (int q = 0; q < reviews.size(); q++) {
                                                         Review review = new Review();
-                                                        review.setManguoireview("");
+                                                        review.setManguoireview(reviews.get(q).getTime());
                                                         review.setTennguoireview(reviews.get(q).getAuthor_name());
                                                         review.setDanhgia(reviews.get(q).getRating());
                                                         review.setNoidungreview(reviews.get(q).getText());
@@ -623,7 +624,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             @Override
             public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
                 if (!documentSnapshot.exists()){
-                    docRef.collection(Common.REVIEWS).document().set(review).addOnSuccessListener(new OnSuccessListener<Void>() {
+                    docRef.collection(Common.REVIEWS).document(review.getManguoireview()).set(review).addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
                             Toast.makeText(MainActivity.this, getString(R.string.themthanhcong), Toast.LENGTH_SHORT).show();
@@ -660,7 +661,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
         diadiem.update(Common.website, website);
     }
-
 
     @Override
     protected void onDestroy() {

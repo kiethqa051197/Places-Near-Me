@@ -97,11 +97,37 @@
         </LinearLayout>
     </LinearLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerTimKiem"
-        android:layout_below="@id/linearSapXep"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="5dp"
-        android:background="@android:color/white"/>
+        android:layout_height="wrap_content"
+        android:layout_below="@id/linearSapXep">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerTimKiem"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="5dp"
+            android:background="@android:color/white"/>
+
+        <LinearLayout
+            android:id="@+id/linearKhongCoDiaDiem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_centerInParent="true"
+            android:gravity="center"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:src="@drawable/search_error"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/khongtimthaydiadiem"
+                android:layout_marginTop="@dimen/padding10dp"/>
+        </LinearLayout>
+    </RelativeLayout>
 </RelativeLayout>

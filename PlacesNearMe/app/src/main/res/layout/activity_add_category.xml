@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/heightToolbar"
+        android:background="@color/colorPrimaryDark"
+        android:layout_marginBottom="@dimen/padding10dp"/>
+
+    <ImageView
+        android:id="@+id/imgChonHinh"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:src="@drawable/picture_black"
+        android:layout_gravity="center"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="@string/chonhinhanhdanhmuc"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/tendanhmuc"
+        android:textStyle="bold"
+        android:textColor="@android:color/black"
+        android:layout_marginTop="30dp"
+        android:layout_marginStart="10dp"/>
+
+    <EditText
+        android:id="@+id/edTenDanhMuc"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/tendanhmuc"
+        android:textSize="@dimen/textsize15sp"
+        android:layout_margin="@dimen/margin10dp"
+        android:inputType="textMultiLine" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/danhsachtukhoa"
+        android:textStyle="bold"
+        android:textColor="@android:color/black"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="10dp"/>
+
+    <EditText
+        android:id="@+id/edNhapTuKhoa"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/nhaptukhoaoday"
+        android:textSize="@dimen/textsize15sp"
+        android:layout_margin="@dimen/margin10dp"
+        android:inputType="textMultiLine" />
+
+    <Button
+        android:id="@+id/btnThemDanhMuc"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/margin10dp"
+        android:text="@string/themdanhmuc2"
+        android:background="@color/colorPrimaryDark"
+        android:textColor="@android:color/white"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_gravity="center"
+        android:gravity="center">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Chọn danh mục cha"/>
+
+        <Spinner
+            android:id="@+id/spinDanhMucCha"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="5dp" />
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerDanhMuc"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/margin10dp" />
+</LinearLayout>

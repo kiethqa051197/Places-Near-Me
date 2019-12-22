@@ -19,7 +19,8 @@
         android:roundIcon="@drawable/logo_app"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".View.SearchResultActivity"></activity>
+        <activity android:name=".View.AddCategoryActivity"></activity>
+        <activity android:name=".View.SearchResultActivity" />
         <activity android:name=".View.DetailPlacesActivity" />
         <activity android:name=".View.MainActivity" />
         <activity android:name=".View.SplashScreenActivity">
@@ -31,7 +32,7 @@
         </activity>
         <activity
             android:name=".View.LoginActivity"
-            android:theme="@style/Theme.AppCompat.NoActionBar"></activity>
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
             android:name=".View.RegisterActivity"
             android:theme="@style/Theme.AppCompat.NoActionBar" />

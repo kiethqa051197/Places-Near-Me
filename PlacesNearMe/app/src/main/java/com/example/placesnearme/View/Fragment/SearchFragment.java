@@ -20,6 +20,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -84,10 +85,10 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, View
 
     private AlertDialog alertDialog;
 
+    private LinearLayout linearKhongCoDiaDiem;
+
     private AutoCompleteTextView autoCompleteTextView;
-
     private GeoApiContext mGeoApiContext;
-
     private Marker mMarker;
 
     private RecyclerView listDiaDiemTimKiem;
@@ -123,7 +124,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, View
 
         layTuKhoa();
 
-        alertDialog = new SpotsDialog(getContext());
+        alertDialog = new SpotsDialog(getContext(), R.style.Custom);
 
         autoCompleteTextView = view.findViewById(R.id.txtautocomplete);
 
@@ -139,6 +140,8 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, View
         arrayAdapterSapXep = new ArrayAdapter<String>(getContext(), android.R.layout.simple_list_item_1, sapxeps);
         spinContextSapXep.setAdapter(arrayAdapterSapXep);
         arrayAdapterSapXep.notifyDataSetChanged();
+
+        linearKhongCoDiaDiem = view.findViewById(R.id.linearKhongCoDiaDiem);
 
         listDiaDiemTimKiem = view.findViewById(R.id.recyclerTimKiem);
         listDiaDiemTimKiem.setHasFixedSize(true);
@@ -331,11 +334,15 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, View
                             }
                         }
 
-                        Collections.sort(diaDiems, new SortDiaDiem());
+                        if (diaDiems.size() > 0){
+                            linearKhongCoDiaDiem.setVisibility(View.GONE);
+                            Collections.sort(diaDiems, new SortDiaDiem());
 
-                        adapterDiaDiemTimKiem = new ListDiaDiemTimKiemAdapter(diaDiems, MainActivity.latitude, MainActivity.longtitude);
-                        adapterDiaDiemTimKiem.notifyDataSetChanged();
-                        listDiaDiemTimKiem.setAdapter(adapterDiaDiemTimKiem);
+                            adapterDiaDiemTimKiem = new ListDiaDiemTimKiemAdapter(diaDiems, MainActivity.latitude, MainActivity.longtitude);
+                            adapterDiaDiemTimKiem.notifyDataSetChanged();
+                            listDiaDiemTimKiem.setAdapter(adapterDiaDiemTimKiem);
+                        }else
+                            linearKhongCoDiaDiem.setVisibility(View.VISIBLE);
 
                         alertDialog.dismiss();
                     }

@@ -124,7 +124,7 @@ public class AddPlaceFragment extends Fragment implements View.OnClickListener, 
         preferencesDiaDiem = getActivity().getSharedPreferences(Common.PREF_DIADIEM, 0);
         editorDiaDiem = preferencesDiaDiem.edit();
 
-        alertDialog = new SpotsDialog(getContext());
+        alertDialog = new SpotsDialog(getContext(), R.style.CustomUpdateAdd);
 
         btnThemDiaDiem = view.findViewById(R.id.btnThemDiaDiem);
         btnChonAnh = view.findViewById(R.id.btnChonAnh);

@@ -12,6 +12,16 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.BitmapShader;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Matrix;
+import android.graphics.Paint;
+import android.graphics.RectF;
+import android.graphics.Shader;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Build;
@@ -22,6 +32,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -44,11 +55,16 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.google.maps.DirectionsApiRequest;
 import com.google.maps.GeoApiContext;
 import com.google.maps.PendingResult;
@@ -96,6 +112,8 @@ public class SearchResultActivity extends AppCompatActivity implements OnMapRead
 
     private AlertDialog alertDialog;
 
+    private LinearLayout linearKhongCoDiaDiem;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -118,7 +136,7 @@ public class SearchResultActivity extends AppCompatActivity implements OnMapRead
         prefCategory = getSharedPreferences(Common.PREF_DANHMUC, 0);
         txtTenDanhMuc.setText(prefCategory.getString(Common.tendanhmuc, ""));
 
-        alertDialog = new SpotsDialog(this);
+        alertDialog = new SpotsDialog(this, R.style.Custom);
 
         spinContextKieuXem = findViewById(R.id.spinContextKieuXem);
         spinContextSapXep = findViewById(R.id.spinContextSapXep);
@@ -133,6 +151,8 @@ public class SearchResultActivity extends AppCompatActivity implements OnMapRead
         spinContextSapXep.setAdapter(arrayAdapterSapXep);
         arrayAdapterSapXep.notifyDataSetChanged();
 
+        linearKhongCoDiaDiem = findViewById(R.id.linearKhongCoDiaDiem);
+
         listDiaDiemTimKiem = findViewById(R.id.recyclerTimKiem);
         listDiaDiemTimKiem.setHasFixedSize(true);
         layoutManagerDanhMuc = new LinearLayoutManager(getApplicationContext());
@@ -146,7 +166,7 @@ public class SearchResultActivity extends AppCompatActivity implements OnMapRead
         imgBack.setOnClickListener(this);
     }
 
-    private void danhsach(String madanhmuc){
+    private void danhsach(final String madanhmuc){
         alertDialog.show();
 
         diaDiems.clear();
@@ -187,11 +207,15 @@ public class SearchResultActivity extends AppCompatActivity implements OnMapRead
                             }
                         }
 
-                        Collections.sort(diaDiems, new SortDiaDiem());
+                        if (diaDiems.size() > 0){
+                            linearKhongCoDiaDiem.setVisibility(View.GONE);
+                            Collections.sort(diaDiems, new SortDiaDiem());
 
-                        adapterDiaDiemTimKiem = new ListDiaDiemTimKiemAdapter(diaDiems, MainActivity.latitude, MainActivity.longtitude);
-                        adapterDiaDiemTimKiem.notifyDataSetChanged();
-                        listDiaDiemTimKiem.setAdapter(adapterDiaDiemTimKiem);
+                            adapterDiaDiemTimKiem = new ListDiaDiemTimKiemAdapter(diaDiems, MainActivity.latitude, MainActivity.longtitude);
+                            adapterDiaDiemTimKiem.notifyDataSetChanged();
+                            listDiaDiemTimKiem.setAdapter(adapterDiaDiemTimKiem);
+                        }else
+                            linearKhongCoDiaDiem.setVisibility(View.VISIBLE);
 
                         alertDialog.dismiss();
                     }

@@ -8,7 +8,6 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -56,7 +55,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
         btnRegister = findViewById(R.id.btnRegister);
         imgBack = findViewById(R.id.imgBack);
 
-        alertDialog = new SpotsDialog(this);
+        alertDialog = new SpotsDialog(this, R.style.Custom);
 
         hideSoftKeyboard();
 

@@ -85,6 +85,7 @@ public class ListDanhMucChaAdapter extends RecyclerView.Adapter<ListDanhMucChaVi
 
                 editor.putString(Common.madanhmuc, danhMucCha.getMadanhmuc());
                 editor.putString(Common.tendanhmuc, danhMucCha.getTendanhmuc());
+                editor.putString(Common.hinhanh, danhMucCha.getHinhanh());
                 editor.commit();
 
                 Intent intent = new Intent(context, CategoryActivity.class);

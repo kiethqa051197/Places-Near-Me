@@ -9,17 +9,19 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -31,6 +33,7 @@ import com.example.placesnearme.Model.Firebase.DiaDiem;
 import com.example.placesnearme.Model.Firebase.Review;
 import com.example.placesnearme.Model.Firebase.User;
 import com.example.placesnearme.R;
+import com.example.placesnearme.Remote.Check;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -50,17 +53,21 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.text.TextUtils.isEmpty;
+
 import de.hdodenhof.circleimageview.CircleImageView;
 import dmax.dialog.SpotsDialog;
 
 public class DetailPlacesActivity extends AppCompatActivity implements View.OnClickListener{
     private CircleImageView imgAvaDiaDiem, imgDienThoai, imgChrome, imgAva;
-    private TextView txtTenDiaDiem, txtSdtDiaDiem, txtWebsite, txtDangHoatDong, txtDiaChi,
+    private TextView txtTenDiaDiem, txtSdtDiaDiem, txtWebsite, txtDiaChi, txtTatCaBinhLuan,
             txtThu2, txtThu3, txtThu4, txtThu5, txtThu6, txtThu7, txtChuNhat, txtDangBinhLuan;
 
     private EditText edBinhLuan;
 
     private Toolbar toolbar;
+
+    private LinearLayout linearKhongCoBinhLuan, linearKhongCoHinh;
 
     private RecyclerView listHinhAnh, listReview;
     private ListHinhAnhDiaDiemAdapter adapterHinhAnh;
@@ -96,7 +103,7 @@ public class DetailPlacesActivity extends AppCompatActivity implements View.OnCl
         db = FirebaseFirestore.getInstance();
         storageReference = FirebaseStorage.getInstance().getReference();
 
-        alertDialog = new SpotsDialog(this);
+        alertDialog = new SpotsDialog(this, R.style.CustomUpdateAdd);
 
         imgAvaDiaDiem = findViewById(R.id.imgAvaDiaDiem);
         imgDienThoai = findViewById(R.id.imgDienThoai);
@@ -106,9 +113,9 @@ public class DetailPlacesActivity extends AppCompatActivity implements View.OnCl
         txtTenDiaDiem = findViewById(R.id.txtTenDiaDiem);
         txtSdtDiaDiem = findViewById(R.id.txtSdtDiaDiem);
         txtWebsite = findViewById(R.id.txtWebsite);
-        txtDangHoatDong = findViewById(R.id.txtDangHoatDong);
         txtDiaChi = findViewById(R.id.txtDiaChi);
         txtDangBinhLuan = findViewById(R.id.txtDangBinhLuan);
+        txtTatCaBinhLuan = findViewById(R.id.txtTatCaBinhLuan);
 
         edBinhLuan = findViewById(R.id.edBinhLuan);
 
@@ -123,6 +130,9 @@ public class DetailPlacesActivity extends AppCompatActivity implements View.OnCl
         txtChuNhat = findViewById(R.id.txtChuNhat);
 
         toolbar = findViewById(R.id.toolbar);
+
+        linearKhongCoBinhLuan = findViewById(R.id.linearKhongCoBinhLuan);
+        linearKhongCoHinh = findViewById(R.id.linearKhongCoHinh);
 
         listHinhAnh = findViewById(R.id.recyclerHinhAnhDiaDiem);
         listHinhAnh.setHasFixedSize(true);
@@ -145,6 +155,8 @@ public class DetailPlacesActivity extends AppCompatActivity implements View.OnCl
         toolbar.setTitleTextColor(getColor(R.color.white));
 
         txtDangBinhLuan.setOnClickListener(this);
+        imgDienThoai.setOnClickListener(this);
+        imgChrome.setOnClickListener(this);
     }
 
     private void setBusinessTiming(TextView textView, String thu, String thoigianmocua, String thoigiandongcua){
@@ -179,9 +191,19 @@ public class DetailPlacesActivity extends AppCompatActivity implements View.OnCl
                         txtTenDiaDiem.setText(diaDiem.getTendiadiem());
                         txtDiaChi.setText(diaDiem.getDiachi());
 
-                        txtSdtDiaDiem.setText(diaDiem.getDienthoai());
+                        if(!isEmpty(diaDiem.getDienthoai()))
+                            txtSdtDiaDiem.setText(diaDiem.getDienthoai());
+                        else
+                            txtSdtDiaDiem.setText(getString(R.string.khongcosdt));
+
+                        if(!isEmpty(diaDiem.getWebsite()))
+                            txtWebsite.setText(diaDiem.getWebsite());
+                        else
+                            txtWebsite.setText(getString(R.string.khongcoduongdan));
 
                         if (diaDiem.getHinhanh().size() > 0){
+                            linearKhongCoHinh.setVisibility(View.GONE);
+
                             hinhanhs.addAll(diaDiem.getHinhanh());
 
                             if (hinhanhs.get(0).substring(0, 5).equals("https")){
@@ -202,11 +224,13 @@ public class DetailPlacesActivity extends AppCompatActivity implements View.OnCl
                                     }
                                 });
                             }
-                        }
 
-                        adapterHinhAnh = new ListHinhAnhDiaDiemAdapter(hinhanhs, madiadiem);
-                        adapterHinhAnh.notifyDataSetChanged();
-                        listHinhAnh.setAdapter(adapterHinhAnh);
+                            adapterHinhAnh = new ListHinhAnhDiaDiemAdapter(hinhanhs, madiadiem);
+                            adapterHinhAnh.notifyDataSetChanged();
+                            listHinhAnh.setAdapter(adapterHinhAnh);
+                        }else
+                            linearKhongCoHinh.setVisibility(View.VISIBLE);
+
 
                         if (diaDiem.getThoigianhoatdong().size() > 0) {
                             for (int i = 0; i < diaDiem.getThoigianhoatdong().size(); i++) {
@@ -238,8 +262,6 @@ public class DetailPlacesActivity extends AppCompatActivity implements View.OnCl
                                 }
                             }
                         }
-
-                        txtWebsite.setText(diaDiem.getWebsite());
                     } else {
                         Toast.makeText(DetailPlacesActivity.this, getString(R.string.khongtontaidiadiem), Toast.LENGTH_SHORT).show();
                         alertDialog.dismiss();
@@ -271,10 +293,17 @@ public class DetailPlacesActivity extends AppCompatActivity implements View.OnCl
                     reviews.add(review);
                 }
 
-                adapterDanhGia = new ListDanhGiaDiaDiemAdapter(reviews);
-                adapterDanhGia.notifyDataSetChanged();
-                listReview.setAdapter(adapterDanhGia);
+                if (reviews.size() > 0){
+                    txtTatCaBinhLuan.setVisibility(View.GONE);
+                    linearKhongCoBinhLuan.setVisibility(View.GONE);
 
+                    adapterDanhGia = new ListDanhGiaDiaDiemAdapter(reviews);
+                    adapterDanhGia.notifyDataSetChanged();
+                    listReview.setAdapter(adapterDanhGia);
+                }else {
+                    linearKhongCoBinhLuan.setVisibility(View.VISIBLE);
+                    txtTatCaBinhLuan.setVisibility(View.VISIBLE);
+                }
                 alertDialog.dismiss();
             }
         });
@@ -336,7 +365,6 @@ public class DetailPlacesActivity extends AppCompatActivity implements View.OnCl
             }
         });
     }
-
 
     private void loadAvatar(String ava, String uid){
         if (ava.equals("ava_man.png")){
@@ -403,7 +431,36 @@ public class DetailPlacesActivity extends AppCompatActivity implements View.OnCl
                         , preferencesUser.getString(Common.username, "")
                         , preferencesUser.getString(Common.avatar, ""));
                 break;
+            case R.id.imgDienThoai:
+                if (!txtSdtDiaDiem.getText().toString().equals(getString(R.string.khongcosdt))){
+                    Uri u = Uri.parse("tel:" + txtSdtDiaDiem.getText().toString());
+                    Intent i = new Intent(Intent.ACTION_DIAL, u);
+
+                    try {
+                        startActivity(i);
+                    }
+                    catch (SecurityException s) { }
+                }else
+                    Toast.makeText(this, getString(R.string.khongcosdt), Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.imgChrome:
+                if (!txtWebsite.getText().toString().equals(getString(R.string.khongcoduongdan)))
+                    openChrome(this, txtWebsite.getText().toString());
+                else
+                    Toast.makeText(this, getString(R.string.khongcoduongdan), Toast.LENGTH_SHORT).show();
+                break;
         }
+    }
+
+    void openChrome(Activity activity, String url) {
+        Uri uri = Uri.parse("googlechrome://navigate?url=" + url);
+        Intent i = new Intent(Intent.ACTION_VIEW, uri);
+
+        if (i.resolveActivity(activity.getPackageManager()) == null) {
+            i.setData(Uri.parse(url));
+        }
+
+        activity.startActivity(i);
     }
 
     private void dangbinhluan(final String madiadiem, final String uid, final String ten, final String ava) {

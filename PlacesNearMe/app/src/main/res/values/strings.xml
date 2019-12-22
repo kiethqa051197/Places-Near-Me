@@ -89,12 +89,18 @@
 
     <string name="themhinhthanhcong">Thêm hình ảnh thành công!</string>
     <string name="themhinhanhthatbai">Thêm hình ảnh thất bại!!!</string>
+    <string name="chonhinhanhdanhmuc">Nhấn vào hình trên để chọn hình cho danh mục</string>
+    <string name="danhsachtukhoa">Nhập danh sách từ khoá</string>
+    <string name="nhaptukhoaoday">Cách nhập: từ khoá, từ khoá tiếp theo, ...</string>
+    <string name="themdanhmuc2">Thêm danh mục</string>
 
     <string name="loidanhmuc">Địa điểm phải có ít nhất một danh mục!!!</string>
     <string name="diachitrong">Không được để trống địa chỉ!!!</string>
+    <string name="tendanhmuctrong">Không được để trống tên danh mục!!!</string>
     <string name="tendiadiemtrong">Không được để trống tên địa điểm!!!</string>
     <string name="khongtontaidiadiem">Không tồn tại địa điểm này</string>
     <string name="capnhatthanhcong">Cập nhật thành công!</string>
+    <string name="suadanhmuc">Sửa danh mục</string>
 
     <string name="daylaban">Đây là bạn</string>
     <string name="duongdi">Đường đi #</string>
@@ -109,9 +115,17 @@
 
     <string name="phienban">Phiên bản: </string>
     <string name="dangtai">Đang tải ...</string>
+    <string name="doichut">Phiền bạn chờ chút nhé</string>
 
+    <string name="khongcobinhluan">Chưa có bình luận nào</string>
+    <string name="khongcohinh">Chưa có hình</string>
+    <string name="khongcosdt">Không có số điện thoại</string>
+    <string name="khongcoduongdan">Không có dường dẫn</string>
 
     <string name="dangxuat">Đăng xuất</string>
+
+    <string name="khongtimthaydiadiem">Không tìm thấy địa điểm bạn cần</string>
+    <string name="capnhatthemdanhmuc">Thêm / Cập nhật danh mục</string>
 
     <!-- Permission -->
     <string name="tuchoicapquyen">Quyền yêu cầu bị từ chối</string>

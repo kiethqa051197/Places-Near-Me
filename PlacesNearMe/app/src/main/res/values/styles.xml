@@ -14,4 +14,18 @@
     </style>
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+    <style name="Custom" parent="android:Theme.DeviceDefault.Light.Dialog">
+        <item name="DialogTitleAppearance">@android:style/TextAppearance.Medium</item>
+        <item name="DialogTitleText">@string/dangtai</item>
+        <item name="DialogSpotColor">@color/colorPrimaryDark</item>
+        <item name="DialogSpotCount">3</item>
+    </style>
+
+    <style name="CustomUpdateAdd" parent="android:Theme.DeviceDefault.Light.Dialog">
+        <item name="DialogTitleAppearance">@android:style/TextAppearance.Medium</item>
+        <item name="DialogTitleText">@string/doichut</item>
+        <item name="DialogSpotColor">@color/colorPrimaryDark</item>
+        <item name="DialogSpotCount">3</item>
+    </style>
 </resources>

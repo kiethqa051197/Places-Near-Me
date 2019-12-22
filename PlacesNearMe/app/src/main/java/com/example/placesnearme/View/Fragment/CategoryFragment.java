@@ -1,12 +1,14 @@
 package com.example.placesnearme.View.Fragment;
 
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -23,6 +25,7 @@ import com.example.placesnearme.Common;
 import com.example.placesnearme.Model.Firebase.DanhMucCha;
 import com.example.placesnearme.Model.Firebase.User;
 import com.example.placesnearme.R;
+import com.example.placesnearme.View.AddCategoryActivity;
 import com.example.placesnearme.View.MainActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -41,6 +44,7 @@ public class CategoryFragment extends Fragment implements View.OnClickListener{
 
     private TextView txtTenNguoiDung;
     private EditText txtSearch;
+    private ImageView imgThemDanhMuc;
 
     private FirebaseAuth.AuthStateListener mAuthListener;
 
@@ -57,6 +61,8 @@ public class CategoryFragment extends Fragment implements View.OnClickListener{
 
     private AlertDialog alertDialog;
 
+    private SharedPreferences prefUser;
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,13 +73,16 @@ public class CategoryFragment extends Fragment implements View.OnClickListener{
         View view = inflater.inflate(R.layout.fragment_category, container, false);
 
         preferences = getActivity().getSharedPreferences(Common.PREF_EDIT, 0);
+        prefUser = getActivity().getSharedPreferences(Common.PREF_USER, 0);
 
         txtTenNguoiDung = view.findViewById(R.id.txttennguoidung);
         txtSearch = view.findViewById(R.id.txtSearch);
 
-        alertDialog = new SpotsDialog(getContext());
+        alertDialog = new SpotsDialog(getContext(), R.style.Custom);
 
         setupFirebaseAuth();
+
+        imgThemDanhMuc = view.findViewById(R.id.imgThemDanhMuc);
 
         listDanhMucCha = view.findViewById(R.id.recyclerDanhMuc);
         listDanhMucCha.setHasFixedSize(true);
@@ -82,10 +91,16 @@ public class CategoryFragment extends Fragment implements View.OnClickListener{
 
         linearTimKiem = view.findViewById(R.id.linearTimKiem);
 
+        if (prefUser.getString(Common.mauser, "").equals("QYA3SxpQ5VWvhcdZNqLRa8T5qHD3"))
+            imgThemDanhMuc.setVisibility(View.VISIBLE);
+        else
+            imgThemDanhMuc.setVisibility(View.GONE);
+
         layDanhMuc();
 
         linearTimKiem.setOnClickListener(this);
         txtSearch.setOnClickListener(this);
+        imgThemDanhMuc.setOnClickListener(this);
 
         return view;
     }
@@ -185,6 +200,9 @@ public class CategoryFragment extends Fragment implements View.OnClickListener{
                 break;
             case R.id.txtSearch:
                 click();
+                break;
+            case R.id.imgThemDanhMuc:
+                startActivity(new Intent(getContext(), AddCategoryActivity.class));
                 break;
         }
     }

@@ -20,7 +20,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/xinchao"
-            android:textColor="@color/white" />
+            android:textColor="@color/white"
+            android:layout_gravity="center"/>
 
         <TextView
             android:id="@+id/txttennguoidung"
@@ -28,7 +29,17 @@
             android:layout_height="wrap_content"
             android:textStyle="bold"
             android:textColor="@color/white"
-            android:layout_marginStart="5dp"/>
+            android:layout_marginStart="5dp"
+            android:layout_weight="1"
+            android:layout_gravity="center"/>
+
+        <ImageView
+            android:id="@+id/imgThemDanhMuc"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_gravity="center"
+            android:padding="@dimen/padding10dp"
+            android:src="@drawable/ic_add_black_24dp"/>
     </LinearLayout>
 
     <LinearLayout

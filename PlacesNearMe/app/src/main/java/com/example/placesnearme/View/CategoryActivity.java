@@ -1,6 +1,7 @@
 package com.example.placesnearme.View;
 
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.MenuItem;
@@ -57,9 +58,10 @@ public class CategoryActivity extends AppCompatActivity implements View.OnClickL
 
         prefCategory = getSharedPreferences(Common.PREF_DANHMUCCHA, 0);
 
-        alertDialog = new SpotsDialog(this);
+        alertDialog = new SpotsDialog(this, R.style.Custom);
 
         imgBack = findViewById(R.id.imgBack);
+
         txtTenDanhMuc = findViewById(R.id.txtTenDanhMuc);
 
         listDanhMuc = findViewById(R.id.recyclerDanhMucCon);
@@ -76,7 +78,9 @@ public class CategoryActivity extends AppCompatActivity implements View.OnClickL
 
     private void loadCategory() {
         alertDialog.show();
-        danhMucList.clear();
+
+        if (danhMucList.size() > 0)
+            danhMucList.clear();
 
         db.collection(Common.DANHMUC).whereEqualTo(Common.DANHMUCCHA + "." + Common.madanhmuc, prefCategory.getString(Common.madanhmuc, ""))
                 .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -111,5 +115,13 @@ public class CategoryActivity extends AppCompatActivity implements View.OnClickL
                 onBackPressed();
                 break;
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (adapterDanhMuc != null)
+            adapterDanhMuc.notifyDataSetChanged();
     }
 }
